@@ -4,3 +4,6 @@ composer.phar
 # Commit your application's lock file https://getcomposer.org/doc/01-basic-usage.md#commit-your-composer-lock-file-to-version-control
 # You may choose to ignore a library lock file http://getcomposer.org/doc/02-libraries.md#lock-file
 # composer.lock
+frontEnd/ewcfg15.php
+frontEnd/SUBMITTAL/{0DAED7A3-53E4-4CF3-BF6B-23DAE7EFA573}.xml
+frontEnd/SUBMITTAL/vishal-sub.xml
