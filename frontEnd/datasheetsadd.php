@@ -23,6 +23,7 @@ $datasheets_add = new datasheets_add();
 $datasheets_add->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -69,17 +70,17 @@ fdatasheetsadd.validate = function() {
 			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->manufacturer->caption(), $datasheets->manufacturer->RequiredErrorMessage)) ?>");
 		<?php } ?>
-		<?php if ($datasheets_add->cdd->Required) { ?>
-			felm = this.getElements("x" + infix + "_cdd");
-			elm = this.getElements("fn_x" + infix + "_cdd");
+		<?php if ($datasheets_add->cddFile->Required) { ?>
+			felm = this.getElements("x" + infix + "_cddFile");
+			elm = this.getElements("fn_x" + infix + "_cddFile");
 			if (felm && elm && !ew.hasValue(elm))
-				return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->cdd->caption(), $datasheets->cdd->RequiredErrorMessage)) ?>");
+				return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->cddFile->caption(), $datasheets->cddFile->RequiredErrorMessage)) ?>");
 		<?php } ?>
-		<?php if ($datasheets_add->thirdParty->Required) { ?>
-			felm = this.getElements("x" + infix + "_thirdParty");
-			elm = this.getElements("fn_x" + infix + "_thirdParty");
+		<?php if ($datasheets_add->thirdPartyFile->Required) { ?>
+			felm = this.getElements("x" + infix + "_thirdPartyFile");
+			elm = this.getElements("fn_x" + infix + "_thirdPartyFile");
 			if (felm && elm && !ew.hasValue(elm))
-				return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->thirdParty->caption(), $datasheets->thirdParty->RequiredErrorMessage)) ?>");
+				return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->thirdPartyFile->caption(), $datasheets->thirdPartyFile->RequiredErrorMessage)) ?>");
 		<?php } ?>
 		<?php if ($datasheets_add->tittle->Required) { ?>
 			elm = this.getElements("x" + infix + "_tittle");
@@ -104,6 +105,11 @@ fdatasheetsadd.validate = function() {
 			elm = this.getElements("x" + infix + "_cddno");
 			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->cddno->caption(), $datasheets->cddno->RequiredErrorMessage)) ?>");
+		<?php } ?>
+		<?php if ($datasheets_add->thirdPartyNo->Required) { ?>
+			elm = this.getElements("x" + infix + "_thirdPartyNo");
+			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
+				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->thirdPartyNo->caption(), $datasheets->thirdPartyNo->RequiredErrorMessage)) ?>");
 		<?php } ?>
 		<?php if ($datasheets_add->duration->Required) { ?>
 			elm = this.getElements("x" + infix + "_duration");
@@ -289,7 +295,9 @@ $datasheets->manufacturer->EditAttrs["onchange"] = "";
 		<input type="text" class="form-control" name="sv_x_manufacturer" id="sv_x_manufacturer" value="<?php echo RemoveHtml($datasheets->manufacturer->EditValue) ?>" size="30" placeholder="<?php echo HtmlEncode($datasheets->manufacturer->getPlaceHolder()) ?>" data-placeholder="<?php echo HtmlEncode($datasheets->manufacturer->getPlaceHolder()) ?>"<?php echo $datasheets->manufacturer->editAttributes() ?>>
 		<div class="input-group-append">
 			<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($datasheets->manufacturer->caption()), $Language->phrase("LookupLink", TRUE))) ?>" onclick="ew.modalLookupShow({lnk:this,el:'x_manufacturer',m:0,n:10,srch:false});" class="ew-lookup-btn btn btn-default"<?php echo (($datasheets->manufacturer->ReadOnly || $datasheets->manufacturer->Disabled) ? " disabled" : "")?>><i class="fa fa-search ew-icon"></i></button>
+<?php if (AllowAdd(CurrentProjectID() . "manufacturer") && !$datasheets->manufacturer->ReadOnly) { ?>
 <button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x_manufacturer" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $datasheets->manufacturer->caption() ?>" data-title="<?php echo $datasheets->manufacturer->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x_manufacturer',url:'manufactureraddopt.php'});"><i class="fa fa-plus ew-icon"></i></button>
+<?php } ?>
 		</div>
 	</div>
 </span>
@@ -324,7 +332,9 @@ $datasheets->manufacturer->EditAttrs["onchange"] = "";
 		<input type="text" class="form-control" name="sv_x_manufacturer" id="sv_x_manufacturer" value="<?php echo RemoveHtml($datasheets->manufacturer->EditValue) ?>" size="30" placeholder="<?php echo HtmlEncode($datasheets->manufacturer->getPlaceHolder()) ?>" data-placeholder="<?php echo HtmlEncode($datasheets->manufacturer->getPlaceHolder()) ?>"<?php echo $datasheets->manufacturer->editAttributes() ?>>
 		<div class="input-group-append">
 			<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($datasheets->manufacturer->caption()), $Language->phrase("LookupLink", TRUE))) ?>" onclick="ew.modalLookupShow({lnk:this,el:'x_manufacturer',m:0,n:10,srch:false});" class="ew-lookup-btn btn btn-default"<?php echo (($datasheets->manufacturer->ReadOnly || $datasheets->manufacturer->Disabled) ? " disabled" : "")?>><i class="fa fa-search ew-icon"></i></button>
+<?php if (AllowAdd(CurrentProjectID() . "manufacturer") && !$datasheets->manufacturer->ReadOnly) { ?>
 <button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x_manufacturer" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $datasheets->manufacturer->caption() ?>" data-title="<?php echo $datasheets->manufacturer->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x_manufacturer',url:'manufactureraddopt.php'});"><i class="fa fa-plus ew-icon"></i></button>
+<?php } ?>
 		</div>
 	</div>
 </span>
@@ -495,6 +505,53 @@ ew.createDateTimePicker("fdatasheetsadd", "x_cddissue", {"ignoreReadonly":true,"
 	</tr>
 <?php } ?>
 <?php } ?>
+<?php if ($datasheets->thirdPartyNo->Visible) { // thirdPartyNo ?>
+<?php if ($datasheets_add->IsMobileOrModal) { ?>
+	<div id="r_thirdPartyNo" class="form-group row">
+		<label id="elh_datasheets_thirdPartyNo" for="x_thirdPartyNo" class="<?php echo $datasheets_add->LeftColumnClass ?>"><?php echo $datasheets->thirdPartyNo->caption() ?><?php echo ($datasheets->thirdPartyNo->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<div class="<?php echo $datasheets_add->RightColumnClass ?>"><div<?php echo $datasheets->thirdPartyNo->cellAttributes() ?>>
+<?php if (!$datasheets->isConfirm()) { ?>
+<span id="el_datasheets_thirdPartyNo">
+<input type="text" data-table="datasheets" data-field="x_thirdPartyNo" data-page="1" name="x_thirdPartyNo" id="x_thirdPartyNo" size="30" placeholder="<?php echo HtmlEncode($datasheets->thirdPartyNo->getPlaceHolder()) ?>" value="<?php echo $datasheets->thirdPartyNo->EditValue ?>"<?php echo $datasheets->thirdPartyNo->editAttributes() ?>>
+</span>
+<?php } else { ?>
+<span id="el_datasheets_thirdPartyNo">
+<span<?php echo $datasheets->thirdPartyNo->viewAttributes() ?>>
+<?php if ((!EmptyString($datasheets->thirdPartyNo->ViewValue)) && $datasheets->thirdPartyNo->linkAttributes() <> "") { ?>
+<a<?php echo $datasheets->thirdPartyNo->linkAttributes() ?>><input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->thirdPartyNo->ViewValue) ?>"></a>
+<?php } else { ?>
+<input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->thirdPartyNo->ViewValue) ?>">
+<?php } ?>
+</span>
+</span>
+<input type="hidden" data-table="datasheets" data-field="x_thirdPartyNo" data-page="1" name="x_thirdPartyNo" id="x_thirdPartyNo" value="<?php echo HtmlEncode($datasheets->thirdPartyNo->FormValue) ?>">
+<?php } ?>
+<?php echo $datasheets->thirdPartyNo->CustomMsg ?></div></div>
+	</div>
+<?php } else { ?>
+	<tr id="r_thirdPartyNo">
+		<td class="<?php echo $datasheets_add->TableLeftColumnClass ?>"><span id="elh_datasheets_thirdPartyNo"><?php echo $datasheets->thirdPartyNo->caption() ?><?php echo ($datasheets->thirdPartyNo->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></span></td>
+		<td<?php echo $datasheets->thirdPartyNo->cellAttributes() ?>>
+<?php if (!$datasheets->isConfirm()) { ?>
+<span id="el_datasheets_thirdPartyNo">
+<input type="text" data-table="datasheets" data-field="x_thirdPartyNo" data-page="1" name="x_thirdPartyNo" id="x_thirdPartyNo" size="30" placeholder="<?php echo HtmlEncode($datasheets->thirdPartyNo->getPlaceHolder()) ?>" value="<?php echo $datasheets->thirdPartyNo->EditValue ?>"<?php echo $datasheets->thirdPartyNo->editAttributes() ?>>
+</span>
+<?php } else { ?>
+<span id="el_datasheets_thirdPartyNo">
+<span<?php echo $datasheets->thirdPartyNo->viewAttributes() ?>>
+<?php if ((!EmptyString($datasheets->thirdPartyNo->ViewValue)) && $datasheets->thirdPartyNo->linkAttributes() <> "") { ?>
+<a<?php echo $datasheets->thirdPartyNo->linkAttributes() ?>><input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->thirdPartyNo->ViewValue) ?>"></a>
+<?php } else { ?>
+<input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->thirdPartyNo->ViewValue) ?>">
+<?php } ?>
+</span>
+</span>
+<input type="hidden" data-table="datasheets" data-field="x_thirdPartyNo" data-page="1" name="x_thirdPartyNo" id="x_thirdPartyNo" value="<?php echo HtmlEncode($datasheets->thirdPartyNo->FormValue) ?>">
+<?php } ?>
+<?php echo $datasheets->thirdPartyNo->CustomMsg ?></td>
+	</tr>
+<?php } ?>
+<?php } ?>
 <?php if ($datasheets->duration->Visible) { // duration ?>
 <?php if ($datasheets_add->IsMobileOrModal) { ?>
 	<div id="r_duration" class="form-group row">
@@ -642,10 +699,12 @@ $wrkonchange = "" . trim(@$datasheets->coo->EditAttrs["onchange"]);
 if (trim($wrkonchange) <> "") $wrkonchange = " onchange=\"" . JsEncode($wrkonchange) . "\"";
 $datasheets->coo->EditAttrs["onchange"] = "";
 ?>
-<span id="as_x_coo" class="text-nowrap" style="z-index: 8860">
+<span id="as_x_coo" class="text-nowrap" style="z-index: 8850">
 	<div class="input-group">
 		<input type="text" class="form-control" name="sv_x_coo" id="sv_x_coo" value="<?php echo RemoveHtml($datasheets->coo->EditValue) ?>" size="30" placeholder="<?php echo HtmlEncode($datasheets->coo->getPlaceHolder()) ?>" data-placeholder="<?php echo HtmlEncode($datasheets->coo->getPlaceHolder()) ?>"<?php echo $datasheets->coo->editAttributes() ?>>
+<?php if (AllowAdd(CurrentProjectID() . "countryOfOrigin") && !$datasheets->coo->ReadOnly) { ?>
 <div class="input-group-append"><button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x_coo" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $datasheets->coo->caption() ?>" data-title="<?php echo $datasheets->coo->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x_coo',url:'countryOfOriginaddopt.php'});"><i class="fa fa-plus ew-icon"></i></button></div>
+<?php } ?>
 	</div>
 </span>
 <input type="hidden" data-table="datasheets" data-field="x_coo" data-page="1" data-value-separator="<?php echo $datasheets->coo->displayValueSeparatorAttribute() ?>" name="x_coo" id="x_coo" value="<?php echo HtmlEncode($datasheets->coo->CurrentValue) ?>"<?php echo $wrkonchange ?>>
@@ -674,10 +733,12 @@ $wrkonchange = "" . trim(@$datasheets->coo->EditAttrs["onchange"]);
 if (trim($wrkonchange) <> "") $wrkonchange = " onchange=\"" . JsEncode($wrkonchange) . "\"";
 $datasheets->coo->EditAttrs["onchange"] = "";
 ?>
-<span id="as_x_coo" class="text-nowrap" style="z-index: 8860">
+<span id="as_x_coo" class="text-nowrap" style="z-index: 8850">
 	<div class="input-group">
 		<input type="text" class="form-control" name="sv_x_coo" id="sv_x_coo" value="<?php echo RemoveHtml($datasheets->coo->EditValue) ?>" size="30" placeholder="<?php echo HtmlEncode($datasheets->coo->getPlaceHolder()) ?>" data-placeholder="<?php echo HtmlEncode($datasheets->coo->getPlaceHolder()) ?>"<?php echo $datasheets->coo->editAttributes() ?>>
+<?php if (AllowAdd(CurrentProjectID() . "countryOfOrigin") && !$datasheets->coo->ReadOnly) { ?>
 <div class="input-group-append"><button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x_coo" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $datasheets->coo->caption() ?>" data-title="<?php echo $datasheets->coo->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x_coo',url:'countryOfOriginaddopt.php'});"><i class="fa fa-plus ew-icon"></i></button></div>
+<?php } ?>
 	</div>
 </span>
 <input type="hidden" data-table="datasheets" data-field="x_coo" data-page="1" data-value-separator="<?php echo $datasheets->coo->displayValueSeparatorAttribute() ?>" name="x_coo" id="x_coo" value="<?php echo HtmlEncode($datasheets->coo->CurrentValue) ?>"<?php echo $wrkonchange ?>>
@@ -856,89 +917,89 @@ fdatasheetsadd.createAutoSuggest({"id":"x_coo","forceSelect":false});
 	</tr>
 <?php } ?>
 <?php } ?>
-<?php if ($datasheets->cdd->Visible) { // cdd ?>
+<?php if ($datasheets->cddFile->Visible) { // cddFile ?>
 <?php if ($datasheets_add->IsMobileOrModal) { ?>
-	<div id="r_cdd" class="form-group row">
-		<label id="elh_datasheets_cdd" class="<?php echo $datasheets_add->LeftColumnClass ?>"><?php echo $datasheets->cdd->caption() ?><?php echo ($datasheets->cdd->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
-		<div class="<?php echo $datasheets_add->RightColumnClass ?>"><div<?php echo $datasheets->cdd->cellAttributes() ?>>
-<span id="el_datasheets_cdd">
-<div id="fd_x_cdd">
-<span title="<?php echo $datasheets->cdd->title() ? $datasheets->cdd->title() : $Language->phrase("ChooseFile") ?>" class="btn btn-default btn-sm fileinput-button ew-tooltip<?php if ($datasheets->cdd->ReadOnly || $datasheets->cdd->Disabled) echo " d-none"; ?>">
+	<div id="r_cddFile" class="form-group row">
+		<label id="elh_datasheets_cddFile" class="<?php echo $datasheets_add->LeftColumnClass ?>"><?php echo $datasheets->cddFile->caption() ?><?php echo ($datasheets->cddFile->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<div class="<?php echo $datasheets_add->RightColumnClass ?>"><div<?php echo $datasheets->cddFile->cellAttributes() ?>>
+<span id="el_datasheets_cddFile">
+<div id="fd_x_cddFile">
+<span title="<?php echo $datasheets->cddFile->title() ? $datasheets->cddFile->title() : $Language->phrase("ChooseFile") ?>" class="btn btn-default btn-sm fileinput-button ew-tooltip<?php if ($datasheets->cddFile->ReadOnly || $datasheets->cddFile->Disabled) echo " d-none"; ?>">
 	<span><?php echo $Language->phrase("ChooseFileBtn") ?></span>
-	<input type="file" title=" " data-table="datasheets" data-field="x_cdd" data-page="2" name="x_cdd" id="x_cdd"<?php echo $datasheets->cdd->editAttributes() ?>>
+	<input type="file" title=" " data-table="datasheets" data-field="x_cddFile" data-page="2" name="x_cddFile" id="x_cddFile"<?php echo $datasheets->cddFile->editAttributes() ?>>
 </span>
-<input type="hidden" name="fn_x_cdd" id= "fn_x_cdd" value="<?php echo $datasheets->cdd->Upload->FileName ?>">
-<input type="hidden" name="fa_x_cdd" id= "fa_x_cdd" value="0">
-<input type="hidden" name="fs_x_cdd" id= "fs_x_cdd" value="0">
-<input type="hidden" name="fx_x_cdd" id= "fx_x_cdd" value="<?php echo $datasheets->cdd->UploadAllowedFileExt ?>">
-<input type="hidden" name="fm_x_cdd" id= "fm_x_cdd" value="<?php echo $datasheets->cdd->UploadMaxFileSize ?>">
+<input type="hidden" name="fn_x_cddFile" id= "fn_x_cddFile" value="<?php echo $datasheets->cddFile->Upload->FileName ?>">
+<input type="hidden" name="fa_x_cddFile" id= "fa_x_cddFile" value="0">
+<input type="hidden" name="fs_x_cddFile" id= "fs_x_cddFile" value="0">
+<input type="hidden" name="fx_x_cddFile" id= "fx_x_cddFile" value="<?php echo $datasheets->cddFile->UploadAllowedFileExt ?>">
+<input type="hidden" name="fm_x_cddFile" id= "fm_x_cddFile" value="<?php echo $datasheets->cddFile->UploadMaxFileSize ?>">
 </div>
-<table id="ft_x_cdd" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
+<table id="ft_x_cddFile" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
 </span>
-<?php echo $datasheets->cdd->CustomMsg ?></div></div>
+<?php echo $datasheets->cddFile->CustomMsg ?></div></div>
 	</div>
 <?php } else { ?>
-	<tr id="r_cdd">
-		<td class="<?php echo $datasheets_add->TableLeftColumnClass ?>"><span id="elh_datasheets_cdd"><?php echo $datasheets->cdd->caption() ?><?php echo ($datasheets->cdd->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></span></td>
-		<td<?php echo $datasheets->cdd->cellAttributes() ?>>
-<span id="el_datasheets_cdd">
-<div id="fd_x_cdd">
-<span title="<?php echo $datasheets->cdd->title() ? $datasheets->cdd->title() : $Language->phrase("ChooseFile") ?>" class="btn btn-default btn-sm fileinput-button ew-tooltip<?php if ($datasheets->cdd->ReadOnly || $datasheets->cdd->Disabled) echo " d-none"; ?>">
+	<tr id="r_cddFile">
+		<td class="<?php echo $datasheets_add->TableLeftColumnClass ?>"><span id="elh_datasheets_cddFile"><?php echo $datasheets->cddFile->caption() ?><?php echo ($datasheets->cddFile->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></span></td>
+		<td<?php echo $datasheets->cddFile->cellAttributes() ?>>
+<span id="el_datasheets_cddFile">
+<div id="fd_x_cddFile">
+<span title="<?php echo $datasheets->cddFile->title() ? $datasheets->cddFile->title() : $Language->phrase("ChooseFile") ?>" class="btn btn-default btn-sm fileinput-button ew-tooltip<?php if ($datasheets->cddFile->ReadOnly || $datasheets->cddFile->Disabled) echo " d-none"; ?>">
 	<span><?php echo $Language->phrase("ChooseFileBtn") ?></span>
-	<input type="file" title=" " data-table="datasheets" data-field="x_cdd" data-page="2" name="x_cdd" id="x_cdd"<?php echo $datasheets->cdd->editAttributes() ?>>
+	<input type="file" title=" " data-table="datasheets" data-field="x_cddFile" data-page="2" name="x_cddFile" id="x_cddFile"<?php echo $datasheets->cddFile->editAttributes() ?>>
 </span>
-<input type="hidden" name="fn_x_cdd" id= "fn_x_cdd" value="<?php echo $datasheets->cdd->Upload->FileName ?>">
-<input type="hidden" name="fa_x_cdd" id= "fa_x_cdd" value="0">
-<input type="hidden" name="fs_x_cdd" id= "fs_x_cdd" value="0">
-<input type="hidden" name="fx_x_cdd" id= "fx_x_cdd" value="<?php echo $datasheets->cdd->UploadAllowedFileExt ?>">
-<input type="hidden" name="fm_x_cdd" id= "fm_x_cdd" value="<?php echo $datasheets->cdd->UploadMaxFileSize ?>">
+<input type="hidden" name="fn_x_cddFile" id= "fn_x_cddFile" value="<?php echo $datasheets->cddFile->Upload->FileName ?>">
+<input type="hidden" name="fa_x_cddFile" id= "fa_x_cddFile" value="0">
+<input type="hidden" name="fs_x_cddFile" id= "fs_x_cddFile" value="0">
+<input type="hidden" name="fx_x_cddFile" id= "fx_x_cddFile" value="<?php echo $datasheets->cddFile->UploadAllowedFileExt ?>">
+<input type="hidden" name="fm_x_cddFile" id= "fm_x_cddFile" value="<?php echo $datasheets->cddFile->UploadMaxFileSize ?>">
 </div>
-<table id="ft_x_cdd" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
+<table id="ft_x_cddFile" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
 </span>
-<?php echo $datasheets->cdd->CustomMsg ?></td>
+<?php echo $datasheets->cddFile->CustomMsg ?></td>
 	</tr>
 <?php } ?>
 <?php } ?>
-<?php if ($datasheets->thirdParty->Visible) { // thirdParty ?>
+<?php if ($datasheets->thirdPartyFile->Visible) { // thirdPartyFile ?>
 <?php if ($datasheets_add->IsMobileOrModal) { ?>
-	<div id="r_thirdParty" class="form-group row">
-		<label id="elh_datasheets_thirdParty" class="<?php echo $datasheets_add->LeftColumnClass ?>"><?php echo $datasheets->thirdParty->caption() ?><?php echo ($datasheets->thirdParty->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
-		<div class="<?php echo $datasheets_add->RightColumnClass ?>"><div<?php echo $datasheets->thirdParty->cellAttributes() ?>>
-<span id="el_datasheets_thirdParty">
-<div id="fd_x_thirdParty">
-<span title="<?php echo $datasheets->thirdParty->title() ? $datasheets->thirdParty->title() : $Language->phrase("ChooseFile") ?>" class="btn btn-default btn-sm fileinput-button ew-tooltip<?php if ($datasheets->thirdParty->ReadOnly || $datasheets->thirdParty->Disabled) echo " d-none"; ?>">
+	<div id="r_thirdPartyFile" class="form-group row">
+		<label id="elh_datasheets_thirdPartyFile" class="<?php echo $datasheets_add->LeftColumnClass ?>"><?php echo $datasheets->thirdPartyFile->caption() ?><?php echo ($datasheets->thirdPartyFile->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<div class="<?php echo $datasheets_add->RightColumnClass ?>"><div<?php echo $datasheets->thirdPartyFile->cellAttributes() ?>>
+<span id="el_datasheets_thirdPartyFile">
+<div id="fd_x_thirdPartyFile">
+<span title="<?php echo $datasheets->thirdPartyFile->title() ? $datasheets->thirdPartyFile->title() : $Language->phrase("ChooseFile") ?>" class="btn btn-default btn-sm fileinput-button ew-tooltip<?php if ($datasheets->thirdPartyFile->ReadOnly || $datasheets->thirdPartyFile->Disabled) echo " d-none"; ?>">
 	<span><?php echo $Language->phrase("ChooseFileBtn") ?></span>
-	<input type="file" title=" " data-table="datasheets" data-field="x_thirdParty" data-page="2" name="x_thirdParty" id="x_thirdParty"<?php echo $datasheets->thirdParty->editAttributes() ?>>
+	<input type="file" title=" " data-table="datasheets" data-field="x_thirdPartyFile" data-page="2" name="x_thirdPartyFile" id="x_thirdPartyFile"<?php echo $datasheets->thirdPartyFile->editAttributes() ?>>
 </span>
-<input type="hidden" name="fn_x_thirdParty" id= "fn_x_thirdParty" value="<?php echo $datasheets->thirdParty->Upload->FileName ?>">
-<input type="hidden" name="fa_x_thirdParty" id= "fa_x_thirdParty" value="0">
-<input type="hidden" name="fs_x_thirdParty" id= "fs_x_thirdParty" value="0">
-<input type="hidden" name="fx_x_thirdParty" id= "fx_x_thirdParty" value="<?php echo $datasheets->thirdParty->UploadAllowedFileExt ?>">
-<input type="hidden" name="fm_x_thirdParty" id= "fm_x_thirdParty" value="<?php echo $datasheets->thirdParty->UploadMaxFileSize ?>">
+<input type="hidden" name="fn_x_thirdPartyFile" id= "fn_x_thirdPartyFile" value="<?php echo $datasheets->thirdPartyFile->Upload->FileName ?>">
+<input type="hidden" name="fa_x_thirdPartyFile" id= "fa_x_thirdPartyFile" value="0">
+<input type="hidden" name="fs_x_thirdPartyFile" id= "fs_x_thirdPartyFile" value="0">
+<input type="hidden" name="fx_x_thirdPartyFile" id= "fx_x_thirdPartyFile" value="<?php echo $datasheets->thirdPartyFile->UploadAllowedFileExt ?>">
+<input type="hidden" name="fm_x_thirdPartyFile" id= "fm_x_thirdPartyFile" value="<?php echo $datasheets->thirdPartyFile->UploadMaxFileSize ?>">
 </div>
-<table id="ft_x_thirdParty" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
+<table id="ft_x_thirdPartyFile" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
 </span>
-<?php echo $datasheets->thirdParty->CustomMsg ?></div></div>
+<?php echo $datasheets->thirdPartyFile->CustomMsg ?></div></div>
 	</div>
 <?php } else { ?>
-	<tr id="r_thirdParty">
-		<td class="<?php echo $datasheets_add->TableLeftColumnClass ?>"><span id="elh_datasheets_thirdParty"><?php echo $datasheets->thirdParty->caption() ?><?php echo ($datasheets->thirdParty->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></span></td>
-		<td<?php echo $datasheets->thirdParty->cellAttributes() ?>>
-<span id="el_datasheets_thirdParty">
-<div id="fd_x_thirdParty">
-<span title="<?php echo $datasheets->thirdParty->title() ? $datasheets->thirdParty->title() : $Language->phrase("ChooseFile") ?>" class="btn btn-default btn-sm fileinput-button ew-tooltip<?php if ($datasheets->thirdParty->ReadOnly || $datasheets->thirdParty->Disabled) echo " d-none"; ?>">
+	<tr id="r_thirdPartyFile">
+		<td class="<?php echo $datasheets_add->TableLeftColumnClass ?>"><span id="elh_datasheets_thirdPartyFile"><?php echo $datasheets->thirdPartyFile->caption() ?><?php echo ($datasheets->thirdPartyFile->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></span></td>
+		<td<?php echo $datasheets->thirdPartyFile->cellAttributes() ?>>
+<span id="el_datasheets_thirdPartyFile">
+<div id="fd_x_thirdPartyFile">
+<span title="<?php echo $datasheets->thirdPartyFile->title() ? $datasheets->thirdPartyFile->title() : $Language->phrase("ChooseFile") ?>" class="btn btn-default btn-sm fileinput-button ew-tooltip<?php if ($datasheets->thirdPartyFile->ReadOnly || $datasheets->thirdPartyFile->Disabled) echo " d-none"; ?>">
 	<span><?php echo $Language->phrase("ChooseFileBtn") ?></span>
-	<input type="file" title=" " data-table="datasheets" data-field="x_thirdParty" data-page="2" name="x_thirdParty" id="x_thirdParty"<?php echo $datasheets->thirdParty->editAttributes() ?>>
+	<input type="file" title=" " data-table="datasheets" data-field="x_thirdPartyFile" data-page="2" name="x_thirdPartyFile" id="x_thirdPartyFile"<?php echo $datasheets->thirdPartyFile->editAttributes() ?>>
 </span>
-<input type="hidden" name="fn_x_thirdParty" id= "fn_x_thirdParty" value="<?php echo $datasheets->thirdParty->Upload->FileName ?>">
-<input type="hidden" name="fa_x_thirdParty" id= "fa_x_thirdParty" value="0">
-<input type="hidden" name="fs_x_thirdParty" id= "fs_x_thirdParty" value="0">
-<input type="hidden" name="fx_x_thirdParty" id= "fx_x_thirdParty" value="<?php echo $datasheets->thirdParty->UploadAllowedFileExt ?>">
-<input type="hidden" name="fm_x_thirdParty" id= "fm_x_thirdParty" value="<?php echo $datasheets->thirdParty->UploadMaxFileSize ?>">
+<input type="hidden" name="fn_x_thirdPartyFile" id= "fn_x_thirdPartyFile" value="<?php echo $datasheets->thirdPartyFile->Upload->FileName ?>">
+<input type="hidden" name="fa_x_thirdPartyFile" id= "fa_x_thirdPartyFile" value="0">
+<input type="hidden" name="fs_x_thirdPartyFile" id= "fs_x_thirdPartyFile" value="0">
+<input type="hidden" name="fx_x_thirdPartyFile" id= "fx_x_thirdPartyFile" value="<?php echo $datasheets->thirdPartyFile->UploadAllowedFileExt ?>">
+<input type="hidden" name="fm_x_thirdPartyFile" id= "fm_x_thirdPartyFile" value="<?php echo $datasheets->thirdPartyFile->UploadMaxFileSize ?>">
 </div>
-<table id="ft_x_thirdParty" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
+<table id="ft_x_thirdPartyFile" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
 </span>
-<?php echo $datasheets->thirdParty->CustomMsg ?></td>
+<?php echo $datasheets->thirdPartyFile->CustomMsg ?></td>
 	</tr>
 <?php } ?>
 <?php } ?>

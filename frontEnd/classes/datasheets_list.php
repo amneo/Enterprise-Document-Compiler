@@ -379,6 +379,7 @@ class datasheets_list extends datasheets
 	public function __construct()
 	{
 		global $Language, $COMPOSITE_KEY_SEPARATOR;
+		global $UserTable, $UserTableConn;
 
 		// Initialize
 		$GLOBALS["Page"] = &$this;
@@ -413,6 +414,10 @@ class datasheets_list extends datasheets
 		$this->MultiUpdateUrl = "datasheetsupdate.php";
 		$this->CancelUrl = $this->pageUrl() . "action=cancel";
 
+		// Table object (users)
+		if (!isset($GLOBALS['users']))
+			$GLOBALS['users'] = new users();
+
 		// Page ID
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'list');
@@ -431,6 +436,12 @@ class datasheets_list extends datasheets
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = &$this->getConnection();
+
+		// User table object (users)
+		if (!isset($UserTable)) {
+			$UserTable = new users();
+			$UserTableConn = Conn($UserTable->Dbid);
+		}
 
 		// List options
 		$this->ListOptions = new ListOptions();
@@ -605,6 +616,8 @@ class datasheets_list extends datasheets
 	{
 		if ($this->isAdd() || $this->isCopy() || $this->isGridAdd())
 			$this->partid->Visible = FALSE;
+		if ($this->isAddOrEdit())
+			$this->username->Visible = FALSE;
 	}
 
 	// Class variables
@@ -617,7 +630,7 @@ class datasheets_list extends datasheets
 	public $ListActions; // List actions
 	public $SelectedCount = 0;
 	public $SelectedIndex = 0;
-	public $DisplayRecs = 50;
+	public $DisplayRecs = 10;
 	public $StartRec;
 	public $StopRec;
 	public $TotalRecs = 0;
@@ -661,6 +674,53 @@ class datasheets_list extends datasheets
 			$func = PROJECT_NAMESPACE . CHECK_TOKEN_FUNC;
 			if (is_callable($func) && Param(TOKEN_NAME) !== NULL && $func(Param(TOKEN_NAME), SessionTimeoutTime()))
 				session_start();
+		}
+
+		// User profile
+		$UserProfile = new UserProfile();
+
+		// Security
+		$Security = new AdvancedSecurity();
+		$validRequest = FALSE;
+
+		// Check security for API request
+		If (IsApi()) {
+
+			// Check token first
+			$func = PROJECT_NAMESPACE . CHECK_TOKEN_FUNC;
+			if (is_callable($func) && Post(TOKEN_NAME) !== NULL)
+				$validRequest = $func(Post(TOKEN_NAME), SessionTimeoutTime());
+			elseif (is_array($RequestSecurity) && @$RequestSecurity["username"] <> "") // Login user for API request
+				$Security->loginUser(@$RequestSecurity["username"], @$RequestSecurity["userid"], @$RequestSecurity["parentuserid"], @$RequestSecurity["userlevelid"]);
+		}
+		if (!$validRequest) {
+			if (IsPasswordExpired())
+				$this->terminate(GetUrl("changepwd.php"));
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			if ($Security->isLoggedIn())
+				$Security->TablePermission_Loading();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if ($Security->isLoggedIn())
+				$Security->TablePermission_Loaded();
+			if (!$Security->canList()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				$this->terminate(GetUrl("index.php"));
+				return;
+			}
+			if ($Security->isLoggedIn()) {
+				$Security->UserID_Loading();
+				$Security->loadUserID();
+				$Security->UserID_Loaded();
+			}
+		}
+
+		// Update last accessed time
+		if ($UserProfile->isValidUser(CurrentUserName(), session_id())) {
+		} else {
+			Write($Language->phrase("UserProfileCorrupted"));
+			$this->terminate();
 		}
 
 		// Create form object
@@ -717,22 +777,23 @@ class datasheets_list extends datasheets
 		$this->partno->setVisibility();
 		$this->dataSheetFile->Visible = FALSE;
 		$this->manufacturer->setVisibility();
-		$this->cdd->Visible = FALSE;
-		$this->thirdParty->Visible = FALSE;
+		$this->cddFile->Visible = FALSE;
+		$this->thirdPartyFile->Visible = FALSE;
 		$this->tittle->setVisibility();
 		$this->cover->Visible = FALSE;
 		$this->cddissue->setVisibility();
 		$this->cddno->setVisibility();
-		$this->duration->setVisibility();
+		$this->thirdPartyNo->setVisibility();
+		$this->duration->Visible = FALSE;
 		$this->expirydt->setVisibility();
-		$this->highlighted->setVisibility();
+		$this->highlighted->Visible = FALSE;
 		$this->coo->setVisibility();
 		$this->hssCode->setVisibility();
 		$this->systrade->setVisibility();
 		$this->isdatasheet->setVisibility();
-		$this->nativeFiles->setVisibility();
 		$this->datasheetdate->Visible = FALSE;
 		$this->username->Visible = FALSE;
+		$this->nativeFiles->setVisibility();
 		$this->hideFieldsForAddEdit();
 
 		// Global Page Loading event (in userfn*.php)
@@ -913,7 +974,7 @@ class datasheets_list extends datasheets
 		if ($this->Command <> "json" && $this->getRecordsPerPage() <> "") {
 			$this->DisplayRecs = $this->getRecordsPerPage(); // Restore from Session
 		} else {
-			$this->DisplayRecs = 50; // Load default
+			$this->DisplayRecs = 10; // Load default
 		}
 
 		// Load Sorting Order
@@ -947,6 +1008,8 @@ class datasheets_list extends datasheets
 
 		// Build filter
 		$filter = "";
+		if (!$Security->canList())
+			$filter = "(0=1)"; // Filter all records
 		AddFilter($filter, $this->DbDetailFilter);
 		AddFilter($filter, $this->SearchWhere);
 
@@ -988,6 +1051,8 @@ class datasheets_list extends datasheets
 
 			// Set no record found message
 			if (!$this->CurrentAction && $this->TotalRecs == 0) {
+				if (!$Security->canList())
+					$this->setWarningMessage(DeniedMessage());
 				if ($this->SearchWhere == "0=101")
 					$this->setWarningMessage($Language->phrase("EnterSearchCriteria"));
 				else
@@ -1042,6 +1107,8 @@ class datasheets_list extends datasheets
 	protected function inlineAddMode()
 	{
 		global $Security, $Language;
+		if (!$Security->canAdd())
+			return FALSE; // Add not allowed
 		if ($this->isCopy()) {
 			if (Get("partid") !== NULL) {
 				$this->partid->setQueryStringValue(Get("partid"));
@@ -1344,11 +1411,9 @@ class datasheets_list extends datasheets
 			return FALSE;
 		if ($CurrentForm->hasValue("x_cddno") && $CurrentForm->hasValue("o_cddno") && $this->cddno->CurrentValue <> $this->cddno->OldValue)
 			return FALSE;
-		if ($CurrentForm->hasValue("x_duration") && $CurrentForm->hasValue("o_duration") && $this->duration->CurrentValue <> $this->duration->OldValue)
+		if ($CurrentForm->hasValue("x_thirdPartyNo") && $CurrentForm->hasValue("o_thirdPartyNo") && $this->thirdPartyNo->CurrentValue <> $this->thirdPartyNo->OldValue)
 			return FALSE;
 		if ($CurrentForm->hasValue("x_expirydt") && $CurrentForm->hasValue("o_expirydt") && $this->expirydt->CurrentValue <> $this->expirydt->OldValue)
-			return FALSE;
-		if ($CurrentForm->hasValue("x_highlighted") && $CurrentForm->hasValue("o_highlighted") && ConvertToBool($this->highlighted->CurrentValue) <> ConvertToBool($this->highlighted->OldValue))
 			return FALSE;
 		if ($CurrentForm->hasValue("x_coo") && $CurrentForm->hasValue("o_coo") && $this->coo->CurrentValue <> $this->coo->OldValue)
 			return FALSE;
@@ -1442,13 +1507,15 @@ class datasheets_list extends datasheets
 		// Initialize
 		$filterList = "";
 		$savedFilterList = "";
+
+		// Load server side filters
+		if (SEARCH_FILTER_OPTION == "Server" && isset($UserProfile))
+			$savedFilterList = $UserProfile->getSearchFilters(CurrentUserName(), "fdatasheetslistsrch");
 		$filterList = Concat($filterList, $this->partno->AdvancedSearch->toJson(), ","); // Field partno
 		$filterList = Concat($filterList, $this->manufacturer->AdvancedSearch->toJson(), ","); // Field manufacturer
-		$filterList = Concat($filterList, $this->cdd->AdvancedSearch->toJson(), ","); // Field cdd
-		$filterList = Concat($filterList, $this->thirdParty->AdvancedSearch->toJson(), ","); // Field thirdParty
 		$filterList = Concat($filterList, $this->tittle->AdvancedSearch->toJson(), ","); // Field tittle
 		$filterList = Concat($filterList, $this->cddno->AdvancedSearch->toJson(), ","); // Field cddno
-		$filterList = Concat($filterList, $this->expirydt->AdvancedSearch->toJson(), ","); // Field expirydt
+		$filterList = Concat($filterList, $this->thirdPartyNo->AdvancedSearch->toJson(), ","); // Field thirdPartyNo
 		$filterList = Concat($filterList, $this->coo->AdvancedSearch->toJson(), ","); // Field coo
 		$filterList = Concat($filterList, $this->systrade->AdvancedSearch->toJson(), ","); // Field systrade
 		$filterList = Concat($filterList, $this->nativeFiles->AdvancedSearch->toJson(), ","); // Field nativeFiles
@@ -1506,22 +1573,6 @@ class datasheets_list extends datasheets
 		$this->manufacturer->AdvancedSearch->SearchOperator2 = @$filter["w_manufacturer"];
 		$this->manufacturer->AdvancedSearch->save();
 
-		// Field cdd
-		$this->cdd->AdvancedSearch->SearchValue = @$filter["x_cdd"];
-		$this->cdd->AdvancedSearch->SearchOperator = @$filter["z_cdd"];
-		$this->cdd->AdvancedSearch->SearchCondition = @$filter["v_cdd"];
-		$this->cdd->AdvancedSearch->SearchValue2 = @$filter["y_cdd"];
-		$this->cdd->AdvancedSearch->SearchOperator2 = @$filter["w_cdd"];
-		$this->cdd->AdvancedSearch->save();
-
-		// Field thirdParty
-		$this->thirdParty->AdvancedSearch->SearchValue = @$filter["x_thirdParty"];
-		$this->thirdParty->AdvancedSearch->SearchOperator = @$filter["z_thirdParty"];
-		$this->thirdParty->AdvancedSearch->SearchCondition = @$filter["v_thirdParty"];
-		$this->thirdParty->AdvancedSearch->SearchValue2 = @$filter["y_thirdParty"];
-		$this->thirdParty->AdvancedSearch->SearchOperator2 = @$filter["w_thirdParty"];
-		$this->thirdParty->AdvancedSearch->save();
-
 		// Field tittle
 		$this->tittle->AdvancedSearch->SearchValue = @$filter["x_tittle"];
 		$this->tittle->AdvancedSearch->SearchOperator = @$filter["z_tittle"];
@@ -1538,13 +1589,13 @@ class datasheets_list extends datasheets
 		$this->cddno->AdvancedSearch->SearchOperator2 = @$filter["w_cddno"];
 		$this->cddno->AdvancedSearch->save();
 
-		// Field expirydt
-		$this->expirydt->AdvancedSearch->SearchValue = @$filter["x_expirydt"];
-		$this->expirydt->AdvancedSearch->SearchOperator = @$filter["z_expirydt"];
-		$this->expirydt->AdvancedSearch->SearchCondition = @$filter["v_expirydt"];
-		$this->expirydt->AdvancedSearch->SearchValue2 = @$filter["y_expirydt"];
-		$this->expirydt->AdvancedSearch->SearchOperator2 = @$filter["w_expirydt"];
-		$this->expirydt->AdvancedSearch->save();
+		// Field thirdPartyNo
+		$this->thirdPartyNo->AdvancedSearch->SearchValue = @$filter["x_thirdPartyNo"];
+		$this->thirdPartyNo->AdvancedSearch->SearchOperator = @$filter["z_thirdPartyNo"];
+		$this->thirdPartyNo->AdvancedSearch->SearchCondition = @$filter["v_thirdPartyNo"];
+		$this->thirdPartyNo->AdvancedSearch->SearchValue2 = @$filter["y_thirdPartyNo"];
+		$this->thirdPartyNo->AdvancedSearch->SearchOperator2 = @$filter["w_thirdPartyNo"];
+		$this->thirdPartyNo->AdvancedSearch->save();
 
 		// Field coo
 		$this->coo->AdvancedSearch->SearchValue = @$filter["x_coo"];
@@ -1581,7 +1632,7 @@ class datasheets_list extends datasheets
 		$this->buildBasicSearchSql($where, $this->manufacturer, $arKeywords, $type);
 		$this->buildBasicSearchSql($where, $this->tittle, $arKeywords, $type);
 		$this->buildBasicSearchSql($where, $this->cddno, $arKeywords, $type);
-		$this->buildBasicSearchSql($where, $this->expirydt, $arKeywords, $type);
+		$this->buildBasicSearchSql($where, $this->thirdPartyNo, $arKeywords, $type);
 		$this->buildBasicSearchSql($where, $this->coo, $arKeywords, $type);
 		$this->buildBasicSearchSql($where, $this->hssCode, $arKeywords, $type);
 		$this->buildBasicSearchSql($where, $this->systrade, $arKeywords, $type);
@@ -1662,6 +1713,8 @@ class datasheets_list extends datasheets
 	{
 		global $Security;
 		$searchStr = "";
+		if (!$Security->canSearch())
+			return "";
 		$searchKeyword = ($default) ? $this->BasicSearch->KeywordDefault : $this->BasicSearch->Keyword;
 		$searchType = ($default) ? $this->BasicSearch->TypeDefault : $this->BasicSearch->Type;
 
@@ -1750,9 +1803,8 @@ class datasheets_list extends datasheets
 			$this->updateSort($this->tittle, $ctrl); // tittle
 			$this->updateSort($this->cddissue, $ctrl); // cddissue
 			$this->updateSort($this->cddno, $ctrl); // cddno
-			$this->updateSort($this->duration, $ctrl); // duration
+			$this->updateSort($this->thirdPartyNo, $ctrl); // thirdPartyNo
 			$this->updateSort($this->expirydt, $ctrl); // expirydt
-			$this->updateSort($this->highlighted, $ctrl); // highlighted
 			$this->updateSort($this->coo, $ctrl); // coo
 			$this->updateSort($this->hssCode, $ctrl); // hssCode
 			$this->updateSort($this->systrade, $ctrl); // systrade
@@ -1800,9 +1852,8 @@ class datasheets_list extends datasheets
 				$this->tittle->setSort("");
 				$this->cddissue->setSort("");
 				$this->cddno->setSort("");
-				$this->duration->setSort("");
+				$this->thirdPartyNo->setSort("");
 				$this->expirydt->setSort("");
-				$this->highlighted->setSort("");
 				$this->coo->setSort("");
 				$this->hssCode->setSort("");
 				$this->systrade->setSort("");
@@ -1825,32 +1876,32 @@ class datasheets_list extends datasheets
 		if ($this->AllowAddDeleteRow) {
 			$item = &$this->ListOptions->add("griddelete");
 			$item->CssClass = "text-nowrap";
-			$item->OnLeft = FALSE;
+			$item->OnLeft = TRUE;
 			$item->Visible = FALSE; // Default hidden
 		}
 
 		// Add group option item
 		$item = &$this->ListOptions->add($this->ListOptions->GroupOptionName);
 		$item->Body = "";
-		$item->OnLeft = FALSE;
+		$item->OnLeft = TRUE;
 		$item->Visible = FALSE;
 
-		// "view"
-		$item = &$this->ListOptions->add("view");
+		// "edit"
+		$item = &$this->ListOptions->add("edit");
 		$item->CssClass = "text-nowrap";
-		$item->Visible = TRUE;
-		$item->OnLeft = FALSE;
+		$item->Visible = $Security->canEdit();
+		$item->OnLeft = TRUE;
 
 		// "copy"
 		$item = &$this->ListOptions->add("copy");
 		$item->CssClass = "text-nowrap";
-		$item->Visible = TRUE;
-		$item->OnLeft = FALSE;
+		$item->Visible = $Security->canAdd();
+		$item->OnLeft = TRUE;
 
 		// List actions
 		$item = &$this->ListOptions->add("listactions");
 		$item->CssClass = "text-nowrap";
-		$item->OnLeft = FALSE;
+		$item->OnLeft = TRUE;
 		$item->Visible = FALSE;
 		$item->ShowInButtonGroup = FALSE;
 		$item->ShowInDropDown = FALSE;
@@ -1858,15 +1909,16 @@ class datasheets_list extends datasheets
 		// "checkbox"
 		$item = &$this->ListOptions->add("checkbox");
 		$item->Visible = FALSE;
-		$item->OnLeft = FALSE;
+		$item->OnLeft = TRUE;
 		$item->Header = "<input type=\"checkbox\" name=\"key\" id=\"key\" onclick=\"ew.selectAllKey(this);\">";
+		$item->moveTo(0);
 		$item->ShowInDropDown = FALSE;
 		$item->ShowInButtonGroup = FALSE;
 
 		// Drop down button for ListOptions
 		$this->ListOptions->UseDropDownButton = FALSE;
 		$this->ListOptions->DropDownButtonPhrase = $Language->phrase("ButtonListOptions");
-		$this->ListOptions->UseButtonGroup = FALSE;
+		$this->ListOptions->UseButtonGroup = TRUE;
 		if ($this->ListOptions->UseButtonGroup && IsMobile())
 			$this->ListOptions->UseDropDownButton = TRUE;
 
@@ -1930,11 +1982,11 @@ class datasheets_list extends datasheets
 			return;
 		}
 
-		// "view"
-		$opt = &$this->ListOptions->Items["view"];
-		$viewcaption = HtmlTitle($Language->phrase("ViewLink"));
-		if (TRUE) {
-			$opt->Body = "<a class=\"ew-row-link ew-view\" title=\"" . $viewcaption . "\" data-caption=\"" . $viewcaption . "\" href=\"" . HtmlEncode($this->ViewUrl) . "\">" . $Language->phrase("ViewLink") . "</a>";
+		// "edit"
+		$opt = &$this->ListOptions->Items["edit"];
+		$editcaption = HtmlTitle($Language->phrase("EditLink"));
+		if ($Security->canEdit()) {
+			$opt->Body = "<a class=\"ew-row-link ew-edit\" title=\"" . HtmlTitle($Language->phrase("EditLink")) . "\" data-caption=\"" . HtmlTitle($Language->phrase("EditLink")) . "\" href=\"" . HtmlEncode($this->EditUrl) . "\">" . $Language->phrase("EditLink") . "</a>";
 		} else {
 			$opt->Body = "";
 		}
@@ -1991,16 +2043,16 @@ class datasheets_list extends datasheets
 		$item = &$option->add("add");
 		$addcaption = HtmlTitle($Language->phrase("AddLink"));
 		$item->Body = "<a class=\"ew-add-edit ew-add\" title=\"" . $addcaption . "\" data-caption=\"" . $addcaption . "\" href=\"" . HtmlEncode($this->AddUrl) . "\">" . $Language->phrase("AddLink") . "</a>";
-		$item->Visible = ($this->AddUrl <> "");
+		$item->Visible = ($this->AddUrl <> "" && $Security->canAdd());
 		$item = &$option->add("gridadd");
 		$item->Body = "<a class=\"ew-add-edit ew-grid-add\" title=\"" . HtmlTitle($Language->phrase("GridAddLink")) . "\" data-caption=\"" . HtmlTitle($Language->phrase("GridAddLink")) . "\" href=\"" . HtmlEncode($this->GridAddUrl) . "\">" . $Language->phrase("GridAddLink") . "</a>";
-		$item->Visible = ($this->GridAddUrl <> "");
+		$item->Visible = ($this->GridAddUrl <> "" && $Security->canAdd());
 
 		// Add grid edit
 		$option = $options["addedit"];
 		$item = &$option->add("gridedit");
 		$item->Body = "<a class=\"ew-add-edit ew-grid-edit\" title=\"" . HtmlTitle($Language->phrase("GridEditLink")) . "\" data-caption=\"" . HtmlTitle($Language->phrase("GridEditLink")) . "\" href=\"" . HtmlEncode($this->GridEditUrl) . "\">" . $Language->phrase("GridEditLink") . "</a>";
-		$item->Visible = ($this->GridEditUrl <> "");
+		$item->Visible = ($this->GridEditUrl <> "" && $Security->canEdit());
 		$option = $options["action"];
 
 		// Set up options default
@@ -2074,7 +2126,7 @@ class datasheets_list extends datasheets
 					$option->UseDropDownButton = FALSE;
 					$item = &$option->add("addblankrow");
 					$item->Body = "<a class=\"ew-add-edit ew-add-blank-row\" title=\"" . HtmlTitle($Language->phrase("AddBlankRow")) . "\" data-caption=\"" . HtmlTitle($Language->phrase("AddBlankRow")) . "\" href=\"javascript:void(0);\" onclick=\"ew.addGridRow(this);\">" . $Language->phrase("AddBlankRow") . "</a>";
-					$item->Visible = TRUE;
+					$item->Visible = $Security->canAdd();
 				}
 				$option = &$options["action"];
 				$option->UseDropDownButton = FALSE;
@@ -2095,7 +2147,7 @@ class datasheets_list extends datasheets
 					$option->UseDropDownButton = FALSE;
 					$item = &$option->add("addblankrow");
 					$item->Body = "<a class=\"ew-add-edit ew-add-blank-row\" title=\"" . HtmlTitle($Language->phrase("AddBlankRow")) . "\" data-caption=\"" . HtmlTitle($Language->phrase("AddBlankRow")) . "\" href=\"javascript:void(0);\" onclick=\"ew.addGridRow(this);\">" . $Language->phrase("AddBlankRow") . "</a>";
-					$item->Visible = TRUE;
+					$item->Visible = $Security->canAdd();
 				}
 				$option = &$options["action"];
 				$option->UseDropDownButton = FALSE;
@@ -2207,6 +2259,11 @@ class datasheets_list extends datasheets
 		$item->Body = "<a class=\"btn btn-default ew-show-all\" title=\"" . $Language->phrase("ShowAll") . "\" data-caption=\"" . $Language->phrase("ShowAll") . "\" href=\"" . $this->pageUrl() . "cmd=reset\">" . $Language->phrase("ShowAllBtn") . "</a>";
 		$item->Visible = ($this->SearchWhere <> $this->DefaultSearchWhere && $this->SearchWhere <> "0=101");
 
+		// Search highlight button
+		$item = &$this->SearchOptions->add("searchhighlight");
+		$item->Body = "<button type=\"button\" class=\"btn btn-default ew-highlight active\" title=\"" . $Language->phrase("Highlight") . "\" data-caption=\"" . $Language->phrase("Highlight") . "\" data-toggle=\"button\" data-form=\"fdatasheetslistsrch\" data-name=\"" . $this->highlightName() . "\">" . $Language->phrase("HighlightBtn") . "</button>";
+		$item->Visible = ($this->SearchWhere <> "" && $this->TotalRecs > 0);
+
 		// Button group for search
 		$this->SearchOptions->UseDropDownButton = FALSE;
 		$this->SearchOptions->UseButtonGroup = TRUE;
@@ -2220,6 +2277,11 @@ class datasheets_list extends datasheets
 		// Hide search options
 		if ($this->isExport() || $this->CurrentAction)
 			$this->SearchOptions->hideAllOptions();
+		global $Security;
+		if (!$Security->canSearch()) {
+			$this->SearchOptions->hideAllOptions();
+			$this->FilterOptions->hideAllOptions();
+		}
 	}
 	protected function setupListOptionsExt()
 	{
@@ -2278,10 +2340,10 @@ class datasheets_list extends datasheets
 		$this->dataSheetFile->OldValue = $this->dataSheetFile->Upload->DbValue;
 		$this->manufacturer->CurrentValue = NULL;
 		$this->manufacturer->OldValue = $this->manufacturer->CurrentValue;
-		$this->cdd->Upload->DbValue = NULL;
-		$this->cdd->OldValue = $this->cdd->Upload->DbValue;
-		$this->thirdParty->Upload->DbValue = NULL;
-		$this->thirdParty->OldValue = $this->thirdParty->Upload->DbValue;
+		$this->cddFile->Upload->DbValue = NULL;
+		$this->cddFile->OldValue = $this->cddFile->Upload->DbValue;
+		$this->thirdPartyFile->Upload->DbValue = NULL;
+		$this->thirdPartyFile->OldValue = $this->thirdPartyFile->Upload->DbValue;
 		$this->tittle->CurrentValue = NULL;
 		$this->tittle->OldValue = $this->tittle->CurrentValue;
 		$this->cover->Upload->DbValue = NULL;
@@ -2290,7 +2352,9 @@ class datasheets_list extends datasheets
 		$this->cddissue->OldValue = $this->cddissue->CurrentValue;
 		$this->cddno->CurrentValue = NULL;
 		$this->cddno->OldValue = $this->cddno->CurrentValue;
-		$this->duration->CurrentValue = NULL;
+		$this->thirdPartyNo->CurrentValue = NULL;
+		$this->thirdPartyNo->OldValue = $this->thirdPartyNo->CurrentValue;
+		$this->duration->CurrentValue = "2 YEARS";
 		$this->duration->OldValue = $this->duration->CurrentValue;
 		$this->expirydt->CurrentValue = NULL;
 		$this->expirydt->OldValue = $this->expirydt->CurrentValue;
@@ -2304,12 +2368,12 @@ class datasheets_list extends datasheets
 		$this->systrade->OldValue = $this->systrade->CurrentValue;
 		$this->isdatasheet->CurrentValue = NULL;
 		$this->isdatasheet->OldValue = $this->isdatasheet->CurrentValue;
-		$this->nativeFiles->CurrentValue = NULL;
-		$this->nativeFiles->OldValue = $this->nativeFiles->CurrentValue;
 		$this->datasheetdate->CurrentValue = NULL;
 		$this->datasheetdate->OldValue = $this->datasheetdate->CurrentValue;
 		$this->username->CurrentValue = NULL;
 		$this->username->OldValue = $this->username->CurrentValue;
+		$this->nativeFiles->CurrentValue = NULL;
+		$this->nativeFiles->OldValue = $this->nativeFiles->CurrentValue;
 	}
 
 	// Load basic search values
@@ -2379,15 +2443,15 @@ class datasheets_list extends datasheets
 		}
 		$this->cddno->setOldValue($CurrentForm->getValue("o_cddno"));
 
-		// Check field name 'duration' first before field var 'x_duration'
-		$val = $CurrentForm->hasValue("duration") ? $CurrentForm->getValue("duration") : $CurrentForm->getValue("x_duration");
-		if (!$this->duration->IsDetailKey) {
+		// Check field name 'thirdPartyNo' first before field var 'x_thirdPartyNo'
+		$val = $CurrentForm->hasValue("thirdPartyNo") ? $CurrentForm->getValue("thirdPartyNo") : $CurrentForm->getValue("x_thirdPartyNo");
+		if (!$this->thirdPartyNo->IsDetailKey) {
 			if (IsApi() && $val == NULL)
-				$this->duration->Visible = FALSE; // Disable update for API request
+				$this->thirdPartyNo->Visible = FALSE; // Disable update for API request
 			else
-				$this->duration->setFormValue($val);
+				$this->thirdPartyNo->setFormValue($val);
 		}
-		$this->duration->setOldValue($CurrentForm->getValue("o_duration"));
+		$this->thirdPartyNo->setOldValue($CurrentForm->getValue("o_thirdPartyNo"));
 
 		// Check field name 'expirydt' first before field var 'x_expirydt'
 		$val = $CurrentForm->hasValue("expirydt") ? $CurrentForm->getValue("expirydt") : $CurrentForm->getValue("x_expirydt");
@@ -2399,16 +2463,6 @@ class datasheets_list extends datasheets
 			$this->expirydt->CurrentValue = UnFormatDateTime($this->expirydt->CurrentValue, 5);
 		}
 		$this->expirydt->setOldValue($CurrentForm->getValue("o_expirydt"));
-
-		// Check field name 'highlighted' first before field var 'x_highlighted'
-		$val = $CurrentForm->hasValue("highlighted") ? $CurrentForm->getValue("highlighted") : $CurrentForm->getValue("x_highlighted");
-		if (!$this->highlighted->IsDetailKey) {
-			if (IsApi() && $val == NULL)
-				$this->highlighted->Visible = FALSE; // Disable update for API request
-			else
-				$this->highlighted->setFormValue($val);
-		}
-		$this->highlighted->setOldValue($CurrentForm->getValue("o_highlighted"));
 
 		// Check field name 'coo' first before field var 'x_coo'
 		$val = $CurrentForm->hasValue("coo") ? $CurrentForm->getValue("coo") : $CurrentForm->getValue("x_coo");
@@ -2478,10 +2532,9 @@ class datasheets_list extends datasheets
 		$this->cddissue->CurrentValue = $this->cddissue->FormValue;
 		$this->cddissue->CurrentValue = UnFormatDateTime($this->cddissue->CurrentValue, 5);
 		$this->cddno->CurrentValue = $this->cddno->FormValue;
-		$this->duration->CurrentValue = $this->duration->FormValue;
+		$this->thirdPartyNo->CurrentValue = $this->thirdPartyNo->FormValue;
 		$this->expirydt->CurrentValue = $this->expirydt->FormValue;
 		$this->expirydt->CurrentValue = UnFormatDateTime($this->expirydt->CurrentValue, 5);
-		$this->highlighted->CurrentValue = $this->highlighted->FormValue;
 		$this->coo->CurrentValue = $this->coo->FormValue;
 		$this->hssCode->CurrentValue = $this->hssCode->FormValue;
 		$this->systrade->CurrentValue = $this->systrade->FormValue;
@@ -2563,15 +2616,16 @@ class datasheets_list extends datasheets
 		} else {
 			$this->manufacturer->VirtualValue = ""; // Clear value
 		}
-		$this->cdd->Upload->DbValue = $row['cdd'];
-		$this->cdd->setDbValue($this->cdd->Upload->DbValue);
-		$this->thirdParty->Upload->DbValue = $row['thirdParty'];
-		$this->thirdParty->setDbValue($this->thirdParty->Upload->DbValue);
+		$this->cddFile->Upload->DbValue = $row['cddFile'];
+		$this->cddFile->setDbValue($this->cddFile->Upload->DbValue);
+		$this->thirdPartyFile->Upload->DbValue = $row['thirdPartyFile'];
+		$this->thirdPartyFile->setDbValue($this->thirdPartyFile->Upload->DbValue);
 		$this->tittle->setDbValue($row['tittle']);
 		$this->cover->Upload->DbValue = $row['cover'];
 		$this->cover->setDbValue($this->cover->Upload->DbValue);
 		$this->cddissue->setDbValue($row['cddissue']);
 		$this->cddno->setDbValue($row['cddno']);
+		$this->thirdPartyNo->setDbValue($row['thirdPartyNo']);
 		$this->duration->setDbValue($row['duration']);
 		$this->expirydt->setDbValue($row['expirydt']);
 		$this->highlighted->setDbValue((ConvertToBool($row['highlighted']) ? "1" : "0"));
@@ -2584,9 +2638,9 @@ class datasheets_list extends datasheets
 		$this->hssCode->setDbValue($row['hssCode']);
 		$this->systrade->setDbValue($row['systrade']);
 		$this->isdatasheet->setDbValue((ConvertToBool($row['isdatasheet']) ? "1" : "0"));
-		$this->nativeFiles->setDbValue($row['nativeFiles']);
 		$this->datasheetdate->setDbValue($row['datasheetdate']);
 		$this->username->setDbValue($row['username']);
+		$this->nativeFiles->setDbValue($row['nativeFiles']);
 	}
 
 	// Return a row with default values
@@ -2598,12 +2652,13 @@ class datasheets_list extends datasheets
 		$row['partno'] = $this->partno->CurrentValue;
 		$row['dataSheetFile'] = $this->dataSheetFile->Upload->DbValue;
 		$row['manufacturer'] = $this->manufacturer->CurrentValue;
-		$row['cdd'] = $this->cdd->Upload->DbValue;
-		$row['thirdParty'] = $this->thirdParty->Upload->DbValue;
+		$row['cddFile'] = $this->cddFile->Upload->DbValue;
+		$row['thirdPartyFile'] = $this->thirdPartyFile->Upload->DbValue;
 		$row['tittle'] = $this->tittle->CurrentValue;
 		$row['cover'] = $this->cover->Upload->DbValue;
 		$row['cddissue'] = $this->cddissue->CurrentValue;
 		$row['cddno'] = $this->cddno->CurrentValue;
+		$row['thirdPartyNo'] = $this->thirdPartyNo->CurrentValue;
 		$row['duration'] = $this->duration->CurrentValue;
 		$row['expirydt'] = $this->expirydt->CurrentValue;
 		$row['highlighted'] = $this->highlighted->CurrentValue;
@@ -2611,9 +2666,9 @@ class datasheets_list extends datasheets
 		$row['hssCode'] = $this->hssCode->CurrentValue;
 		$row['systrade'] = $this->systrade->CurrentValue;
 		$row['isdatasheet'] = $this->isdatasheet->CurrentValue;
-		$row['nativeFiles'] = $this->nativeFiles->CurrentValue;
 		$row['datasheetdate'] = $this->datasheetdate->CurrentValue;
 		$row['username'] = $this->username->CurrentValue;
+		$row['nativeFiles'] = $this->nativeFiles->CurrentValue;
 		return $row;
 	}
 
@@ -2658,35 +2713,35 @@ class datasheets_list extends datasheets
 
 		// Common render codes for all row types
 		// partid
-
-		$this->partid->CellCssStyle = "white-space: nowrap;";
-
 		// partno
-		$this->partno->CellCssStyle = "width: 5px;";
+
+		$this->partno->CellCssStyle = "width: 10px;";
 
 		// dataSheetFile
-		$this->dataSheetFile->CellCssStyle = "width: 5px;";
+		$this->dataSheetFile->CellCssStyle = "width: 10px;";
 
 		// manufacturer
-		$this->manufacturer->CellCssStyle = "width: 5px;";
+		$this->manufacturer->CellCssStyle = "width: 10px;";
 
-		// cdd
-		$this->cdd->CellCssStyle = "width: 5px;";
+		// cddFile
+		$this->cddFile->CellCssStyle = "width: 10px;";
 
-		// thirdParty
-		$this->thirdParty->CellCssStyle = "width: 5px;";
+		// thirdPartyFile
+		$this->thirdPartyFile->CellCssStyle = "width: 10px;";
 
 		// tittle
-		$this->tittle->CellCssStyle = "width: 20px;";
-
 		// cover
-		$this->cover->CellCssStyle = "width: 5px;";
+
+		$this->cover->CellCssStyle = "width: 10px;";
 
 		// cddissue
 		$this->cddissue->CellCssStyle = "width: 10px;";
 
 		// cddno
 		$this->cddno->CellCssStyle = "width: 10px;";
+
+		// thirdPartyNo
+		$this->thirdPartyNo->CellCssStyle = "width: 5px;";
 
 		// duration
 		$this->duration->CellCssStyle = "width: 10px;";
@@ -2701,26 +2756,28 @@ class datasheets_list extends datasheets
 		$this->coo->CellCssStyle = "width: 10px;";
 
 		// hssCode
-		$this->hssCode->CellCssStyle = "width: 5px;";
+		$this->hssCode->CellCssStyle = "width: 10px;";
 
 		// systrade
-		$this->systrade->CellCssStyle = "width: 5px;";
+		$this->systrade->CellCssStyle = "width: 10px;";
 
 		// isdatasheet
-		$this->isdatasheet->CellCssStyle = "width: 5px;";
+		$this->isdatasheet->CellCssStyle = "width: 10px;";
 
-		// nativeFiles
 		// datasheetdate
-
-		$this->datasheetdate->CellCssStyle = "white-space: nowrap;";
+		$this->datasheetdate->CellCssStyle = "width: 10px;";
 
 		// username
-		$this->username->CellCssStyle = "white-space: nowrap;";
+		$this->username->CellCssStyle = "width: 10px;";
+
+		// nativeFiles
+		$this->nativeFiles->CellCssStyle = "width: 10px;";
 		if ($this->RowType == ROWTYPE_VIEW) { // View row
 
 			// partno
 			$this->partno->ViewValue = $this->partno->CurrentValue;
 			$this->partno->ViewValue = strtoupper($this->partno->ViewValue);
+			$this->partno->CssClass = "font-weight-bold";
 			$this->partno->ViewCustomAttributes = "";
 
 			// manufacturer
@@ -2765,26 +2822,14 @@ class datasheets_list extends datasheets
 			$this->cddno->ViewValue = strtoupper($this->cddno->ViewValue);
 			$this->cddno->ViewCustomAttributes = "";
 
-			// duration
-			if (strval($this->duration->CurrentValue) <> "") {
-				$this->duration->ViewValue = $this->duration->optionCaption($this->duration->CurrentValue);
-			} else {
-				$this->duration->ViewValue = NULL;
-			}
-			$this->duration->ViewCustomAttributes = "";
+			// thirdPartyNo
+			$this->thirdPartyNo->ViewValue = $this->thirdPartyNo->CurrentValue;
+			$this->thirdPartyNo->ViewCustomAttributes = "";
 
 			// expirydt
 			$this->expirydt->ViewValue = $this->expirydt->CurrentValue;
 			$this->expirydt->ViewValue = FormatDateTime($this->expirydt->ViewValue, 5);
 			$this->expirydt->ViewCustomAttributes = "";
-
-			// highlighted
-			if (ConvertToBool($this->highlighted->CurrentValue)) {
-				$this->highlighted->ViewValue = $this->highlighted->tagCaption(1) <> "" ? $this->highlighted->tagCaption(1) : "Yes";
-			} else {
-				$this->highlighted->ViewValue = $this->highlighted->tagCaption(2) <> "" ? $this->highlighted->tagCaption(2) : "No";
-			}
-			$this->highlighted->ViewCustomAttributes = "";
 
 			// coo
 			if ($this->coo->VirtualValue <> "") {
@@ -2867,8 +2912,8 @@ class datasheets_list extends datasheets
 
 			// cddno
 			$this->cddno->LinkCustomAttributes = "";
-			if (!EmptyValue($this->cdd->Upload->DbValue)) {
-				$this->cddno->HrefValue = GetFileUploadUrl($this->cdd, $this->cdd->Upload->DbValue); // Add prefix/suffix
+			if (!EmptyValue($this->cddFile->Upload->DbValue)) {
+				$this->cddno->HrefValue = GetFileUploadUrl($this->cddFile, $this->cddFile->Upload->DbValue); // Add prefix/suffix
 				$this->cddno->LinkAttrs["target"] = "_blank"; // Add target
 				if ($this->isExport()) $this->cddno->HrefValue = FullUrl($this->cddno->HrefValue, "href");
 			} else {
@@ -2876,20 +2921,23 @@ class datasheets_list extends datasheets
 			}
 			$this->cddno->TooltipValue = "";
 
-			// duration
-			$this->duration->LinkCustomAttributes = "";
-			$this->duration->HrefValue = "";
-			$this->duration->TooltipValue = "";
+			// thirdPartyNo
+			$this->thirdPartyNo->LinkCustomAttributes = "";
+			if (!EmptyValue($this->thirdPartyFile->Upload->DbValue)) {
+				$this->thirdPartyNo->HrefValue = GetFileUploadUrl($this->thirdPartyFile, $this->thirdPartyFile->Upload->DbValue); // Add prefix/suffix
+				$this->thirdPartyNo->LinkAttrs["target"] = "_blank"; // Add target
+				if ($this->isExport()) $this->thirdPartyNo->HrefValue = FullUrl($this->thirdPartyNo->HrefValue, "href");
+			} else {
+				$this->thirdPartyNo->HrefValue = "";
+			}
+			$this->thirdPartyNo->TooltipValue = "";
+			if (!$this->isExport())
+				$this->thirdPartyNo->ViewValue = $this->highlightValue($this->thirdPartyNo);
 
 			// expirydt
 			$this->expirydt->LinkCustomAttributes = "";
 			$this->expirydt->HrefValue = "";
 			$this->expirydt->TooltipValue = "";
-
-			// highlighted
-			$this->highlighted->LinkCustomAttributes = "";
-			$this->highlighted->HrefValue = "";
-			$this->highlighted->TooltipValue = "";
 
 			// coo
 			$this->coo->LinkCustomAttributes = "";
@@ -2974,20 +3022,19 @@ class datasheets_list extends datasheets
 			$this->cddno->EditValue = HtmlEncode($this->cddno->CurrentValue);
 			$this->cddno->PlaceHolder = RemoveHtml($this->cddno->caption());
 
-			// duration
-			$this->duration->EditAttrs["class"] = "form-control";
-			$this->duration->EditCustomAttributes = "";
-			$this->duration->EditValue = $this->duration->options(TRUE);
+			// thirdPartyNo
+			$this->thirdPartyNo->EditAttrs["class"] = "form-control";
+			$this->thirdPartyNo->EditCustomAttributes = "";
+			if (REMOVE_XSS)
+				$this->thirdPartyNo->CurrentValue = HtmlDecode($this->thirdPartyNo->CurrentValue);
+			$this->thirdPartyNo->EditValue = HtmlEncode($this->thirdPartyNo->CurrentValue);
+			$this->thirdPartyNo->PlaceHolder = RemoveHtml($this->thirdPartyNo->caption());
 
 			// expirydt
 			$this->expirydt->EditAttrs["class"] = "form-control";
 			$this->expirydt->EditCustomAttributes = "";
 			$this->expirydt->EditValue = HtmlEncode(FormatDateTime($this->expirydt->CurrentValue, 5));
 			$this->expirydt->PlaceHolder = RemoveHtml($this->expirydt->caption());
-
-			// highlighted
-			$this->highlighted->EditCustomAttributes = 30;
-			$this->highlighted->EditValue = $this->highlighted->options(FALSE);
 
 			// coo
 			$this->coo->EditAttrs["class"] = "form-control";
@@ -3045,25 +3092,27 @@ class datasheets_list extends datasheets
 
 			// cddno
 			$this->cddno->LinkCustomAttributes = "";
-			if (!EmptyValue($this->cdd->Upload->DbValue)) {
-				$this->cddno->HrefValue = GetFileUploadUrl($this->cdd, $this->cdd->Upload->DbValue); // Add prefix/suffix
+			if (!EmptyValue($this->cddFile->Upload->DbValue)) {
+				$this->cddno->HrefValue = GetFileUploadUrl($this->cddFile, $this->cddFile->Upload->DbValue); // Add prefix/suffix
 				$this->cddno->LinkAttrs["target"] = "_blank"; // Add target
 				if ($this->isExport()) $this->cddno->HrefValue = FullUrl($this->cddno->HrefValue, "href");
 			} else {
 				$this->cddno->HrefValue = "";
 			}
 
-			// duration
-			$this->duration->LinkCustomAttributes = "";
-			$this->duration->HrefValue = "";
+			// thirdPartyNo
+			$this->thirdPartyNo->LinkCustomAttributes = "";
+			if (!EmptyValue($this->thirdPartyFile->Upload->DbValue)) {
+				$this->thirdPartyNo->HrefValue = GetFileUploadUrl($this->thirdPartyFile, $this->thirdPartyFile->Upload->DbValue); // Add prefix/suffix
+				$this->thirdPartyNo->LinkAttrs["target"] = "_blank"; // Add target
+				if ($this->isExport()) $this->thirdPartyNo->HrefValue = FullUrl($this->thirdPartyNo->HrefValue, "href");
+			} else {
+				$this->thirdPartyNo->HrefValue = "";
+			}
 
 			// expirydt
 			$this->expirydt->LinkCustomAttributes = "";
 			$this->expirydt->HrefValue = "";
-
-			// highlighted
-			$this->highlighted->LinkCustomAttributes = "";
-			$this->highlighted->HrefValue = "";
 
 			// coo
 			$this->coo->LinkCustomAttributes = "";
@@ -3091,15 +3140,15 @@ class datasheets_list extends datasheets
 			$this->partno->EditCustomAttributes = "";
 			$this->partno->EditValue = $this->partno->CurrentValue;
 			$this->partno->EditValue = strtoupper($this->partno->EditValue);
+			$this->partno->CssClass = "font-weight-bold";
 			$this->partno->ViewCustomAttributes = "";
 
 			// manufacturer
 			$this->manufacturer->EditAttrs["class"] = "form-control";
 			$this->manufacturer->EditCustomAttributes = "";
-			if ($this->manufacturer->VirtualValue <> "") {
-				$this->manufacturer->EditValue = $this->manufacturer->VirtualValue;
-			} else {
-				$this->manufacturer->EditValue = $this->manufacturer->CurrentValue;
+			if (REMOVE_XSS)
+				$this->manufacturer->CurrentValue = HtmlDecode($this->manufacturer->CurrentValue);
+			$this->manufacturer->EditValue = HtmlEncode($this->manufacturer->CurrentValue);
 			$curVal = strval($this->manufacturer->CurrentValue);
 			if ($curVal <> "") {
 				$this->manufacturer->EditValue = $this->manufacturer->lookupCacheOption($curVal);
@@ -3109,18 +3158,17 @@ class datasheets_list extends datasheets
 					$rswrk = Conn()->execute($sqlWrk);
 					if ($rswrk && !$rswrk->EOF) { // Lookup values found
 						$arwrk = array();
-						$arwrk[1] = $rswrk->fields('df');
+						$arwrk[1] = HtmlEncode($rswrk->fields('df'));
 						$this->manufacturer->EditValue = $this->manufacturer->displayValue($arwrk);
 						$rswrk->Close();
 					} else {
-						$this->manufacturer->EditValue = $this->manufacturer->CurrentValue;
+						$this->manufacturer->EditValue = HtmlEncode($this->manufacturer->CurrentValue);
 					}
 				}
 			} else {
 				$this->manufacturer->EditValue = NULL;
 			}
-			}
-			$this->manufacturer->ViewCustomAttributes = "";
+			$this->manufacturer->PlaceHolder = RemoveHtml($this->manufacturer->caption());
 
 			// tittle
 			$this->tittle->EditAttrs["class"] = "form-control";
@@ -3144,20 +3192,19 @@ class datasheets_list extends datasheets
 			$this->cddno->EditValue = HtmlEncode($this->cddno->CurrentValue);
 			$this->cddno->PlaceHolder = RemoveHtml($this->cddno->caption());
 
-			// duration
-			$this->duration->EditAttrs["class"] = "form-control";
-			$this->duration->EditCustomAttributes = "";
-			$this->duration->EditValue = $this->duration->options(TRUE);
+			// thirdPartyNo
+			$this->thirdPartyNo->EditAttrs["class"] = "form-control";
+			$this->thirdPartyNo->EditCustomAttributes = "";
+			if (REMOVE_XSS)
+				$this->thirdPartyNo->CurrentValue = HtmlDecode($this->thirdPartyNo->CurrentValue);
+			$this->thirdPartyNo->EditValue = HtmlEncode($this->thirdPartyNo->CurrentValue);
+			$this->thirdPartyNo->PlaceHolder = RemoveHtml($this->thirdPartyNo->caption());
 
 			// expirydt
 			$this->expirydt->EditAttrs["class"] = "form-control";
 			$this->expirydt->EditCustomAttributes = "";
 			$this->expirydt->EditValue = HtmlEncode(FormatDateTime($this->expirydt->CurrentValue, 5));
 			$this->expirydt->PlaceHolder = RemoveHtml($this->expirydt->caption());
-
-			// highlighted
-			$this->highlighted->EditCustomAttributes = 30;
-			$this->highlighted->EditValue = $this->highlighted->options(FALSE);
 
 			// coo
 			$this->coo->EditAttrs["class"] = "form-control";
@@ -3205,7 +3252,6 @@ class datasheets_list extends datasheets
 			// manufacturer
 			$this->manufacturer->LinkCustomAttributes = "";
 			$this->manufacturer->HrefValue = "";
-			$this->manufacturer->TooltipValue = "";
 
 			// tittle
 			$this->tittle->LinkCustomAttributes = "";
@@ -3217,25 +3263,27 @@ class datasheets_list extends datasheets
 
 			// cddno
 			$this->cddno->LinkCustomAttributes = "";
-			if (!EmptyValue($this->cdd->Upload->DbValue)) {
-				$this->cddno->HrefValue = GetFileUploadUrl($this->cdd, $this->cdd->Upload->DbValue); // Add prefix/suffix
+			if (!EmptyValue($this->cddFile->Upload->DbValue)) {
+				$this->cddno->HrefValue = GetFileUploadUrl($this->cddFile, $this->cddFile->Upload->DbValue); // Add prefix/suffix
 				$this->cddno->LinkAttrs["target"] = "_blank"; // Add target
 				if ($this->isExport()) $this->cddno->HrefValue = FullUrl($this->cddno->HrefValue, "href");
 			} else {
 				$this->cddno->HrefValue = "";
 			}
 
-			// duration
-			$this->duration->LinkCustomAttributes = "";
-			$this->duration->HrefValue = "";
+			// thirdPartyNo
+			$this->thirdPartyNo->LinkCustomAttributes = "";
+			if (!EmptyValue($this->thirdPartyFile->Upload->DbValue)) {
+				$this->thirdPartyNo->HrefValue = GetFileUploadUrl($this->thirdPartyFile, $this->thirdPartyFile->Upload->DbValue); // Add prefix/suffix
+				$this->thirdPartyNo->LinkAttrs["target"] = "_blank"; // Add target
+				if ($this->isExport()) $this->thirdPartyNo->HrefValue = FullUrl($this->thirdPartyNo->HrefValue, "href");
+			} else {
+				$this->thirdPartyNo->HrefValue = "";
+			}
 
 			// expirydt
 			$this->expirydt->LinkCustomAttributes = "";
 			$this->expirydt->HrefValue = "";
-
-			// highlighted
-			$this->highlighted->LinkCustomAttributes = "";
-			$this->highlighted->HrefValue = "";
 
 			// coo
 			$this->coo->LinkCustomAttributes = "";
@@ -3296,14 +3344,14 @@ class datasheets_list extends datasheets
 				AddMessage($FormError, str_replace("%s", $this->manufacturer->caption(), $this->manufacturer->RequiredErrorMessage));
 			}
 		}
-		if ($this->cdd->Required) {
-			if ($this->cdd->Upload->FileName == "" && !$this->cdd->Upload->KeepFile) {
-				AddMessage($FormError, str_replace("%s", $this->cdd->caption(), $this->cdd->RequiredErrorMessage));
+		if ($this->cddFile->Required) {
+			if ($this->cddFile->Upload->FileName == "" && !$this->cddFile->Upload->KeepFile) {
+				AddMessage($FormError, str_replace("%s", $this->cddFile->caption(), $this->cddFile->RequiredErrorMessage));
 			}
 		}
-		if ($this->thirdParty->Required) {
-			if ($this->thirdParty->Upload->FileName == "" && !$this->thirdParty->Upload->KeepFile) {
-				AddMessage($FormError, str_replace("%s", $this->thirdParty->caption(), $this->thirdParty->RequiredErrorMessage));
+		if ($this->thirdPartyFile->Required) {
+			if ($this->thirdPartyFile->Upload->FileName == "" && !$this->thirdPartyFile->Upload->KeepFile) {
+				AddMessage($FormError, str_replace("%s", $this->thirdPartyFile->caption(), $this->thirdPartyFile->RequiredErrorMessage));
 			}
 		}
 		if ($this->tittle->Required) {
@@ -3327,6 +3375,11 @@ class datasheets_list extends datasheets
 		if ($this->cddno->Required) {
 			if (!$this->cddno->IsDetailKey && $this->cddno->FormValue != NULL && $this->cddno->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->cddno->caption(), $this->cddno->RequiredErrorMessage));
+			}
+		}
+		if ($this->thirdPartyNo->Required) {
+			if (!$this->thirdPartyNo->IsDetailKey && $this->thirdPartyNo->FormValue != NULL && $this->thirdPartyNo->FormValue == "") {
+				AddMessage($FormError, str_replace("%s", $this->thirdPartyNo->caption(), $this->thirdPartyNo->RequiredErrorMessage));
 			}
 		}
 		if ($this->duration->Required) {
@@ -3367,11 +3420,6 @@ class datasheets_list extends datasheets
 				AddMessage($FormError, str_replace("%s", $this->isdatasheet->caption(), $this->isdatasheet->RequiredErrorMessage));
 			}
 		}
-		if ($this->nativeFiles->Required) {
-			if (!$this->nativeFiles->IsDetailKey && $this->nativeFiles->FormValue != NULL && $this->nativeFiles->FormValue == "") {
-				AddMessage($FormError, str_replace("%s", $this->nativeFiles->caption(), $this->nativeFiles->RequiredErrorMessage));
-			}
-		}
 		if ($this->datasheetdate->Required) {
 			if (!$this->datasheetdate->IsDetailKey && $this->datasheetdate->FormValue != NULL && $this->datasheetdate->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->datasheetdate->caption(), $this->datasheetdate->RequiredErrorMessage));
@@ -3380,6 +3428,11 @@ class datasheets_list extends datasheets
 		if ($this->username->Required) {
 			if (!$this->username->IsDetailKey && $this->username->FormValue != NULL && $this->username->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->username->caption(), $this->username->RequiredErrorMessage));
+			}
+		}
+		if ($this->nativeFiles->Required) {
+			if (!$this->nativeFiles->IsDetailKey && $this->nativeFiles->FormValue != NULL && $this->nativeFiles->FormValue == "") {
+				AddMessage($FormError, str_replace("%s", $this->nativeFiles->caption(), $this->nativeFiles->RequiredErrorMessage));
 			}
 		}
 
@@ -3399,6 +3452,10 @@ class datasheets_list extends datasheets
 	protected function deleteRows()
 	{
 		global $Language, $Security;
+		if (!$Security->canDelete()) {
+			$this->setFailureMessage($Language->phrase("NoDeletePermission")); // No delete permission
+			return FALSE;
+		}
 		$deleteRows = TRUE;
 		$sql = $this->getCurrentSql();
 		$conn = &$this->getConnection();
@@ -3520,6 +3577,9 @@ class datasheets_list extends datasheets
 			$this->loadDbValues($rsold);
 			$rsnew = [];
 
+			// manufacturer
+			$this->manufacturer->setDbValueDef($rsnew, $this->manufacturer->CurrentValue, "", $this->manufacturer->ReadOnly);
+
 			// tittle
 			$this->tittle->setDbValueDef($rsnew, $this->tittle->CurrentValue, "", $this->tittle->ReadOnly);
 
@@ -3529,14 +3589,11 @@ class datasheets_list extends datasheets
 			// cddno
 			$this->cddno->setDbValueDef($rsnew, $this->cddno->CurrentValue, "", $this->cddno->ReadOnly);
 
-			// duration
-			$this->duration->setDbValueDef($rsnew, $this->duration->CurrentValue, NULL, $this->duration->ReadOnly);
+			// thirdPartyNo
+			$this->thirdPartyNo->setDbValueDef($rsnew, $this->thirdPartyNo->CurrentValue, "", $this->thirdPartyNo->ReadOnly);
 
 			// expirydt
 			$this->expirydt->setDbValueDef($rsnew, UnFormatDateTime($this->expirydt->CurrentValue, 5), NULL, $this->expirydt->ReadOnly);
-
-			// highlighted
-			$this->highlighted->setDbValueDef($rsnew, ((strval($this->highlighted->CurrentValue) == "1") ? "1" : "0"), NULL, $this->highlighted->ReadOnly);
 
 			// coo
 			$this->coo->setDbValueDef($rsnew, $this->coo->CurrentValue, NULL, $this->coo->ReadOnly);
@@ -3611,12 +3668,12 @@ class datasheets_list extends datasheets
 		if (!$rs)
 			return "";
 		$hash = "";
+		$hash .= GetFieldHash($rs->fields('manufacturer')); // manufacturer
 		$hash .= GetFieldHash($rs->fields('tittle')); // tittle
 		$hash .= GetFieldHash($rs->fields('cddissue')); // cddissue
 		$hash .= GetFieldHash($rs->fields('cddno')); // cddno
-		$hash .= GetFieldHash($rs->fields('duration')); // duration
+		$hash .= GetFieldHash($rs->fields('thirdPartyNo')); // thirdPartyNo
 		$hash .= GetFieldHash($rs->fields('expirydt')); // expirydt
-		$hash .= GetFieldHash($rs->fields('highlighted')); // highlighted
 		$hash .= GetFieldHash($rs->fields('coo')); // coo
 		$hash .= GetFieldHash($rs->fields('hssCode')); // hssCode
 		$hash .= GetFieldHash($rs->fields('systrade')); // systrade
@@ -3663,14 +3720,11 @@ class datasheets_list extends datasheets
 		// cddno
 		$this->cddno->setDbValueDef($rsnew, $this->cddno->CurrentValue, "", FALSE);
 
-		// duration
-		$this->duration->setDbValueDef($rsnew, $this->duration->CurrentValue, NULL, strval($this->duration->CurrentValue) == "");
+		// thirdPartyNo
+		$this->thirdPartyNo->setDbValueDef($rsnew, $this->thirdPartyNo->CurrentValue, "", FALSE);
 
 		// expirydt
 		$this->expirydt->setDbValueDef($rsnew, UnFormatDateTime($this->expirydt->CurrentValue, 5), NULL, strval($this->expirydt->CurrentValue) == "");
-
-		// highlighted
-		$this->highlighted->setDbValueDef($rsnew, ((strval($this->highlighted->CurrentValue) == "1") ? "1" : "0"), NULL, strval($this->highlighted->CurrentValue) == "");
 
 		// coo
 		$this->coo->setDbValueDef($rsnew, $this->coo->CurrentValue, NULL, strval($this->coo->CurrentValue) == "");

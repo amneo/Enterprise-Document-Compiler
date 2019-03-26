@@ -23,6 +23,7 @@ $manufacturer_add = new manufacturer_add();
 $manufacturer_add->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)

@@ -66,7 +66,7 @@ jQuery.extend(ew, {
 	IS_SYS_ADMIN: <?php echo IsSysAdmin() ? "true" : "false" ?>, // Is sys admin
 	CURRENT_USER_NAME: "<?php echo JsEncode(CurrentUserName()) ?>", // Current user name
 	IS_AUTOLOGIN: <?php echo IsAutoLogin() ? "true" : "false" ?>, // Is logged in with option "Auto login until I logout explicitly"
-	TIMEOUT_URL: "<?php echo $RELATIVE_PATH ?>index.php", // Timeout URL
+	TIMEOUT_URL: "<?php echo $RELATIVE_PATH ?>logout.php", // Timeout URL
 	API_URL: "<?php echo $RELATIVE_PATH ?><?php echo API_URL ?>", // API file name
 	API_ACTION_NAME: "<?php echo API_ACTION_NAME ?>", // API action name
 	API_OBJECT_NAME: "<?php echo API_OBJECT_NAME ?>", // API object name

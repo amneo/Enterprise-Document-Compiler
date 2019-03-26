@@ -97,6 +97,39 @@ namespace PHPMaker2019\SUBMITTAL;
 <script type="text/html" class="ew-js-template" data-name="languages" data-data="languages" data-method="<?php echo $Language->Method ?>" data-target="<?php echo HtmlEncode($Language->Target) ?>">
 <?php echo $Language->getTemplate() ?>
 </script>
+<script type="text/html" class="ew-js-template" data-name="login" data-data="login" data-method="appendTo" data-target=".navbar-nav.ml-auto">
+{{if isLoggedIn}}
+<li class="nav-item dropdown text-body">
+	<a class="nav-link" data-toggle="dropdown" href="#">
+		<i class="fa fa-user"></i>
+	</a>
+	<div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+		<div class="dropdown-item p-3"><i class="fa fa-user mr-2"></i>{{:currentUserName}}</div>
+		{{if (hasPersonalData || canChangePassword)}}
+		<div class="dropdown-divider"></div>
+		<div class="text-nowrap p-3">
+			{{if hasPersonalData}}
+			<a class="btn btn-default" href="{{:personalDataUrl}}">{{:personalDataText}}</a>
+			{{/if}}
+			{{if canChangePassword}}
+			<a class="btn btn-default" href="{{:changePasswordUrl}}">{{:changePasswordText}}</a>
+			{{/if}}
+		</div>
+		{{/if}}
+		{{if canLogout}}
+		<div class="dropdown-divider"></div>
+		<div class="dropdown-footer p-2 text-right">
+			<a class="btn btn-default" href="{{:logoutUrl}}">{{:logoutText}}</a>
+		</div>
+		{{/if}}
+	</div>
+<li>
+{{else}}
+	{{if canLogin}}
+<li class="nav-item"><a class="nav-link" href="{{:loginUrl}}">{{:loginText}}</a></li>
+	{{/if}}
+{{/if}}
+</script>
 <?php } ?>
 <!-- modal dialog -->
 <div id="ew-modal-dialog" class="modal" role="dialog" aria-hidden="true"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h4 class="modal-title"></h4></div><div class="modal-body"></div><div class="modal-footer"></div></div></div></div>

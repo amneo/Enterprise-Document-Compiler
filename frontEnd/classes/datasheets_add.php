@@ -338,6 +338,7 @@ class datasheets_add extends datasheets
 	public function __construct()
 	{
 		global $Language, $COMPOSITE_KEY_SEPARATOR;
+		global $UserTable, $UserTableConn;
 
 		// Initialize
 		$GLOBALS["Page"] = &$this;
@@ -357,6 +358,10 @@ class datasheets_add extends datasheets
 		}
 		$this->CancelUrl = $this->pageUrl() . "action=cancel";
 
+		// Table object (users)
+		if (!isset($GLOBALS['users']))
+			$GLOBALS['users'] = new users();
+
 		// Page ID
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'add');
@@ -375,6 +380,12 @@ class datasheets_add extends datasheets
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = &$this->getConnection();
+
+		// User table object (users)
+		if (!isset($UserTable)) {
+			$UserTable = new users();
+			$UserTableConn = Conn($UserTable->Dbid);
+		}
 	}
 
 	// Terminate page
@@ -561,6 +572,56 @@ class datasheets_add extends datasheets
 		// Is modal
 		$this->IsModal = (Param("modal") == "1");
 
+		// User profile
+		$UserProfile = new UserProfile();
+
+		// Security
+		$Security = new AdvancedSecurity();
+		$validRequest = FALSE;
+
+		// Check security for API request
+		If (IsApi()) {
+
+			// Check token first
+			$func = PROJECT_NAMESPACE . CHECK_TOKEN_FUNC;
+			if (is_callable($func) && Post(TOKEN_NAME) !== NULL)
+				$validRequest = $func(Post(TOKEN_NAME), SessionTimeoutTime());
+			elseif (is_array($RequestSecurity) && @$RequestSecurity["username"] <> "") // Login user for API request
+				$Security->loginUser(@$RequestSecurity["username"], @$RequestSecurity["userid"], @$RequestSecurity["parentuserid"], @$RequestSecurity["userlevelid"]);
+		}
+		if (!$validRequest) {
+			if (IsPasswordExpired())
+				$this->terminate(GetUrl("changepwd.php"));
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			if ($Security->isLoggedIn())
+				$Security->TablePermission_Loading();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if ($Security->isLoggedIn())
+				$Security->TablePermission_Loaded();
+			if (!$Security->canAdd()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("datasheetslist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
+			if ($Security->isLoggedIn()) {
+				$Security->UserID_Loading();
+				$Security->loadUserID();
+				$Security->UserID_Loaded();
+			}
+		}
+
+		// Update last accessed time
+		if ($UserProfile->isValidUser(CurrentUserName(), session_id())) {
+		} else {
+			Write($Language->phrase("UserProfileCorrupted"));
+			$this->terminate();
+		}
+
 		// Create form object
 		$CurrentForm = new HttpForm();
 		$this->CurrentAction = Param("action"); // Set up current action
@@ -568,12 +629,13 @@ class datasheets_add extends datasheets
 		$this->partno->setVisibility();
 		$this->dataSheetFile->setVisibility();
 		$this->manufacturer->setVisibility();
-		$this->cdd->setVisibility();
-		$this->thirdParty->setVisibility();
+		$this->cddFile->setVisibility();
+		$this->thirdPartyFile->setVisibility();
 		$this->tittle->setVisibility();
 		$this->cover->setVisibility();
 		$this->cddissue->setVisibility();
 		$this->cddno->setVisibility();
+		$this->thirdPartyNo->setVisibility();
 		$this->duration->setVisibility();
 		$this->expirydt->setVisibility();
 		$this->highlighted->setVisibility();
@@ -581,9 +643,9 @@ class datasheets_add extends datasheets
 		$this->hssCode->setVisibility();
 		$this->systrade->setVisibility();
 		$this->isdatasheet->setVisibility();
-		$this->nativeFiles->setVisibility();
 		$this->datasheetdate->Visible = FALSE;
 		$this->username->Visible = FALSE;
+		$this->nativeFiles->setVisibility();
 		$this->hideFieldsForAddEdit();
 
 		// Do not use lookup cache
@@ -722,12 +784,12 @@ class datasheets_add extends datasheets
 		$this->dataSheetFile->Upload->Index = $CurrentForm->Index;
 		$this->dataSheetFile->Upload->uploadFile();
 		$this->dataSheetFile->CurrentValue = $this->dataSheetFile->Upload->FileName;
-		$this->cdd->Upload->Index = $CurrentForm->Index;
-		$this->cdd->Upload->uploadFile();
-		$this->cdd->CurrentValue = $this->cdd->Upload->FileName;
-		$this->thirdParty->Upload->Index = $CurrentForm->Index;
-		$this->thirdParty->Upload->uploadFile();
-		$this->thirdParty->CurrentValue = $this->thirdParty->Upload->FileName;
+		$this->cddFile->Upload->Index = $CurrentForm->Index;
+		$this->cddFile->Upload->uploadFile();
+		$this->cddFile->CurrentValue = $this->cddFile->Upload->FileName;
+		$this->thirdPartyFile->Upload->Index = $CurrentForm->Index;
+		$this->thirdPartyFile->Upload->uploadFile();
+		$this->thirdPartyFile->CurrentValue = $this->thirdPartyFile->Upload->FileName;
 		$this->cover->Upload->Index = $CurrentForm->Index;
 		$this->cover->Upload->uploadFile();
 		$this->cover->CurrentValue = $this->cover->Upload->FileName;
@@ -745,12 +807,12 @@ class datasheets_add extends datasheets
 		$this->dataSheetFile->CurrentValue = NULL; // Clear file related field
 		$this->manufacturer->CurrentValue = NULL;
 		$this->manufacturer->OldValue = $this->manufacturer->CurrentValue;
-		$this->cdd->Upload->DbValue = NULL;
-		$this->cdd->OldValue = $this->cdd->Upload->DbValue;
-		$this->cdd->CurrentValue = NULL; // Clear file related field
-		$this->thirdParty->Upload->DbValue = NULL;
-		$this->thirdParty->OldValue = $this->thirdParty->Upload->DbValue;
-		$this->thirdParty->CurrentValue = NULL; // Clear file related field
+		$this->cddFile->Upload->DbValue = NULL;
+		$this->cddFile->OldValue = $this->cddFile->Upload->DbValue;
+		$this->cddFile->CurrentValue = NULL; // Clear file related field
+		$this->thirdPartyFile->Upload->DbValue = NULL;
+		$this->thirdPartyFile->OldValue = $this->thirdPartyFile->Upload->DbValue;
+		$this->thirdPartyFile->CurrentValue = NULL; // Clear file related field
 		$this->tittle->CurrentValue = NULL;
 		$this->tittle->OldValue = $this->tittle->CurrentValue;
 		$this->cover->Upload->DbValue = NULL;
@@ -760,8 +822,9 @@ class datasheets_add extends datasheets
 		$this->cddissue->OldValue = $this->cddissue->CurrentValue;
 		$this->cddno->CurrentValue = NULL;
 		$this->cddno->OldValue = $this->cddno->CurrentValue;
-		$this->duration->CurrentValue = NULL;
-		$this->duration->OldValue = $this->duration->CurrentValue;
+		$this->thirdPartyNo->CurrentValue = NULL;
+		$this->thirdPartyNo->OldValue = $this->thirdPartyNo->CurrentValue;
+		$this->duration->CurrentValue = "2 YEARS";
 		$this->expirydt->CurrentValue = NULL;
 		$this->expirydt->OldValue = $this->expirydt->CurrentValue;
 		$this->highlighted->CurrentValue = NULL;
@@ -774,12 +837,12 @@ class datasheets_add extends datasheets
 		$this->systrade->OldValue = $this->systrade->CurrentValue;
 		$this->isdatasheet->CurrentValue = NULL;
 		$this->isdatasheet->OldValue = $this->isdatasheet->CurrentValue;
-		$this->nativeFiles->CurrentValue = NULL;
-		$this->nativeFiles->OldValue = $this->nativeFiles->CurrentValue;
 		$this->datasheetdate->CurrentValue = NULL;
 		$this->datasheetdate->OldValue = $this->datasheetdate->CurrentValue;
 		$this->username->CurrentValue = NULL;
 		$this->username->OldValue = $this->username->CurrentValue;
+		$this->nativeFiles->CurrentValue = NULL;
+		$this->nativeFiles->OldValue = $this->nativeFiles->CurrentValue;
 	}
 
 	// Load form values
@@ -834,6 +897,15 @@ class datasheets_add extends datasheets
 				$this->cddno->Visible = FALSE; // Disable update for API request
 			else
 				$this->cddno->setFormValue($val);
+		}
+
+		// Check field name 'thirdPartyNo' first before field var 'x_thirdPartyNo'
+		$val = $CurrentForm->hasValue("thirdPartyNo") ? $CurrentForm->getValue("thirdPartyNo") : $CurrentForm->getValue("x_thirdPartyNo");
+		if (!$this->thirdPartyNo->IsDetailKey) {
+			if (IsApi() && $val == NULL)
+				$this->thirdPartyNo->Visible = FALSE; // Disable update for API request
+			else
+				$this->thirdPartyNo->setFormValue($val);
 		}
 
 		// Check field name 'duration' first before field var 'x_duration'
@@ -923,6 +995,7 @@ class datasheets_add extends datasheets
 		$this->cddissue->CurrentValue = $this->cddissue->FormValue;
 		$this->cddissue->CurrentValue = UnFormatDateTime($this->cddissue->CurrentValue, 5);
 		$this->cddno->CurrentValue = $this->cddno->FormValue;
+		$this->thirdPartyNo->CurrentValue = $this->thirdPartyNo->FormValue;
 		$this->duration->CurrentValue = $this->duration->FormValue;
 		$this->expirydt->CurrentValue = $this->expirydt->FormValue;
 		$this->expirydt->CurrentValue = UnFormatDateTime($this->expirydt->CurrentValue, 5);
@@ -979,15 +1052,16 @@ class datasheets_add extends datasheets
 		} else {
 			$this->manufacturer->VirtualValue = ""; // Clear value
 		}
-		$this->cdd->Upload->DbValue = $row['cdd'];
-		$this->cdd->setDbValue($this->cdd->Upload->DbValue);
-		$this->thirdParty->Upload->DbValue = $row['thirdParty'];
-		$this->thirdParty->setDbValue($this->thirdParty->Upload->DbValue);
+		$this->cddFile->Upload->DbValue = $row['cddFile'];
+		$this->cddFile->setDbValue($this->cddFile->Upload->DbValue);
+		$this->thirdPartyFile->Upload->DbValue = $row['thirdPartyFile'];
+		$this->thirdPartyFile->setDbValue($this->thirdPartyFile->Upload->DbValue);
 		$this->tittle->setDbValue($row['tittle']);
 		$this->cover->Upload->DbValue = $row['cover'];
 		$this->cover->setDbValue($this->cover->Upload->DbValue);
 		$this->cddissue->setDbValue($row['cddissue']);
 		$this->cddno->setDbValue($row['cddno']);
+		$this->thirdPartyNo->setDbValue($row['thirdPartyNo']);
 		$this->duration->setDbValue($row['duration']);
 		$this->expirydt->setDbValue($row['expirydt']);
 		$this->highlighted->setDbValue((ConvertToBool($row['highlighted']) ? "1" : "0"));
@@ -1000,9 +1074,9 @@ class datasheets_add extends datasheets
 		$this->hssCode->setDbValue($row['hssCode']);
 		$this->systrade->setDbValue($row['systrade']);
 		$this->isdatasheet->setDbValue((ConvertToBool($row['isdatasheet']) ? "1" : "0"));
-		$this->nativeFiles->setDbValue($row['nativeFiles']);
 		$this->datasheetdate->setDbValue($row['datasheetdate']);
 		$this->username->setDbValue($row['username']);
+		$this->nativeFiles->setDbValue($row['nativeFiles']);
 	}
 
 	// Return a row with default values
@@ -1014,12 +1088,13 @@ class datasheets_add extends datasheets
 		$row['partno'] = $this->partno->CurrentValue;
 		$row['dataSheetFile'] = $this->dataSheetFile->Upload->DbValue;
 		$row['manufacturer'] = $this->manufacturer->CurrentValue;
-		$row['cdd'] = $this->cdd->Upload->DbValue;
-		$row['thirdParty'] = $this->thirdParty->Upload->DbValue;
+		$row['cddFile'] = $this->cddFile->Upload->DbValue;
+		$row['thirdPartyFile'] = $this->thirdPartyFile->Upload->DbValue;
 		$row['tittle'] = $this->tittle->CurrentValue;
 		$row['cover'] = $this->cover->Upload->DbValue;
 		$row['cddissue'] = $this->cddissue->CurrentValue;
 		$row['cddno'] = $this->cddno->CurrentValue;
+		$row['thirdPartyNo'] = $this->thirdPartyNo->CurrentValue;
 		$row['duration'] = $this->duration->CurrentValue;
 		$row['expirydt'] = $this->expirydt->CurrentValue;
 		$row['highlighted'] = $this->highlighted->CurrentValue;
@@ -1027,9 +1102,9 @@ class datasheets_add extends datasheets
 		$row['hssCode'] = $this->hssCode->CurrentValue;
 		$row['systrade'] = $this->systrade->CurrentValue;
 		$row['isdatasheet'] = $this->isdatasheet->CurrentValue;
-		$row['nativeFiles'] = $this->nativeFiles->CurrentValue;
 		$row['datasheetdate'] = $this->datasheetdate->CurrentValue;
 		$row['username'] = $this->username->CurrentValue;
+		$row['nativeFiles'] = $this->nativeFiles->CurrentValue;
 		return $row;
 	}
 
@@ -1071,12 +1146,13 @@ class datasheets_add extends datasheets
 		// partno
 		// dataSheetFile
 		// manufacturer
-		// cdd
-		// thirdParty
+		// cddFile
+		// thirdPartyFile
 		// tittle
 		// cover
 		// cddissue
 		// cddno
+		// thirdPartyNo
 		// duration
 		// expirydt
 		// highlighted
@@ -1084,15 +1160,16 @@ class datasheets_add extends datasheets
 		// hssCode
 		// systrade
 		// isdatasheet
-		// nativeFiles
 		// datasheetdate
 		// username
+		// nativeFiles
 
 		if ($this->RowType == ROWTYPE_VIEW) { // View row
 
 			// partno
 			$this->partno->ViewValue = $this->partno->CurrentValue;
 			$this->partno->ViewValue = strtoupper($this->partno->ViewValue);
+			$this->partno->CssClass = "font-weight-bold";
 			$this->partno->ViewCustomAttributes = "";
 
 			// dataSheetFile
@@ -1130,21 +1207,21 @@ class datasheets_add extends datasheets
 			}
 			$this->manufacturer->ViewCustomAttributes = "";
 
-			// cdd
-			if (!EmptyValue($this->cdd->Upload->DbValue)) {
-				$this->cdd->ViewValue = $this->cdd->Upload->DbValue;
+			// cddFile
+			if (!EmptyValue($this->cddFile->Upload->DbValue)) {
+				$this->cddFile->ViewValue = $this->cddFile->Upload->DbValue;
 			} else {
-				$this->cdd->ViewValue = "";
+				$this->cddFile->ViewValue = "";
 			}
-			$this->cdd->ViewCustomAttributes = "";
+			$this->cddFile->ViewCustomAttributes = "";
 
-			// thirdParty
-			if (!EmptyValue($this->thirdParty->Upload->DbValue)) {
-				$this->thirdParty->ViewValue = $this->thirdParty->Upload->DbValue;
+			// thirdPartyFile
+			if (!EmptyValue($this->thirdPartyFile->Upload->DbValue)) {
+				$this->thirdPartyFile->ViewValue = $this->thirdPartyFile->Upload->DbValue;
 			} else {
-				$this->thirdParty->ViewValue = "";
+				$this->thirdPartyFile->ViewValue = "";
 			}
-			$this->thirdParty->ViewCustomAttributes = "";
+			$this->thirdPartyFile->ViewCustomAttributes = "";
 
 			// tittle
 			$this->tittle->ViewValue = $this->tittle->CurrentValue;
@@ -1168,6 +1245,10 @@ class datasheets_add extends datasheets
 			$this->cddno->ViewValue = $this->cddno->CurrentValue;
 			$this->cddno->ViewValue = strtoupper($this->cddno->ViewValue);
 			$this->cddno->ViewCustomAttributes = "";
+
+			// thirdPartyNo
+			$this->thirdPartyNo->ViewValue = $this->thirdPartyNo->CurrentValue;
+			$this->thirdPartyNo->ViewCustomAttributes = "";
 
 			// duration
 			if (strval($this->duration->CurrentValue) <> "") {
@@ -1271,29 +1352,29 @@ class datasheets_add extends datasheets
 			$this->manufacturer->HrefValue = "";
 			$this->manufacturer->TooltipValue = "";
 
-			// cdd
-			$this->cdd->LinkCustomAttributes = "";
-			if (!EmptyValue($this->cdd->Upload->DbValue)) {
-				$this->cdd->HrefValue = GetFileUploadUrl($this->cdd, $this->cdd->Upload->DbValue); // Add prefix/suffix
-				$this->cdd->LinkAttrs["target"] = "_blank"; // Add target
-				if ($this->isExport()) $this->cdd->HrefValue = FullUrl($this->cdd->HrefValue, "href");
+			// cddFile
+			$this->cddFile->LinkCustomAttributes = "";
+			if (!EmptyValue($this->cddFile->Upload->DbValue)) {
+				$this->cddFile->HrefValue = GetFileUploadUrl($this->cddFile, $this->cddFile->Upload->DbValue); // Add prefix/suffix
+				$this->cddFile->LinkAttrs["target"] = "_blank"; // Add target
+				if ($this->isExport()) $this->cddFile->HrefValue = FullUrl($this->cddFile->HrefValue, "href");
 			} else {
-				$this->cdd->HrefValue = "";
+				$this->cddFile->HrefValue = "";
 			}
-			$this->cdd->ExportHrefValue = $this->cdd->UploadPath . $this->cdd->Upload->DbValue;
-			$this->cdd->TooltipValue = "";
+			$this->cddFile->ExportHrefValue = $this->cddFile->UploadPath . $this->cddFile->Upload->DbValue;
+			$this->cddFile->TooltipValue = "";
 
-			// thirdParty
-			$this->thirdParty->LinkCustomAttributes = "";
-			if (!EmptyValue($this->thirdParty->Upload->DbValue)) {
-				$this->thirdParty->HrefValue = GetFileUploadUrl($this->thirdParty, $this->thirdParty->Upload->DbValue); // Add prefix/suffix
-				$this->thirdParty->LinkAttrs["target"] = "_blank"; // Add target
-				if ($this->isExport()) $this->thirdParty->HrefValue = FullUrl($this->thirdParty->HrefValue, "href");
+			// thirdPartyFile
+			$this->thirdPartyFile->LinkCustomAttributes = "";
+			if (!EmptyValue($this->thirdPartyFile->Upload->DbValue)) {
+				$this->thirdPartyFile->HrefValue = GetFileUploadUrl($this->thirdPartyFile, $this->thirdPartyFile->Upload->DbValue); // Add prefix/suffix
+				$this->thirdPartyFile->LinkAttrs["target"] = "_blank"; // Add target
+				if ($this->isExport()) $this->thirdPartyFile->HrefValue = FullUrl($this->thirdPartyFile->HrefValue, "href");
 			} else {
-				$this->thirdParty->HrefValue = "";
+				$this->thirdPartyFile->HrefValue = "";
 			}
-			$this->thirdParty->ExportHrefValue = $this->thirdParty->UploadPath . $this->thirdParty->Upload->DbValue;
-			$this->thirdParty->TooltipValue = "";
+			$this->thirdPartyFile->ExportHrefValue = $this->thirdPartyFile->UploadPath . $this->thirdPartyFile->Upload->DbValue;
+			$this->thirdPartyFile->TooltipValue = "";
 
 			// tittle
 			$this->tittle->LinkCustomAttributes = "";
@@ -1319,14 +1400,25 @@ class datasheets_add extends datasheets
 
 			// cddno
 			$this->cddno->LinkCustomAttributes = "";
-			if (!EmptyValue($this->cdd->Upload->DbValue)) {
-				$this->cddno->HrefValue = GetFileUploadUrl($this->cdd, $this->cdd->Upload->DbValue); // Add prefix/suffix
+			if (!EmptyValue($this->cddFile->Upload->DbValue)) {
+				$this->cddno->HrefValue = GetFileUploadUrl($this->cddFile, $this->cddFile->Upload->DbValue); // Add prefix/suffix
 				$this->cddno->LinkAttrs["target"] = "_blank"; // Add target
 				if ($this->isExport()) $this->cddno->HrefValue = FullUrl($this->cddno->HrefValue, "href");
 			} else {
 				$this->cddno->HrefValue = "";
 			}
 			$this->cddno->TooltipValue = "";
+
+			// thirdPartyNo
+			$this->thirdPartyNo->LinkCustomAttributes = "";
+			if (!EmptyValue($this->thirdPartyFile->Upload->DbValue)) {
+				$this->thirdPartyNo->HrefValue = GetFileUploadUrl($this->thirdPartyFile, $this->thirdPartyFile->Upload->DbValue); // Add prefix/suffix
+				$this->thirdPartyNo->LinkAttrs["target"] = "_blank"; // Add target
+				if ($this->isExport()) $this->thirdPartyNo->HrefValue = FullUrl($this->thirdPartyNo->HrefValue, "href");
+			} else {
+				$this->thirdPartyNo->HrefValue = "";
+			}
+			$this->thirdPartyNo->TooltipValue = "";
 
 			// duration
 			$this->duration->LinkCustomAttributes = "";
@@ -1417,31 +1509,31 @@ class datasheets_add extends datasheets
 			}
 			$this->manufacturer->PlaceHolder = RemoveHtml($this->manufacturer->caption());
 
-			// cdd
-			$this->cdd->EditAttrs["class"] = "form-control";
-			$this->cdd->EditCustomAttributes = "";
-			if (!EmptyValue($this->cdd->Upload->DbValue)) {
-				$this->cdd->EditValue = $this->cdd->Upload->DbValue;
+			// cddFile
+			$this->cddFile->EditAttrs["class"] = "form-control";
+			$this->cddFile->EditCustomAttributes = "";
+			if (!EmptyValue($this->cddFile->Upload->DbValue)) {
+				$this->cddFile->EditValue = $this->cddFile->Upload->DbValue;
 			} else {
-				$this->cdd->EditValue = "";
+				$this->cddFile->EditValue = "";
 			}
-			if (!EmptyValue($this->cdd->CurrentValue))
-					$this->cdd->Upload->FileName = $this->cdd->CurrentValue;
+			if (!EmptyValue($this->cddFile->CurrentValue))
+					$this->cddFile->Upload->FileName = $this->cddFile->CurrentValue;
 			if (($this->isShow() || $this->isCopy()) && !$this->EventCancelled)
-				RenderUploadField($this->cdd);
+				RenderUploadField($this->cddFile);
 
-			// thirdParty
-			$this->thirdParty->EditAttrs["class"] = "form-control";
-			$this->thirdParty->EditCustomAttributes = "";
-			if (!EmptyValue($this->thirdParty->Upload->DbValue)) {
-				$this->thirdParty->EditValue = $this->thirdParty->Upload->DbValue;
+			// thirdPartyFile
+			$this->thirdPartyFile->EditAttrs["class"] = "form-control";
+			$this->thirdPartyFile->EditCustomAttributes = "";
+			if (!EmptyValue($this->thirdPartyFile->Upload->DbValue)) {
+				$this->thirdPartyFile->EditValue = $this->thirdPartyFile->Upload->DbValue;
 			} else {
-				$this->thirdParty->EditValue = "";
+				$this->thirdPartyFile->EditValue = "";
 			}
-			if (!EmptyValue($this->thirdParty->CurrentValue))
-					$this->thirdParty->Upload->FileName = $this->thirdParty->CurrentValue;
+			if (!EmptyValue($this->thirdPartyFile->CurrentValue))
+					$this->thirdPartyFile->Upload->FileName = $this->thirdPartyFile->CurrentValue;
 			if (($this->isShow() || $this->isCopy()) && !$this->EventCancelled)
-				RenderUploadField($this->thirdParty);
+				RenderUploadField($this->thirdPartyFile);
 
 			// tittle
 			$this->tittle->EditAttrs["class"] = "form-control";
@@ -1477,6 +1569,14 @@ class datasheets_add extends datasheets
 				$this->cddno->CurrentValue = HtmlDecode($this->cddno->CurrentValue);
 			$this->cddno->EditValue = HtmlEncode($this->cddno->CurrentValue);
 			$this->cddno->PlaceHolder = RemoveHtml($this->cddno->caption());
+
+			// thirdPartyNo
+			$this->thirdPartyNo->EditAttrs["class"] = "form-control";
+			$this->thirdPartyNo->EditCustomAttributes = "";
+			if (REMOVE_XSS)
+				$this->thirdPartyNo->CurrentValue = HtmlDecode($this->thirdPartyNo->CurrentValue);
+			$this->thirdPartyNo->EditValue = HtmlEncode($this->thirdPartyNo->CurrentValue);
+			$this->thirdPartyNo->PlaceHolder = RemoveHtml($this->thirdPartyNo->caption());
 
 			// duration
 			$this->duration->EditAttrs["class"] = "form-control";
@@ -1550,27 +1650,27 @@ class datasheets_add extends datasheets
 			$this->manufacturer->LinkCustomAttributes = "";
 			$this->manufacturer->HrefValue = "";
 
-			// cdd
-			$this->cdd->LinkCustomAttributes = "";
-			if (!EmptyValue($this->cdd->Upload->DbValue)) {
-				$this->cdd->HrefValue = GetFileUploadUrl($this->cdd, $this->cdd->Upload->DbValue); // Add prefix/suffix
-				$this->cdd->LinkAttrs["target"] = "_blank"; // Add target
-				if ($this->isExport()) $this->cdd->HrefValue = FullUrl($this->cdd->HrefValue, "href");
+			// cddFile
+			$this->cddFile->LinkCustomAttributes = "";
+			if (!EmptyValue($this->cddFile->Upload->DbValue)) {
+				$this->cddFile->HrefValue = GetFileUploadUrl($this->cddFile, $this->cddFile->Upload->DbValue); // Add prefix/suffix
+				$this->cddFile->LinkAttrs["target"] = "_blank"; // Add target
+				if ($this->isExport()) $this->cddFile->HrefValue = FullUrl($this->cddFile->HrefValue, "href");
 			} else {
-				$this->cdd->HrefValue = "";
+				$this->cddFile->HrefValue = "";
 			}
-			$this->cdd->ExportHrefValue = $this->cdd->UploadPath . $this->cdd->Upload->DbValue;
+			$this->cddFile->ExportHrefValue = $this->cddFile->UploadPath . $this->cddFile->Upload->DbValue;
 
-			// thirdParty
-			$this->thirdParty->LinkCustomAttributes = "";
-			if (!EmptyValue($this->thirdParty->Upload->DbValue)) {
-				$this->thirdParty->HrefValue = GetFileUploadUrl($this->thirdParty, $this->thirdParty->Upload->DbValue); // Add prefix/suffix
-				$this->thirdParty->LinkAttrs["target"] = "_blank"; // Add target
-				if ($this->isExport()) $this->thirdParty->HrefValue = FullUrl($this->thirdParty->HrefValue, "href");
+			// thirdPartyFile
+			$this->thirdPartyFile->LinkCustomAttributes = "";
+			if (!EmptyValue($this->thirdPartyFile->Upload->DbValue)) {
+				$this->thirdPartyFile->HrefValue = GetFileUploadUrl($this->thirdPartyFile, $this->thirdPartyFile->Upload->DbValue); // Add prefix/suffix
+				$this->thirdPartyFile->LinkAttrs["target"] = "_blank"; // Add target
+				if ($this->isExport()) $this->thirdPartyFile->HrefValue = FullUrl($this->thirdPartyFile->HrefValue, "href");
 			} else {
-				$this->thirdParty->HrefValue = "";
+				$this->thirdPartyFile->HrefValue = "";
 			}
-			$this->thirdParty->ExportHrefValue = $this->thirdParty->UploadPath . $this->thirdParty->Upload->DbValue;
+			$this->thirdPartyFile->ExportHrefValue = $this->thirdPartyFile->UploadPath . $this->thirdPartyFile->Upload->DbValue;
 
 			// tittle
 			$this->tittle->LinkCustomAttributes = "";
@@ -1593,12 +1693,22 @@ class datasheets_add extends datasheets
 
 			// cddno
 			$this->cddno->LinkCustomAttributes = "";
-			if (!EmptyValue($this->cdd->Upload->DbValue)) {
-				$this->cddno->HrefValue = GetFileUploadUrl($this->cdd, $this->cdd->Upload->DbValue); // Add prefix/suffix
+			if (!EmptyValue($this->cddFile->Upload->DbValue)) {
+				$this->cddno->HrefValue = GetFileUploadUrl($this->cddFile, $this->cddFile->Upload->DbValue); // Add prefix/suffix
 				$this->cddno->LinkAttrs["target"] = "_blank"; // Add target
 				if ($this->isExport()) $this->cddno->HrefValue = FullUrl($this->cddno->HrefValue, "href");
 			} else {
 				$this->cddno->HrefValue = "";
+			}
+
+			// thirdPartyNo
+			$this->thirdPartyNo->LinkCustomAttributes = "";
+			if (!EmptyValue($this->thirdPartyFile->Upload->DbValue)) {
+				$this->thirdPartyNo->HrefValue = GetFileUploadUrl($this->thirdPartyFile, $this->thirdPartyFile->Upload->DbValue); // Add prefix/suffix
+				$this->thirdPartyNo->LinkAttrs["target"] = "_blank"; // Add target
+				if ($this->isExport()) $this->thirdPartyNo->HrefValue = FullUrl($this->thirdPartyNo->HrefValue, "href");
+			} else {
+				$this->thirdPartyNo->HrefValue = "";
 			}
 
 			// duration
@@ -1672,14 +1782,14 @@ class datasheets_add extends datasheets
 				AddMessage($FormError, str_replace("%s", $this->manufacturer->caption(), $this->manufacturer->RequiredErrorMessage));
 			}
 		}
-		if ($this->cdd->Required) {
-			if ($this->cdd->Upload->FileName == "" && !$this->cdd->Upload->KeepFile) {
-				AddMessage($FormError, str_replace("%s", $this->cdd->caption(), $this->cdd->RequiredErrorMessage));
+		if ($this->cddFile->Required) {
+			if ($this->cddFile->Upload->FileName == "" && !$this->cddFile->Upload->KeepFile) {
+				AddMessage($FormError, str_replace("%s", $this->cddFile->caption(), $this->cddFile->RequiredErrorMessage));
 			}
 		}
-		if ($this->thirdParty->Required) {
-			if ($this->thirdParty->Upload->FileName == "" && !$this->thirdParty->Upload->KeepFile) {
-				AddMessage($FormError, str_replace("%s", $this->thirdParty->caption(), $this->thirdParty->RequiredErrorMessage));
+		if ($this->thirdPartyFile->Required) {
+			if ($this->thirdPartyFile->Upload->FileName == "" && !$this->thirdPartyFile->Upload->KeepFile) {
+				AddMessage($FormError, str_replace("%s", $this->thirdPartyFile->caption(), $this->thirdPartyFile->RequiredErrorMessage));
 			}
 		}
 		if ($this->tittle->Required) {
@@ -1703,6 +1813,11 @@ class datasheets_add extends datasheets
 		if ($this->cddno->Required) {
 			if (!$this->cddno->IsDetailKey && $this->cddno->FormValue != NULL && $this->cddno->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->cddno->caption(), $this->cddno->RequiredErrorMessage));
+			}
+		}
+		if ($this->thirdPartyNo->Required) {
+			if (!$this->thirdPartyNo->IsDetailKey && $this->thirdPartyNo->FormValue != NULL && $this->thirdPartyNo->FormValue == "") {
+				AddMessage($FormError, str_replace("%s", $this->thirdPartyNo->caption(), $this->thirdPartyNo->RequiredErrorMessage));
 			}
 		}
 		if ($this->duration->Required) {
@@ -1743,11 +1858,6 @@ class datasheets_add extends datasheets
 				AddMessage($FormError, str_replace("%s", $this->isdatasheet->caption(), $this->isdatasheet->RequiredErrorMessage));
 			}
 		}
-		if ($this->nativeFiles->Required) {
-			if (!$this->nativeFiles->IsDetailKey && $this->nativeFiles->FormValue != NULL && $this->nativeFiles->FormValue == "") {
-				AddMessage($FormError, str_replace("%s", $this->nativeFiles->caption(), $this->nativeFiles->RequiredErrorMessage));
-			}
-		}
 		if ($this->datasheetdate->Required) {
 			if (!$this->datasheetdate->IsDetailKey && $this->datasheetdate->FormValue != NULL && $this->datasheetdate->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->datasheetdate->caption(), $this->datasheetdate->RequiredErrorMessage));
@@ -1756,6 +1866,11 @@ class datasheets_add extends datasheets
 		if ($this->username->Required) {
 			if (!$this->username->IsDetailKey && $this->username->FormValue != NULL && $this->username->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->username->caption(), $this->username->RequiredErrorMessage));
+			}
+		}
+		if ($this->nativeFiles->Required) {
+			if (!$this->nativeFiles->IsDetailKey && $this->nativeFiles->FormValue != NULL && $this->nativeFiles->FormValue == "") {
+				AddMessage($FormError, str_replace("%s", $this->nativeFiles->caption(), $this->nativeFiles->RequiredErrorMessage));
 			}
 		}
 
@@ -1810,23 +1925,23 @@ class datasheets_add extends datasheets
 		// manufacturer
 		$this->manufacturer->setDbValueDef($rsnew, $this->manufacturer->CurrentValue, "", FALSE);
 
-		// cdd
-		if ($this->cdd->Visible && !$this->cdd->Upload->KeepFile) {
-			$this->cdd->Upload->DbValue = ""; // No need to delete old file
-			if ($this->cdd->Upload->FileName == "") {
-				$rsnew['cdd'] = NULL;
+		// cddFile
+		if ($this->cddFile->Visible && !$this->cddFile->Upload->KeepFile) {
+			$this->cddFile->Upload->DbValue = ""; // No need to delete old file
+			if ($this->cddFile->Upload->FileName == "") {
+				$rsnew['cddFile'] = NULL;
 			} else {
-				$rsnew['cdd'] = $this->cdd->Upload->FileName;
+				$rsnew['cddFile'] = $this->cddFile->Upload->FileName;
 			}
 		}
 
-		// thirdParty
-		if ($this->thirdParty->Visible && !$this->thirdParty->Upload->KeepFile) {
-			$this->thirdParty->Upload->DbValue = ""; // No need to delete old file
-			if ($this->thirdParty->Upload->FileName == "") {
-				$rsnew['thirdParty'] = NULL;
+		// thirdPartyFile
+		if ($this->thirdPartyFile->Visible && !$this->thirdPartyFile->Upload->KeepFile) {
+			$this->thirdPartyFile->Upload->DbValue = ""; // No need to delete old file
+			if ($this->thirdPartyFile->Upload->FileName == "") {
+				$rsnew['thirdPartyFile'] = NULL;
 			} else {
-				$rsnew['thirdParty'] = $this->thirdParty->Upload->FileName;
+				$rsnew['thirdPartyFile'] = $this->thirdPartyFile->Upload->FileName;
 			}
 		}
 
@@ -1848,6 +1963,9 @@ class datasheets_add extends datasheets
 
 		// cddno
 		$this->cddno->setDbValueDef($rsnew, $this->cddno->CurrentValue, "", FALSE);
+
+		// thirdPartyNo
+		$this->thirdPartyNo->setDbValueDef($rsnew, $this->thirdPartyNo->CurrentValue, "", FALSE);
 
 		// duration
 		$this->duration->setDbValueDef($rsnew, $this->duration->CurrentValue, NULL, strval($this->duration->CurrentValue) == "");
@@ -1910,15 +2028,15 @@ class datasheets_add extends datasheets
 				$this->dataSheetFile->setDbValueDef($rsnew, $this->dataSheetFile->Upload->FileName, "", FALSE);
 			}
 		}
-		if ($this->cdd->Visible && !$this->cdd->Upload->KeepFile) {
-			$oldFiles = EmptyValue($this->cdd->Upload->DbValue) ? array() : array($this->cdd->Upload->DbValue);
-			if (!EmptyValue($this->cdd->Upload->FileName)) {
-				$newFiles = array($this->cdd->Upload->FileName);
+		if ($this->cddFile->Visible && !$this->cddFile->Upload->KeepFile) {
+			$oldFiles = EmptyValue($this->cddFile->Upload->DbValue) ? array() : array($this->cddFile->Upload->DbValue);
+			if (!EmptyValue($this->cddFile->Upload->FileName)) {
+				$newFiles = array($this->cddFile->Upload->FileName);
 				$NewFileCount = count($newFiles);
 				for ($i = 0; $i < $NewFileCount; $i++) {
 					if ($newFiles[$i] <> "") {
 						$file = $newFiles[$i];
-						if (file_exists(UploadTempPath($this->cdd, $this->cdd->Upload->Index) . $file)) {
+						if (file_exists(UploadTempPath($this->cddFile, $this->cddFile->Upload->Index) . $file)) {
 							if (DELETE_UPLOADED_FILES) {
 								$oldFileFound = FALSE;
 								$oldFileCount = count($oldFiles);
@@ -1933,30 +2051,30 @@ class datasheets_add extends datasheets
 								if ($oldFileFound) // No need to check if file exists further
 									continue;
 							}
-							$file1 = UniqueFilename($this->cdd->physicalUploadPath(), $file); // Get new file name
+							$file1 = UniqueFilename($this->cddFile->physicalUploadPath(), $file); // Get new file name
 							if ($file1 <> $file) { // Rename temp file
-								while (file_exists(UploadTempPath($this->cdd, $this->cdd->Upload->Index) . $file1) || file_exists($this->cdd->physicalUploadPath() . $file1)) // Make sure no file name clash
-									$file1 = UniqueFilename($this->cdd->physicalUploadPath(), $file1, TRUE); // Use indexed name
-								rename(UploadTempPath($this->cdd, $this->cdd->Upload->Index) . $file, UploadTempPath($this->cdd, $this->cdd->Upload->Index) . $file1);
+								while (file_exists(UploadTempPath($this->cddFile, $this->cddFile->Upload->Index) . $file1) || file_exists($this->cddFile->physicalUploadPath() . $file1)) // Make sure no file name clash
+									$file1 = UniqueFilename($this->cddFile->physicalUploadPath(), $file1, TRUE); // Use indexed name
+								rename(UploadTempPath($this->cddFile, $this->cddFile->Upload->Index) . $file, UploadTempPath($this->cddFile, $this->cddFile->Upload->Index) . $file1);
 								$newFiles[$i] = $file1;
 							}
 						}
 					}
 				}
-				$this->cdd->Upload->DbValue = empty($oldFiles) ? "" : implode(MULTIPLE_UPLOAD_SEPARATOR, $oldFiles);
-				$this->cdd->Upload->FileName = implode(MULTIPLE_UPLOAD_SEPARATOR, $newFiles);
-				$this->cdd->setDbValueDef($rsnew, $this->cdd->Upload->FileName, NULL, strval($this->cdd->CurrentValue) == "");
+				$this->cddFile->Upload->DbValue = empty($oldFiles) ? "" : implode(MULTIPLE_UPLOAD_SEPARATOR, $oldFiles);
+				$this->cddFile->Upload->FileName = implode(MULTIPLE_UPLOAD_SEPARATOR, $newFiles);
+				$this->cddFile->setDbValueDef($rsnew, $this->cddFile->Upload->FileName, NULL, strval($this->cddFile->CurrentValue) == "");
 			}
 		}
-		if ($this->thirdParty->Visible && !$this->thirdParty->Upload->KeepFile) {
-			$oldFiles = EmptyValue($this->thirdParty->Upload->DbValue) ? array() : array($this->thirdParty->Upload->DbValue);
-			if (!EmptyValue($this->thirdParty->Upload->FileName)) {
-				$newFiles = array($this->thirdParty->Upload->FileName);
+		if ($this->thirdPartyFile->Visible && !$this->thirdPartyFile->Upload->KeepFile) {
+			$oldFiles = EmptyValue($this->thirdPartyFile->Upload->DbValue) ? array() : array($this->thirdPartyFile->Upload->DbValue);
+			if (!EmptyValue($this->thirdPartyFile->Upload->FileName)) {
+				$newFiles = array($this->thirdPartyFile->Upload->FileName);
 				$NewFileCount = count($newFiles);
 				for ($i = 0; $i < $NewFileCount; $i++) {
 					if ($newFiles[$i] <> "") {
 						$file = $newFiles[$i];
-						if (file_exists(UploadTempPath($this->thirdParty, $this->thirdParty->Upload->Index) . $file)) {
+						if (file_exists(UploadTempPath($this->thirdPartyFile, $this->thirdPartyFile->Upload->Index) . $file)) {
 							if (DELETE_UPLOADED_FILES) {
 								$oldFileFound = FALSE;
 								$oldFileCount = count($oldFiles);
@@ -1971,19 +2089,19 @@ class datasheets_add extends datasheets
 								if ($oldFileFound) // No need to check if file exists further
 									continue;
 							}
-							$file1 = UniqueFilename($this->thirdParty->physicalUploadPath(), $file); // Get new file name
+							$file1 = UniqueFilename($this->thirdPartyFile->physicalUploadPath(), $file); // Get new file name
 							if ($file1 <> $file) { // Rename temp file
-								while (file_exists(UploadTempPath($this->thirdParty, $this->thirdParty->Upload->Index) . $file1) || file_exists($this->thirdParty->physicalUploadPath() . $file1)) // Make sure no file name clash
-									$file1 = UniqueFilename($this->thirdParty->physicalUploadPath(), $file1, TRUE); // Use indexed name
-								rename(UploadTempPath($this->thirdParty, $this->thirdParty->Upload->Index) . $file, UploadTempPath($this->thirdParty, $this->thirdParty->Upload->Index) . $file1);
+								while (file_exists(UploadTempPath($this->thirdPartyFile, $this->thirdPartyFile->Upload->Index) . $file1) || file_exists($this->thirdPartyFile->physicalUploadPath() . $file1)) // Make sure no file name clash
+									$file1 = UniqueFilename($this->thirdPartyFile->physicalUploadPath(), $file1, TRUE); // Use indexed name
+								rename(UploadTempPath($this->thirdPartyFile, $this->thirdPartyFile->Upload->Index) . $file, UploadTempPath($this->thirdPartyFile, $this->thirdPartyFile->Upload->Index) . $file1);
 								$newFiles[$i] = $file1;
 							}
 						}
 					}
 				}
-				$this->thirdParty->Upload->DbValue = empty($oldFiles) ? "" : implode(MULTIPLE_UPLOAD_SEPARATOR, $oldFiles);
-				$this->thirdParty->Upload->FileName = implode(MULTIPLE_UPLOAD_SEPARATOR, $newFiles);
-				$this->thirdParty->setDbValueDef($rsnew, $this->thirdParty->Upload->FileName, "", strval($this->thirdParty->CurrentValue) == "");
+				$this->thirdPartyFile->Upload->DbValue = empty($oldFiles) ? "" : implode(MULTIPLE_UPLOAD_SEPARATOR, $oldFiles);
+				$this->thirdPartyFile->Upload->FileName = implode(MULTIPLE_UPLOAD_SEPARATOR, $newFiles);
+				$this->thirdPartyFile->setDbValueDef($rsnew, $this->thirdPartyFile->Upload->FileName, "", strval($this->thirdPartyFile->CurrentValue) == "");
 			}
 		}
 		if ($this->cover->Visible && !$this->cover->Upload->KeepFile) {
@@ -2062,19 +2180,19 @@ class datasheets_add extends datasheets
 						}
 					}
 				}
-				if ($this->cdd->Visible && !$this->cdd->Upload->KeepFile) {
-					$oldFiles = EmptyValue($this->cdd->Upload->DbValue) ? array() : array($this->cdd->Upload->DbValue);
-					if (!EmptyValue($this->cdd->Upload->FileName)) {
-						$newFiles = array($this->cdd->Upload->FileName);
-						$newFiles2 = array($rsnew['cdd']);
+				if ($this->cddFile->Visible && !$this->cddFile->Upload->KeepFile) {
+					$oldFiles = EmptyValue($this->cddFile->Upload->DbValue) ? array() : array($this->cddFile->Upload->DbValue);
+					if (!EmptyValue($this->cddFile->Upload->FileName)) {
+						$newFiles = array($this->cddFile->Upload->FileName);
+						$newFiles2 = array($rsnew['cddFile']);
 						$newFileCount = count($newFiles);
 						for ($i = 0; $i < $newFileCount; $i++) {
 							if ($newFiles[$i] <> "") {
-								$file = UploadTempPath($this->cdd, $this->cdd->Upload->Index) . $newFiles[$i];
+								$file = UploadTempPath($this->cddFile, $this->cddFile->Upload->Index) . $newFiles[$i];
 								if (file_exists($file)) {
 									if (@$newFiles2[$i] <> "") // Use correct file name
 										$newFiles[$i] = $newFiles2[$i];
-									if (!$this->cdd->Upload->saveToFile($newFiles[$i], TRUE, $i)) { // Just replace
+									if (!$this->cddFile->Upload->saveToFile($newFiles[$i], TRUE, $i)) { // Just replace
 										$this->setFailureMessage($Language->phrase("UploadErrMsg7"));
 										return FALSE;
 									}
@@ -2087,23 +2205,23 @@ class datasheets_add extends datasheets
 					if (DELETE_UPLOADED_FILES) {
 						foreach ($oldFiles as $oldFile) {
 							if ($oldFile <> "" && !in_array($oldFile, $newFiles))
-								@unlink($this->cdd->oldPhysicalUploadPath() . $oldFile);
+								@unlink($this->cddFile->oldPhysicalUploadPath() . $oldFile);
 						}
 					}
 				}
-				if ($this->thirdParty->Visible && !$this->thirdParty->Upload->KeepFile) {
-					$oldFiles = EmptyValue($this->thirdParty->Upload->DbValue) ? array() : array($this->thirdParty->Upload->DbValue);
-					if (!EmptyValue($this->thirdParty->Upload->FileName)) {
-						$newFiles = array($this->thirdParty->Upload->FileName);
-						$newFiles2 = array($rsnew['thirdParty']);
+				if ($this->thirdPartyFile->Visible && !$this->thirdPartyFile->Upload->KeepFile) {
+					$oldFiles = EmptyValue($this->thirdPartyFile->Upload->DbValue) ? array() : array($this->thirdPartyFile->Upload->DbValue);
+					if (!EmptyValue($this->thirdPartyFile->Upload->FileName)) {
+						$newFiles = array($this->thirdPartyFile->Upload->FileName);
+						$newFiles2 = array($rsnew['thirdPartyFile']);
 						$newFileCount = count($newFiles);
 						for ($i = 0; $i < $newFileCount; $i++) {
 							if ($newFiles[$i] <> "") {
-								$file = UploadTempPath($this->thirdParty, $this->thirdParty->Upload->Index) . $newFiles[$i];
+								$file = UploadTempPath($this->thirdPartyFile, $this->thirdPartyFile->Upload->Index) . $newFiles[$i];
 								if (file_exists($file)) {
 									if (@$newFiles2[$i] <> "") // Use correct file name
 										$newFiles[$i] = $newFiles2[$i];
-									if (!$this->thirdParty->Upload->saveToFile($newFiles[$i], TRUE, $i)) { // Just replace
+									if (!$this->thirdPartyFile->Upload->saveToFile($newFiles[$i], TRUE, $i)) { // Just replace
 										$this->setFailureMessage($Language->phrase("UploadErrMsg7"));
 										return FALSE;
 									}
@@ -2116,7 +2234,7 @@ class datasheets_add extends datasheets
 					if (DELETE_UPLOADED_FILES) {
 						foreach ($oldFiles as $oldFile) {
 							if ($oldFile <> "" && !in_array($oldFile, $newFiles))
-								@unlink($this->thirdParty->oldPhysicalUploadPath() . $oldFile);
+								@unlink($this->thirdPartyFile->oldPhysicalUploadPath() . $oldFile);
 						}
 					}
 				}
@@ -2175,17 +2293,17 @@ class datasheets_add extends datasheets
 		else
 			CleanUploadTempPath($this->dataSheetFile, $this->dataSheetFile->Upload->Index);
 
-		// cdd
-		if ($this->cdd->Upload->FileToken <> "")
-			CleanUploadTempPath($this->cdd->Upload->FileToken, $this->cdd->Upload->Index);
+		// cddFile
+		if ($this->cddFile->Upload->FileToken <> "")
+			CleanUploadTempPath($this->cddFile->Upload->FileToken, $this->cddFile->Upload->Index);
 		else
-			CleanUploadTempPath($this->cdd, $this->cdd->Upload->Index);
+			CleanUploadTempPath($this->cddFile, $this->cddFile->Upload->Index);
 
-		// thirdParty
-		if ($this->thirdParty->Upload->FileToken <> "")
-			CleanUploadTempPath($this->thirdParty->Upload->FileToken, $this->thirdParty->Upload->Index);
+		// thirdPartyFile
+		if ($this->thirdPartyFile->Upload->FileToken <> "")
+			CleanUploadTempPath($this->thirdPartyFile->Upload->FileToken, $this->thirdPartyFile->Upload->Index);
 		else
-			CleanUploadTempPath($this->thirdParty, $this->thirdParty->Upload->Index);
+			CleanUploadTempPath($this->thirdPartyFile, $this->thirdPartyFile->Upload->Index);
 
 		// cover
 		if ($this->cover->Upload->FileToken <> "")

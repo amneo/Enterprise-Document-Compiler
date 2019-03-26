@@ -13,4 +13,5 @@ return array(
     'HTML5_Tokenizer' => $vendorDir . '/hkvstore/dompdf/lib/html5lib/Tokenizer.php',
     'HTML5_TreeBuilder' => $vendorDir . '/hkvstore/dompdf/lib/html5lib/TreeBuilder.php',
     'Mobile_Detect' => $vendorDir . '/mobiledetect/mobiledetectlib/Mobile_Detect.php',
+    'PclZip' => $vendorDir . '/pclzip/pclzip/pclzip.lib.php',
 );

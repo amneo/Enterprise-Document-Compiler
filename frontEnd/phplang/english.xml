@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ew-language date="2019/3/21" version="15.0.0.1" id="en" name="English" desc="English" author="e.World Technology Ltd.">
+<ew-language date="2019/3/27" version="15.0.0.1" id="en" name="English" desc="English" author="e.World Technology Ltd.">
   <!-- 
 	*** Important Notes:
 	1. Language ID should follow: https://developers.google.com/recaptcha/docs/language,
@@ -699,9 +699,6 @@
   <project>
     <phrase id="bodytitle" value="CDD Tracker and Submittal Tool-Firelink" />
     <phrase id="footertext" value="Maintained By Estimation and Engineering Team-Vishal" />
-    <menu id="6">
-      <phrase id="menutext" value="audittrail" />
-    </menu>
     <menu id="4">
       <phrase id="menutext" value="Workspace" />
     </menu>
@@ -716,6 +713,18 @@
     </menu>
     <menu id="3">
       <phrase id="menutext" value="Country Of Origin" />
+    </menu>
+    <menu id="7">
+      <phrase id="menutext" value="User Details" />
+    </menu>
+    <menu id="9">
+      <phrase id="menutext" value="User Level Permissions" />
+    </menu>
+    <menu id="8">
+      <phrase id="menutext" value="User Levels" />
+    </menu>
+    <menu id="6">
+      <phrase id="menutext" value="Audit Trail" />
     </menu>
     <table id="datasheets">
       <phrase id="tblcaption" value="Data Sheets" />
@@ -733,23 +742,26 @@
       <field id="manufacturer">
         <phrase id="fldcaption" value="Manufacturer" />
       </field>
-      <field id="cdd">
-        <phrase id="fldcaption" value="Civil Defence Certificate" />
+      <field id="cddfile">
+        <phrase id="fldcaption" value="CDD Approval File" />
       </field>
-      <field id="thirdparty">
-        <phrase id="fldcaption" value="Third Party Certificate" />
+      <field id="thirdpartyfile">
+        <phrase id="fldcaption" value="Third Party Certificate File" />
       </field>
       <field id="tittle">
         <phrase id="fldcaption" value="Description" />
       </field>
       <field id="cover">
-        <phrase id="fldcaption" value="Cover File(Divider)" />
+        <phrase id="fldcaption" value="Cover File i.e Divider" />
       </field>
       <field id="cddissue">
         <phrase id="fldcaption" value="CDD Issue Date" />
       </field>
       <field id="cddno">
         <phrase id="fldcaption" value="Civil Defence File Name" />
+      </field>
+      <field id="thirdpartyno">
+        <phrase id="fldcaption" value="Third Party Certificate No" />
       </field>
       <field id="duration">
         <phrase id="fldcaption" value="Approval Duration" />
@@ -784,20 +796,20 @@
         <phrase id="fldtagcaption2" value="MECHANICAL SYSTEM" />
       </field>
       <field id="isdatasheet">
-        <phrase id="fldcaption" value="Is This a Datasheet ?" />
+        <phrase id="fldcaption" value="CDD Required ?" />
         <phrase id="fldtagvalue1" value="1" />
         <phrase id="fldtagcaption1" value="Yes" />
         <phrase id="fldtagvalue2" value="0" />
         <phrase id="fldtagcaption2" value="No" />
-      </field>
-      <field id="nativefiles">
-        <phrase id="fldcaption" value="Application Native File Location" />
       </field>
       <field id="datasheetdate">
         <phrase id="fldcaption" value="datasheetdate" />
       </field>
       <field id="username">
         <phrase id="fldcaption" value="username" />
+      </field>
+      <field id="nativefiles">
+        <phrase id="fldcaption" value="Native File Location" />
       </field>
     </table>
     <table id="manufacturer">
@@ -824,17 +836,17 @@
         <phrase id="fldcaption" value="coo Id" />
       </field>
       <field id="countryname">
-        <phrase id="fldcaption" value="country Name" />
+        <phrase id="fldcaption" value="Country Name" />
       </field>
       <field id="countryisocode">
-        <phrase id="fldcaption" value="country Iso Code" />
+        <phrase id="fldcaption" value="Country ISO Code" />
       </field>
       <field id="username">
         <phrase id="fldcaption" value="username" />
       </field>
     </table>
     <table id="audittrail">
-      <phrase id="tblcaption" value="audittrail" />
+      <phrase id="tblcaption" value="Audit Trail" />
       <field id="id">
         <phrase id="fldcaption" value="id" />
       </field>
@@ -864,6 +876,61 @@
       </field>
       <field id="newvalue">
         <phrase id="fldcaption" value="Manufacturer Factory" />
+      </field>
+    </table>
+    <table id="users">
+      <phrase id="tblcaption" value="User Details" />
+      <field id="seqid">
+        <phrase id="fldcaption" value="seqid" />
+      </field>
+      <field id="username">
+        <phrase id="fldcaption" value="user Name" />
+      </field>
+      <field id="userloginid">
+        <phrase id="fldcaption" value="user Login Id" />
+      </field>
+      <field id="uemail">
+        <phrase id="fldcaption" value="u Email" />
+      </field>
+      <field id="ulevel">
+        <phrase id="fldcaption" value="u Level" />
+      </field>
+      <field id="upassword">
+        <phrase id="fldcaption" value="u Password" />
+      </field>
+      <field id="uprofile">
+        <phrase id="fldcaption" value="u Profile" />
+      </field>
+      <field id="ureportsto">
+        <phrase id="fldcaption" value="u Reports To" />
+      </field>
+      <field id="uactivated">
+        <phrase id="fldcaption" value="u Activated" />
+        <phrase id="fldtagvalue1" value="1" />
+        <phrase id="fldtagcaption1" value="Yes" />
+        <phrase id="fldtagvalue2" value="0" />
+        <phrase id="fldtagcaption2" value="No" />
+      </field>
+    </table>
+    <table id="userlevels">
+      <phrase id="tblcaption" value="User Levels" />
+      <field id="userlevelid">
+        <phrase id="fldcaption" value="userlevelid" />
+      </field>
+      <field id="userlevelname">
+        <phrase id="fldcaption" value="userlevelname" />
+      </field>
+    </table>
+    <table id="userlevelpermissions">
+      <phrase id="tblcaption" value="User Level Permissions" />
+      <field id="userlevelid">
+        <phrase id="fldcaption" value="User Level Id" />
+      </field>
+      <field id="_tablename">
+        <phrase id="fldcaption" value="Table Name" />
+      </field>
+      <field id="permission">
+        <phrase id="fldcaption" value="Permission" />
       </field>
     </table>
   </project>

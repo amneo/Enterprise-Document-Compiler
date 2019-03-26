@@ -55,7 +55,7 @@ class FileViewer
 			$width = THUMBNAIL_DEFAULT_WIDTH;
 			$height = THUMBNAIL_DEFAULT_HEIGHT;
 		}
-		$validRequest = TRUE;
+		$validRequest = FALSE;
 
 		// Get table object
 		$tbl = $this->getTable($table);
@@ -67,8 +67,39 @@ class FileViewer
 			if (is_callable($func))
 				$validRequest = $func($token, SessionTimeoutTime());
 			$fn = Decrypt($fn, $key); // File path is always encrypted
+			if ($validRequest && !isset($Security)) { // Set up Security from session
+				if (session_status() !== PHP_SESSION_ACTIVE)
+					session_start(); // Init session data
+				$Security = new AdvancedSecurity();
+			}
 		} else { // DO NOT support external request for file path
 			$fn = "";
+		}
+
+		// For external request, login user via JWT
+		if (!$validRequest && $tableName <> "") {
+
+			// Security
+			$Security = new AdvancedSecurity();
+			if (is_array($RequestSecurity)) { // Login user
+				$Security->loginUser(@$RequestSecurity["username"], @$RequestSecurity["userid"], @$RequestSecurity["parentuserid"], @$RequestSecurity["userlevelid"]);
+				$validRequest = TRUE;
+			}
+		}
+
+		// Check security
+		if ($validRequest && $tableName <> "") {
+			if ($Security->isLoggedIn())
+				$Security->TablePermission_Loading();
+			$Security->loadCurrentUserLevel($PROJECT_ID . $tableName);
+			if ($Security->isLoggedIn())
+				$Security->TablePermission_Loaded();
+			$validRequest = $Security->canList() || $Security->canView() || $Security->canDelete(); // With permission
+			if ($validRequest) {
+				$Security->UserID_Loading();
+				$Security->loadUserID();
+				$Security->UserID_Loaded();
+			}
 		}
 
 		// Reject invalid request

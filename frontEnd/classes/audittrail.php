@@ -250,7 +250,7 @@ class audittrail extends DbTable
 	}
 	public function getSqlOrderBy() // Order By
 	{
-		return ($this->SqlOrderBy <> "") ? $this->SqlOrderBy : "";
+		return ($this->SqlOrderBy <> "") ? $this->SqlOrderBy : "\"id\" DESC";
 	}
 	public function sqlOrderBy() // For backward compatibility
 	{
@@ -1059,6 +1059,47 @@ class audittrail extends DbTable
 		global $Language, $LANGUAGE_FOLDER, $PROJECT_ID;
 		if (!isset($Language))
 			$Language = new Language($LANGUAGE_FOLDER, Post("language", ""));
+		global $Security, $RequestSecurity;
+
+		// Check token first
+		$func = PROJECT_NAMESPACE . "CheckToken";
+		$validRequest = FALSE;
+		if (is_callable($func) && Post(TOKEN_NAME) !== NULL) {
+			$validRequest = $func(Post(TOKEN_NAME), SessionTimeoutTime());
+			if ($validRequest) {
+				if (!isset($Security)) {
+					if (session_status() !== PHP_SESSION_ACTIVE)
+						session_start(); // Init session data
+					$Security = new AdvancedSecurity();
+					if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
+					$Security->loadCurrentUserLevel($PROJECT_ID . $this->TableName);
+					if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
+					$validRequest = $Security->canList(); // List permission
+					if ($validRequest) {
+						$Security->UserID_Loading();
+						$Security->loadUserID();
+						$Security->UserID_Loaded();
+					}
+				}
+			}
+		} else {
+
+			// User profile
+			$UserProfile = new UserProfile();
+
+			// Security
+			$Security = new AdvancedSecurity();
+			if (is_array($RequestSecurity)) // Login user for API request
+				$Security->loginUser(@$RequestSecurity["username"], @$RequestSecurity["userid"], @$RequestSecurity["parentuserid"], @$RequestSecurity["userlevelid"]);
+			$Security->TablePermission_Loading();
+			$Security->loadCurrentUserLevel(CurrentProjectID() . $this->TableName);
+			$Security->TablePermission_Loaded();
+			$validRequest = $Security->canList(); // List permission
+		}
+
+		// Reject invalid request
+		if (!$validRequest)
+			return FALSE;
 
 		// Load lookup parameters
 		$distinct = ConvertToBool(Post("distinct"));
@@ -1158,7 +1199,7 @@ class audittrail extends DbTable
 	public function writeAuditTrailDummy($typ)
 	{
 		$table = 'audittrail';
-		$usr = CurrentUserName();
+		$usr = CurrentUserID();
 		WriteAuditTrail("log", DbCurrentDateTime(), ScriptName(), $usr, $typ, $table, "", "", "", "");
 	}
 
@@ -1179,7 +1220,7 @@ class audittrail extends DbTable
 		// Write Audit Trail
 		$dt = DbCurrentDateTime();
 		$id = ScriptName();
-		$usr = CurrentUserName();
+		$usr = CurrentUserID();
 		foreach (array_keys($rs) as $fldname) {
 			if (array_key_exists($fldname, $this->fields) && $this->fields[$fldname]->DataType <> DATATYPE_BLOB) { // Ignore BLOB fields
 				if ($this->fields[$fldname]->HtmlTag == "PASSWORD") {
@@ -1216,7 +1257,7 @@ class audittrail extends DbTable
 		// Write Audit Trail
 		$dt = DbCurrentDateTime();
 		$id = ScriptName();
-		$usr = CurrentUserName();
+		$usr = CurrentUserID();
 		foreach (array_keys($rsnew) as $fldname) {
 			if (array_key_exists($fldname, $this->fields) && array_key_exists($fldname, $rsold) && $this->fields[$fldname]->DataType <> DATATYPE_BLOB) { // Ignore BLOB fields
 				if ($this->fields[$fldname]->DataType == DATATYPE_DATE) { // DateTime field
@@ -1266,7 +1307,7 @@ class audittrail extends DbTable
 		// Write Audit Trail
 		$dt = DbCurrentDateTime();
 		$id = ScriptName();
-		$curUser = CurrentUserName();
+		$curUser = CurrentUserID();
 		foreach (array_keys($rs) as $fldname) {
 			if (array_key_exists($fldname, $this->fields) && $this->fields[$fldname]->DataType <> DATATYPE_BLOB) { // Ignore BLOB fields
 				if ($this->fields[$fldname]->HtmlTag == "PASSWORD") {

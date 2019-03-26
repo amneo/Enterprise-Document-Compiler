@@ -23,6 +23,7 @@ $countryOfOrigin_delete = new countryOfOrigin_delete();
 $countryOfOrigin_delete->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)

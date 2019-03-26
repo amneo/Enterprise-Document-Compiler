@@ -23,6 +23,7 @@ $datasheets_list = new datasheets_list();
 $datasheets_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -86,10 +87,10 @@ fdatasheetslist.validate = function() {
 			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->cddno->caption(), $datasheets->cddno->RequiredErrorMessage)) ?>");
 		<?php } ?>
-		<?php if ($datasheets_list->duration->Required) { ?>
-			elm = this.getElements("x" + infix + "_duration");
+		<?php if ($datasheets_list->thirdPartyNo->Required) { ?>
+			elm = this.getElements("x" + infix + "_thirdPartyNo");
 			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
-				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->duration->caption(), $datasheets->duration->RequiredErrorMessage)) ?>");
+				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->thirdPartyNo->caption(), $datasheets->thirdPartyNo->RequiredErrorMessage)) ?>");
 		<?php } ?>
 		<?php if ($datasheets_list->expirydt->Required) { ?>
 			elm = this.getElements("x" + infix + "_expirydt");
@@ -99,11 +100,6 @@ fdatasheetslist.validate = function() {
 			elm = this.getElements("x" + infix + "_expirydt");
 			if (elm && !ew.checkDate(elm.value))
 				return this.onError(elm, "<?php echo JsEncode($datasheets->expirydt->errorMessage()) ?>");
-		<?php if ($datasheets_list->highlighted->Required) { ?>
-			elm = this.getElements("x" + infix + "_highlighted");
-			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
-				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->highlighted->caption(), $datasheets->highlighted->RequiredErrorMessage)) ?>");
-		<?php } ?>
 		<?php if ($datasheets_list->coo->Required) { ?>
 			elm = this.getElements("x" + infix + "_coo");
 			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -150,9 +146,8 @@ fdatasheetslist.emptyRow = function(infix) {
 	if (ew.valueChanged(fobj, infix, "tittle", false)) return false;
 	if (ew.valueChanged(fobj, infix, "cddissue", false)) return false;
 	if (ew.valueChanged(fobj, infix, "cddno", false)) return false;
-	if (ew.valueChanged(fobj, infix, "duration", false)) return false;
+	if (ew.valueChanged(fobj, infix, "thirdPartyNo", false)) return false;
 	if (ew.valueChanged(fobj, infix, "expirydt", false)) return false;
-	if (ew.valueChanged(fobj, infix, "highlighted", true)) return false;
 	if (ew.valueChanged(fobj, infix, "coo", false)) return false;
 	if (ew.valueChanged(fobj, infix, "hssCode", false)) return false;
 	if (ew.valueChanged(fobj, infix, "systrade", false)) return false;
@@ -175,10 +170,6 @@ fdatasheetslist.validateRequired = <?php echo json_encode(CLIENT_VALIDATE) ?>;
 fdatasheetslist.lists["x_manufacturer"] = <?php echo $datasheets_list->manufacturer->Lookup->toClientList() ?>;
 fdatasheetslist.lists["x_manufacturer"].options = <?php echo JsonEncode($datasheets_list->manufacturer->lookupOptions()) ?>;
 fdatasheetslist.autoSuggests["x_manufacturer"] = <?php echo json_encode(["data" => "ajax=autosuggest"]) ?>;
-fdatasheetslist.lists["x_duration"] = <?php echo $datasheets_list->duration->Lookup->toClientList() ?>;
-fdatasheetslist.lists["x_duration"].options = <?php echo JsonEncode($datasheets_list->duration->options(FALSE, TRUE)) ?>;
-fdatasheetslist.lists["x_highlighted"] = <?php echo $datasheets_list->highlighted->Lookup->toClientList() ?>;
-fdatasheetslist.lists["x_highlighted"].options = <?php echo JsonEncode($datasheets_list->highlighted->options(FALSE, TRUE)) ?>;
 fdatasheetslist.lists["x_coo"] = <?php echo $datasheets_list->coo->Lookup->toClientList() ?>;
 fdatasheetslist.lists["x_coo"].options = <?php echo JsonEncode($datasheets_list->coo->lookupOptions()) ?>;
 fdatasheetslist.autoSuggests["x_coo"] = <?php echo json_encode(["data" => "ajax=autosuggest"]) ?>;
@@ -218,6 +209,7 @@ fdatasheetslistsrch.filterList = <?php echo $datasheets_list->getFilterList() ?>
 <?php
 $datasheets_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$datasheets->isExport() && !$datasheets->CurrentAction) { ?>
 <form name="fdatasheetslistsrch" id="fdatasheetslistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <?php $searchPanelClass = ($datasheets_list->SearchWhere <> "") ? " show" : " show"; ?>
@@ -244,6 +236,7 @@ $datasheets_list->renderOtherOptions();
 	</div>
 </div>
 </form>
+<?php } ?>
 <?php } ?>
 <?php $datasheets_list->showPageHeader(); ?>
 <?php
@@ -313,27 +306,27 @@ $datasheets_list->ListOptions->render("header", "left");
 ?>
 <?php if ($datasheets->partno->Visible) { // partno ?>
 	<?php if ($datasheets->sortUrl($datasheets->partno) == "") { ?>
-		<th data-name="partno" class="<?php echo $datasheets->partno->headerCellClass() ?>" style="width: 5px;"><div id="elh_datasheets_partno" class="datasheets_partno"><div class="ew-table-header-caption"><?php echo $datasheets->partno->caption() ?></div></div></th>
+		<th data-name="partno" class="<?php echo $datasheets->partno->headerCellClass() ?>" style="width: 10px;"><div id="elh_datasheets_partno" class="datasheets_partno"><div class="ew-table-header-caption"><?php echo $datasheets->partno->caption() ?></div></div></th>
 	<?php } else { ?>
-		<th data-name="partno" class="<?php echo $datasheets->partno->headerCellClass() ?>" style="width: 5px;"><div class="ew-pointer" onclick="ew.sort(event,'<?php echo $datasheets->SortUrl($datasheets->partno) ?>',2);"><div id="elh_datasheets_partno" class="datasheets_partno">
+		<th data-name="partno" class="<?php echo $datasheets->partno->headerCellClass() ?>" style="width: 10px;"><div class="ew-pointer" onclick="ew.sort(event,'<?php echo $datasheets->SortUrl($datasheets->partno) ?>',2);"><div id="elh_datasheets_partno" class="datasheets_partno">
 			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $datasheets->partno->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($datasheets->partno->getSort() == "ASC") { ?><i class="fa fa-sort-up"></i><?php } elseif ($datasheets->partno->getSort() == "DESC") { ?><i class="fa fa-sort-down"></i><?php } ?></span></div>
 		</div></div></th>
 	<?php } ?>
 <?php } ?>
 <?php if ($datasheets->manufacturer->Visible) { // manufacturer ?>
 	<?php if ($datasheets->sortUrl($datasheets->manufacturer) == "") { ?>
-		<th data-name="manufacturer" class="<?php echo $datasheets->manufacturer->headerCellClass() ?>" style="width: 5px;"><div id="elh_datasheets_manufacturer" class="datasheets_manufacturer"><div class="ew-table-header-caption"><?php echo $datasheets->manufacturer->caption() ?></div></div></th>
+		<th data-name="manufacturer" class="<?php echo $datasheets->manufacturer->headerCellClass() ?>" style="width: 10px;"><div id="elh_datasheets_manufacturer" class="datasheets_manufacturer"><div class="ew-table-header-caption"><?php echo $datasheets->manufacturer->caption() ?></div></div></th>
 	<?php } else { ?>
-		<th data-name="manufacturer" class="<?php echo $datasheets->manufacturer->headerCellClass() ?>" style="width: 5px;"><div class="ew-pointer" onclick="ew.sort(event,'<?php echo $datasheets->SortUrl($datasheets->manufacturer) ?>',2);"><div id="elh_datasheets_manufacturer" class="datasheets_manufacturer">
+		<th data-name="manufacturer" class="<?php echo $datasheets->manufacturer->headerCellClass() ?>" style="width: 10px;"><div class="ew-pointer" onclick="ew.sort(event,'<?php echo $datasheets->SortUrl($datasheets->manufacturer) ?>',2);"><div id="elh_datasheets_manufacturer" class="datasheets_manufacturer">
 			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $datasheets->manufacturer->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($datasheets->manufacturer->getSort() == "ASC") { ?><i class="fa fa-sort-up"></i><?php } elseif ($datasheets->manufacturer->getSort() == "DESC") { ?><i class="fa fa-sort-down"></i><?php } ?></span></div>
 		</div></div></th>
 	<?php } ?>
 <?php } ?>
 <?php if ($datasheets->tittle->Visible) { // tittle ?>
 	<?php if ($datasheets->sortUrl($datasheets->tittle) == "") { ?>
-		<th data-name="tittle" class="<?php echo $datasheets->tittle->headerCellClass() ?>" style="width: 20px;"><div id="elh_datasheets_tittle" class="datasheets_tittle"><div class="ew-table-header-caption"><?php echo $datasheets->tittle->caption() ?></div></div></th>
+		<th data-name="tittle" class="<?php echo $datasheets->tittle->headerCellClass() ?>"><div id="elh_datasheets_tittle" class="datasheets_tittle"><div class="ew-table-header-caption"><?php echo $datasheets->tittle->caption() ?></div></div></th>
 	<?php } else { ?>
-		<th data-name="tittle" class="<?php echo $datasheets->tittle->headerCellClass() ?>" style="width: 20px;"><div class="ew-pointer" onclick="ew.sort(event,'<?php echo $datasheets->SortUrl($datasheets->tittle) ?>',2);"><div id="elh_datasheets_tittle" class="datasheets_tittle">
+		<th data-name="tittle" class="<?php echo $datasheets->tittle->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event,'<?php echo $datasheets->SortUrl($datasheets->tittle) ?>',2);"><div id="elh_datasheets_tittle" class="datasheets_tittle">
 			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $datasheets->tittle->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($datasheets->tittle->getSort() == "ASC") { ?><i class="fa fa-sort-up"></i><?php } elseif ($datasheets->tittle->getSort() == "DESC") { ?><i class="fa fa-sort-down"></i><?php } ?></span></div>
 		</div></div></th>
 	<?php } ?>
@@ -356,12 +349,12 @@ $datasheets_list->ListOptions->render("header", "left");
 		</div></div></th>
 	<?php } ?>
 <?php } ?>
-<?php if ($datasheets->duration->Visible) { // duration ?>
-	<?php if ($datasheets->sortUrl($datasheets->duration) == "") { ?>
-		<th data-name="duration" class="<?php echo $datasheets->duration->headerCellClass() ?>" style="width: 10px;"><div id="elh_datasheets_duration" class="datasheets_duration"><div class="ew-table-header-caption"><?php echo $datasheets->duration->caption() ?></div></div></th>
+<?php if ($datasheets->thirdPartyNo->Visible) { // thirdPartyNo ?>
+	<?php if ($datasheets->sortUrl($datasheets->thirdPartyNo) == "") { ?>
+		<th data-name="thirdPartyNo" class="<?php echo $datasheets->thirdPartyNo->headerCellClass() ?>" style="width: 5px;"><div id="elh_datasheets_thirdPartyNo" class="datasheets_thirdPartyNo"><div class="ew-table-header-caption"><?php echo $datasheets->thirdPartyNo->caption() ?></div></div></th>
 	<?php } else { ?>
-		<th data-name="duration" class="<?php echo $datasheets->duration->headerCellClass() ?>" style="width: 10px;"><div class="ew-pointer" onclick="ew.sort(event,'<?php echo $datasheets->SortUrl($datasheets->duration) ?>',2);"><div id="elh_datasheets_duration" class="datasheets_duration">
-			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $datasheets->duration->caption() ?></span><span class="ew-table-header-sort"><?php if ($datasheets->duration->getSort() == "ASC") { ?><i class="fa fa-sort-up"></i><?php } elseif ($datasheets->duration->getSort() == "DESC") { ?><i class="fa fa-sort-down"></i><?php } ?></span></div>
+		<th data-name="thirdPartyNo" class="<?php echo $datasheets->thirdPartyNo->headerCellClass() ?>" style="width: 5px;"><div class="ew-pointer" onclick="ew.sort(event,'<?php echo $datasheets->SortUrl($datasheets->thirdPartyNo) ?>',2);"><div id="elh_datasheets_thirdPartyNo" class="datasheets_thirdPartyNo">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $datasheets->thirdPartyNo->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($datasheets->thirdPartyNo->getSort() == "ASC") { ?><i class="fa fa-sort-up"></i><?php } elseif ($datasheets->thirdPartyNo->getSort() == "DESC") { ?><i class="fa fa-sort-down"></i><?php } ?></span></div>
 		</div></div></th>
 	<?php } ?>
 <?php } ?>
@@ -370,16 +363,7 @@ $datasheets_list->ListOptions->render("header", "left");
 		<th data-name="expirydt" class="<?php echo $datasheets->expirydt->headerCellClass() ?>" style="width: 10px;"><div id="elh_datasheets_expirydt" class="datasheets_expirydt"><div class="ew-table-header-caption"><?php echo $datasheets->expirydt->caption() ?></div></div></th>
 	<?php } else { ?>
 		<th data-name="expirydt" class="<?php echo $datasheets->expirydt->headerCellClass() ?>" style="width: 10px;"><div class="ew-pointer" onclick="ew.sort(event,'<?php echo $datasheets->SortUrl($datasheets->expirydt) ?>',2);"><div id="elh_datasheets_expirydt" class="datasheets_expirydt">
-			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $datasheets->expirydt->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($datasheets->expirydt->getSort() == "ASC") { ?><i class="fa fa-sort-up"></i><?php } elseif ($datasheets->expirydt->getSort() == "DESC") { ?><i class="fa fa-sort-down"></i><?php } ?></span></div>
-		</div></div></th>
-	<?php } ?>
-<?php } ?>
-<?php if ($datasheets->highlighted->Visible) { // highlighted ?>
-	<?php if ($datasheets->sortUrl($datasheets->highlighted) == "") { ?>
-		<th data-name="highlighted" class="<?php echo $datasheets->highlighted->headerCellClass() ?>" style="width: 10px;"><div id="elh_datasheets_highlighted" class="datasheets_highlighted"><div class="ew-table-header-caption"><?php echo $datasheets->highlighted->caption() ?></div></div></th>
-	<?php } else { ?>
-		<th data-name="highlighted" class="<?php echo $datasheets->highlighted->headerCellClass() ?>" style="width: 10px;"><div class="ew-pointer" onclick="ew.sort(event,'<?php echo $datasheets->SortUrl($datasheets->highlighted) ?>',2);"><div id="elh_datasheets_highlighted" class="datasheets_highlighted">
-			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $datasheets->highlighted->caption() ?></span><span class="ew-table-header-sort"><?php if ($datasheets->highlighted->getSort() == "ASC") { ?><i class="fa fa-sort-up"></i><?php } elseif ($datasheets->highlighted->getSort() == "DESC") { ?><i class="fa fa-sort-down"></i><?php } ?></span></div>
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $datasheets->expirydt->caption() ?></span><span class="ew-table-header-sort"><?php if ($datasheets->expirydt->getSort() == "ASC") { ?><i class="fa fa-sort-up"></i><?php } elseif ($datasheets->expirydt->getSort() == "DESC") { ?><i class="fa fa-sort-down"></i><?php } ?></span></div>
 		</div></div></th>
 	<?php } ?>
 <?php } ?>
@@ -394,36 +378,36 @@ $datasheets_list->ListOptions->render("header", "left");
 <?php } ?>
 <?php if ($datasheets->hssCode->Visible) { // hssCode ?>
 	<?php if ($datasheets->sortUrl($datasheets->hssCode) == "") { ?>
-		<th data-name="hssCode" class="<?php echo $datasheets->hssCode->headerCellClass() ?>" style="width: 5px;"><div id="elh_datasheets_hssCode" class="datasheets_hssCode"><div class="ew-table-header-caption"><?php echo $datasheets->hssCode->caption() ?></div></div></th>
+		<th data-name="hssCode" class="<?php echo $datasheets->hssCode->headerCellClass() ?>" style="width: 10px;"><div id="elh_datasheets_hssCode" class="datasheets_hssCode"><div class="ew-table-header-caption"><?php echo $datasheets->hssCode->caption() ?></div></div></th>
 	<?php } else { ?>
-		<th data-name="hssCode" class="<?php echo $datasheets->hssCode->headerCellClass() ?>" style="width: 5px;"><div class="ew-pointer" onclick="ew.sort(event,'<?php echo $datasheets->SortUrl($datasheets->hssCode) ?>',2);"><div id="elh_datasheets_hssCode" class="datasheets_hssCode">
+		<th data-name="hssCode" class="<?php echo $datasheets->hssCode->headerCellClass() ?>" style="width: 10px;"><div class="ew-pointer" onclick="ew.sort(event,'<?php echo $datasheets->SortUrl($datasheets->hssCode) ?>',2);"><div id="elh_datasheets_hssCode" class="datasheets_hssCode">
 			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $datasheets->hssCode->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($datasheets->hssCode->getSort() == "ASC") { ?><i class="fa fa-sort-up"></i><?php } elseif ($datasheets->hssCode->getSort() == "DESC") { ?><i class="fa fa-sort-down"></i><?php } ?></span></div>
 		</div></div></th>
 	<?php } ?>
 <?php } ?>
 <?php if ($datasheets->systrade->Visible) { // systrade ?>
 	<?php if ($datasheets->sortUrl($datasheets->systrade) == "") { ?>
-		<th data-name="systrade" class="<?php echo $datasheets->systrade->headerCellClass() ?>" style="width: 5px;"><div id="elh_datasheets_systrade" class="datasheets_systrade"><div class="ew-table-header-caption"><?php echo $datasheets->systrade->caption() ?></div></div></th>
+		<th data-name="systrade" class="<?php echo $datasheets->systrade->headerCellClass() ?>" style="width: 10px;"><div id="elh_datasheets_systrade" class="datasheets_systrade"><div class="ew-table-header-caption"><?php echo $datasheets->systrade->caption() ?></div></div></th>
 	<?php } else { ?>
-		<th data-name="systrade" class="<?php echo $datasheets->systrade->headerCellClass() ?>" style="width: 5px;"><div class="ew-pointer" onclick="ew.sort(event,'<?php echo $datasheets->SortUrl($datasheets->systrade) ?>',2);"><div id="elh_datasheets_systrade" class="datasheets_systrade">
+		<th data-name="systrade" class="<?php echo $datasheets->systrade->headerCellClass() ?>" style="width: 10px;"><div class="ew-pointer" onclick="ew.sort(event,'<?php echo $datasheets->SortUrl($datasheets->systrade) ?>',2);"><div id="elh_datasheets_systrade" class="datasheets_systrade">
 			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $datasheets->systrade->caption() ?></span><span class="ew-table-header-sort"><?php if ($datasheets->systrade->getSort() == "ASC") { ?><i class="fa fa-sort-up"></i><?php } elseif ($datasheets->systrade->getSort() == "DESC") { ?><i class="fa fa-sort-down"></i><?php } ?></span></div>
 		</div></div></th>
 	<?php } ?>
 <?php } ?>
 <?php if ($datasheets->isdatasheet->Visible) { // isdatasheet ?>
 	<?php if ($datasheets->sortUrl($datasheets->isdatasheet) == "") { ?>
-		<th data-name="isdatasheet" class="<?php echo $datasheets->isdatasheet->headerCellClass() ?>" style="width: 5px;"><div id="elh_datasheets_isdatasheet" class="datasheets_isdatasheet"><div class="ew-table-header-caption"><?php echo $datasheets->isdatasheet->caption() ?></div></div></th>
+		<th data-name="isdatasheet" class="<?php echo $datasheets->isdatasheet->headerCellClass() ?>" style="width: 10px;"><div id="elh_datasheets_isdatasheet" class="datasheets_isdatasheet"><div class="ew-table-header-caption"><?php echo $datasheets->isdatasheet->caption() ?></div></div></th>
 	<?php } else { ?>
-		<th data-name="isdatasheet" class="<?php echo $datasheets->isdatasheet->headerCellClass() ?>" style="width: 5px;"><div class="ew-pointer" onclick="ew.sort(event,'<?php echo $datasheets->SortUrl($datasheets->isdatasheet) ?>',2);"><div id="elh_datasheets_isdatasheet" class="datasheets_isdatasheet">
+		<th data-name="isdatasheet" class="<?php echo $datasheets->isdatasheet->headerCellClass() ?>" style="width: 10px;"><div class="ew-pointer" onclick="ew.sort(event,'<?php echo $datasheets->SortUrl($datasheets->isdatasheet) ?>',2);"><div id="elh_datasheets_isdatasheet" class="datasheets_isdatasheet">
 			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $datasheets->isdatasheet->caption() ?></span><span class="ew-table-header-sort"><?php if ($datasheets->isdatasheet->getSort() == "ASC") { ?><i class="fa fa-sort-up"></i><?php } elseif ($datasheets->isdatasheet->getSort() == "DESC") { ?><i class="fa fa-sort-down"></i><?php } ?></span></div>
 		</div></div></th>
 	<?php } ?>
 <?php } ?>
 <?php if ($datasheets->nativeFiles->Visible) { // nativeFiles ?>
 	<?php if ($datasheets->sortUrl($datasheets->nativeFiles) == "") { ?>
-		<th data-name="nativeFiles" class="<?php echo $datasheets->nativeFiles->headerCellClass() ?>"><div id="elh_datasheets_nativeFiles" class="datasheets_nativeFiles"><div class="ew-table-header-caption"><?php echo $datasheets->nativeFiles->caption() ?></div></div></th>
+		<th data-name="nativeFiles" class="<?php echo $datasheets->nativeFiles->headerCellClass() ?>" style="width: 10px;"><div id="elh_datasheets_nativeFiles" class="datasheets_nativeFiles"><div class="ew-table-header-caption"><?php echo $datasheets->nativeFiles->caption() ?></div></div></th>
 	<?php } else { ?>
-		<th data-name="nativeFiles" class="<?php echo $datasheets->nativeFiles->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event,'<?php echo $datasheets->SortUrl($datasheets->nativeFiles) ?>',2);"><div id="elh_datasheets_nativeFiles" class="datasheets_nativeFiles">
+		<th data-name="nativeFiles" class="<?php echo $datasheets->nativeFiles->headerCellClass() ?>" style="width: 10px;"><div class="ew-pointer" onclick="ew.sort(event,'<?php echo $datasheets->SortUrl($datasheets->nativeFiles) ?>',2);"><div id="elh_datasheets_nativeFiles" class="datasheets_nativeFiles">
 			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $datasheets->nativeFiles->caption() ?></span><span class="ew-table-header-sort"><?php if ($datasheets->nativeFiles->getSort() == "ASC") { ?><i class="fa fa-sort-up"></i><?php } elseif ($datasheets->nativeFiles->getSort() == "DESC") { ?><i class="fa fa-sort-down"></i><?php } ?></span></div>
 		</div></div></th>
 	<?php } ?>
@@ -486,7 +470,9 @@ $datasheets->manufacturer->EditAttrs["onchange"] = "";
 		<input type="text" class="form-control" name="sv_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" id="sv_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" value="<?php echo RemoveHtml($datasheets->manufacturer->EditValue) ?>" size="30" placeholder="<?php echo HtmlEncode($datasheets->manufacturer->getPlaceHolder()) ?>" data-placeholder="<?php echo HtmlEncode($datasheets->manufacturer->getPlaceHolder()) ?>"<?php echo $datasheets->manufacturer->editAttributes() ?>>
 		<div class="input-group-append">
 			<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($datasheets->manufacturer->caption()), $Language->phrase("LookupLink", TRUE))) ?>" onclick="ew.modalLookupShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_manufacturer',m:0,n:10,srch:false});" class="ew-lookup-btn btn btn-default"<?php echo (($datasheets->manufacturer->ReadOnly || $datasheets->manufacturer->Disabled) ? " disabled" : "")?>><i class="fa fa-search ew-icon"></i></button>
+<?php if (AllowAdd(CurrentProjectID() . "manufacturer") && !$datasheets->manufacturer->ReadOnly) { ?>
 <button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $datasheets->manufacturer->caption() ?>" data-title="<?php echo $datasheets->manufacturer->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_manufacturer',url:'manufactureraddopt.php'});"><i class="fa fa-plus ew-icon"></i></button>
+<?php } ?>
 		</div>
 	</div>
 </span>
@@ -528,16 +514,12 @@ ew.createDateTimePicker("fdatasheetslist", "x<?php echo $datasheets_list->RowInd
 <input type="hidden" data-table="datasheets" data-field="x_cddno" name="o<?php echo $datasheets_list->RowIndex ?>_cddno" id="o<?php echo $datasheets_list->RowIndex ?>_cddno" value="<?php echo HtmlEncode($datasheets->cddno->OldValue) ?>">
 </td>
 	<?php } ?>
-	<?php if ($datasheets->duration->Visible) { // duration ?>
-		<td data-name="duration">
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_duration" class="form-group datasheets_duration">
-<div class="input-group">
-	<select class="custom-select ew-custom-select" data-table="datasheets" data-field="x_duration" data-value-separator="<?php echo $datasheets->duration->displayValueSeparatorAttribute() ?>" id="x<?php echo $datasheets_list->RowIndex ?>_duration" name="x<?php echo $datasheets_list->RowIndex ?>_duration"<?php echo $datasheets->duration->editAttributes() ?>>
-		<?php echo $datasheets->duration->selectOptionListHtml("x<?php echo $datasheets_list->RowIndex ?>_duration") ?>
-	</select>
-</div>
+	<?php if ($datasheets->thirdPartyNo->Visible) { // thirdPartyNo ?>
+		<td data-name="thirdPartyNo">
+<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_thirdPartyNo" class="form-group datasheets_thirdPartyNo">
+<input type="text" data-table="datasheets" data-field="x_thirdPartyNo" name="x<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" id="x<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" size="30" placeholder="<?php echo HtmlEncode($datasheets->thirdPartyNo->getPlaceHolder()) ?>" value="<?php echo $datasheets->thirdPartyNo->EditValue ?>"<?php echo $datasheets->thirdPartyNo->editAttributes() ?>>
 </span>
-<input type="hidden" data-table="datasheets" data-field="x_duration" name="o<?php echo $datasheets_list->RowIndex ?>_duration" id="o<?php echo $datasheets_list->RowIndex ?>_duration" value="<?php echo HtmlEncode($datasheets->duration->OldValue) ?>">
+<input type="hidden" data-table="datasheets" data-field="x_thirdPartyNo" name="o<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" id="o<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" value="<?php echo HtmlEncode($datasheets->thirdPartyNo->OldValue) ?>">
 </td>
 	<?php } ?>
 	<?php if ($datasheets->expirydt->Visible) { // expirydt ?>
@@ -553,17 +535,6 @@ ew.createDateTimePicker("fdatasheetslist", "x<?php echo $datasheets_list->RowInd
 <input type="hidden" data-table="datasheets" data-field="x_expirydt" name="o<?php echo $datasheets_list->RowIndex ?>_expirydt" id="o<?php echo $datasheets_list->RowIndex ?>_expirydt" value="<?php echo HtmlEncode($datasheets->expirydt->OldValue) ?>">
 </td>
 	<?php } ?>
-	<?php if ($datasheets->highlighted->Visible) { // highlighted ?>
-		<td data-name="highlighted">
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_highlighted" class="form-group datasheets_highlighted">
-<div id="tp_x<?php echo $datasheets_list->RowIndex ?>_highlighted" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_highlighted" data-value-separator="<?php echo $datasheets->highlighted->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_highlighted" id="x<?php echo $datasheets_list->RowIndex ?>_highlighted" value="{value}"<?php echo $datasheets->highlighted->editAttributes() ?>></div>
-<div id="dsl_x<?php echo $datasheets_list->RowIndex ?>_highlighted" data-repeatcolumn="5" class="ew-item-list d-none"><div>
-<?php echo $datasheets->highlighted->radioButtonListHtml(FALSE, "x{$datasheets_list->RowIndex}_highlighted") ?>
-</div></div>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_highlighted" name="o<?php echo $datasheets_list->RowIndex ?>_highlighted" id="o<?php echo $datasheets_list->RowIndex ?>_highlighted" value="<?php echo HtmlEncode($datasheets->highlighted->OldValue) ?>">
-</td>
-	<?php } ?>
 	<?php if ($datasheets->coo->Visible) { // coo ?>
 		<td data-name="coo">
 <span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_coo" class="form-group datasheets_coo">
@@ -575,7 +546,9 @@ $datasheets->coo->EditAttrs["onchange"] = "";
 <span id="as_x<?php echo $datasheets_list->RowIndex ?>_coo" class="text-nowrap" style="z-index: <?php echo (9000 - $datasheets_list->RowCnt * 10) ?>">
 	<div class="input-group">
 		<input type="text" class="form-control" name="sv_x<?php echo $datasheets_list->RowIndex ?>_coo" id="sv_x<?php echo $datasheets_list->RowIndex ?>_coo" value="<?php echo RemoveHtml($datasheets->coo->EditValue) ?>" size="30" placeholder="<?php echo HtmlEncode($datasheets->coo->getPlaceHolder()) ?>" data-placeholder="<?php echo HtmlEncode($datasheets->coo->getPlaceHolder()) ?>"<?php echo $datasheets->coo->editAttributes() ?>>
+<?php if (AllowAdd(CurrentProjectID() . "countryOfOrigin") && !$datasheets->coo->ReadOnly) { ?>
 <div class="input-group-append"><button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x<?php echo $datasheets_list->RowIndex ?>_coo" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $datasheets->coo->caption() ?>" data-title="<?php echo $datasheets->coo->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_coo',url:'countryOfOriginaddopt.php'});"><i class="fa fa-plus ew-icon"></i></button></div>
+<?php } ?>
 	</div>
 </span>
 <input type="hidden" data-table="datasheets" data-field="x_coo" data-value-separator="<?php echo $datasheets->coo->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_coo" id="x<?php echo $datasheets_list->RowIndex ?>_coo" value="<?php echo HtmlEncode($datasheets->coo->CurrentValue) ?>"<?php echo $wrkonchange ?>>
@@ -803,7 +776,9 @@ $datasheets->manufacturer->EditAttrs["onchange"] = "";
 		<input type="text" class="form-control" name="sv_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" id="sv_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" value="<?php echo RemoveHtml($datasheets->manufacturer->EditValue) ?>" size="30" placeholder="<?php echo HtmlEncode($datasheets->manufacturer->getPlaceHolder()) ?>" data-placeholder="<?php echo HtmlEncode($datasheets->manufacturer->getPlaceHolder()) ?>"<?php echo $datasheets->manufacturer->editAttributes() ?>>
 		<div class="input-group-append">
 			<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($datasheets->manufacturer->caption()), $Language->phrase("LookupLink", TRUE))) ?>" onclick="ew.modalLookupShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_manufacturer',m:0,n:10,srch:false});" class="ew-lookup-btn btn btn-default"<?php echo (($datasheets->manufacturer->ReadOnly || $datasheets->manufacturer->Disabled) ? " disabled" : "")?>><i class="fa fa-search ew-icon"></i></button>
+<?php if (AllowAdd(CurrentProjectID() . "manufacturer") && !$datasheets->manufacturer->ReadOnly) { ?>
 <button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $datasheets->manufacturer->caption() ?>" data-title="<?php echo $datasheets->manufacturer->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_manufacturer',url:'manufactureraddopt.php'});"><i class="fa fa-plus ew-icon"></i></button>
+<?php } ?>
 		</div>
 	</div>
 </span>
@@ -817,10 +792,28 @@ fdatasheetslist.createAutoSuggest({"id":"x<?php echo $datasheets_list->RowIndex 
 <?php } ?>
 <?php if ($datasheets->RowType == ROWTYPE_EDIT) { // Edit record ?>
 <span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_manufacturer" class="form-group datasheets_manufacturer">
-<span<?php echo $datasheets->manufacturer->viewAttributes() ?>>
-<input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->manufacturer->EditValue) ?>"></span>
+<?php
+$wrkonchange = "" . trim(@$datasheets->manufacturer->EditAttrs["onchange"]);
+if (trim($wrkonchange) <> "") $wrkonchange = " onchange=\"" . JsEncode($wrkonchange) . "\"";
+$datasheets->manufacturer->EditAttrs["onchange"] = "";
+?>
+<span id="as_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" class="text-nowrap" style="z-index: <?php echo (9000 - $datasheets_list->RowCnt * 10) ?>">
+	<div class="input-group mb-3">
+		<input type="text" class="form-control" name="sv_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" id="sv_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" value="<?php echo RemoveHtml($datasheets->manufacturer->EditValue) ?>" size="30" placeholder="<?php echo HtmlEncode($datasheets->manufacturer->getPlaceHolder()) ?>" data-placeholder="<?php echo HtmlEncode($datasheets->manufacturer->getPlaceHolder()) ?>"<?php echo $datasheets->manufacturer->editAttributes() ?>>
+		<div class="input-group-append">
+			<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($datasheets->manufacturer->caption()), $Language->phrase("LookupLink", TRUE))) ?>" onclick="ew.modalLookupShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_manufacturer',m:0,n:10,srch:false});" class="ew-lookup-btn btn btn-default"<?php echo (($datasheets->manufacturer->ReadOnly || $datasheets->manufacturer->Disabled) ? " disabled" : "")?>><i class="fa fa-search ew-icon"></i></button>
+<?php if (AllowAdd(CurrentProjectID() . "manufacturer") && !$datasheets->manufacturer->ReadOnly) { ?>
+<button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $datasheets->manufacturer->caption() ?>" data-title="<?php echo $datasheets->manufacturer->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_manufacturer',url:'manufactureraddopt.php'});"><i class="fa fa-plus ew-icon"></i></button>
+<?php } ?>
+		</div>
+	</div>
 </span>
-<input type="hidden" data-table="datasheets" data-field="x_manufacturer" name="x<?php echo $datasheets_list->RowIndex ?>_manufacturer" id="x<?php echo $datasheets_list->RowIndex ?>_manufacturer" value="<?php echo HtmlEncode($datasheets->manufacturer->CurrentValue) ?>">
+<input type="hidden" data-table="datasheets" data-field="x_manufacturer" data-multiple="0" data-lookup="1" data-value-separator="<?php echo $datasheets->manufacturer->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_manufacturer" id="x<?php echo $datasheets_list->RowIndex ?>_manufacturer" value="<?php echo HtmlEncode($datasheets->manufacturer->CurrentValue) ?>"<?php echo $wrkonchange ?>>
+<script>
+fdatasheetslist.createAutoSuggest({"id":"x<?php echo $datasheets_list->RowIndex ?>_manufacturer","forceSelect":true});
+</script>
+<?php echo $datasheets->manufacturer->Lookup->getParamTag("p_x" . $datasheets_list->RowIndex . "_manufacturer") ?>
+</span>
 <?php } ?>
 <?php if ($datasheets->RowType == ROWTYPE_VIEW) { // View record ?>
 <span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_manufacturer" class="datasheets_manufacturer">
@@ -908,31 +901,28 @@ ew.createDateTimePicker("fdatasheetslist", "x<?php echo $datasheets_list->RowInd
 <?php } ?>
 </td>
 	<?php } ?>
-	<?php if ($datasheets->duration->Visible) { // duration ?>
-		<td data-name="duration"<?php echo $datasheets->duration->cellAttributes() ?>>
+	<?php if ($datasheets->thirdPartyNo->Visible) { // thirdPartyNo ?>
+		<td data-name="thirdPartyNo"<?php echo $datasheets->thirdPartyNo->cellAttributes() ?>>
 <?php if ($datasheets->RowType == ROWTYPE_ADD) { // Add record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_duration" class="form-group datasheets_duration">
-<div class="input-group">
-	<select class="custom-select ew-custom-select" data-table="datasheets" data-field="x_duration" data-value-separator="<?php echo $datasheets->duration->displayValueSeparatorAttribute() ?>" id="x<?php echo $datasheets_list->RowIndex ?>_duration" name="x<?php echo $datasheets_list->RowIndex ?>_duration"<?php echo $datasheets->duration->editAttributes() ?>>
-		<?php echo $datasheets->duration->selectOptionListHtml("x<?php echo $datasheets_list->RowIndex ?>_duration") ?>
-	</select>
-</div>
+<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_thirdPartyNo" class="form-group datasheets_thirdPartyNo">
+<input type="text" data-table="datasheets" data-field="x_thirdPartyNo" name="x<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" id="x<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" size="30" placeholder="<?php echo HtmlEncode($datasheets->thirdPartyNo->getPlaceHolder()) ?>" value="<?php echo $datasheets->thirdPartyNo->EditValue ?>"<?php echo $datasheets->thirdPartyNo->editAttributes() ?>>
 </span>
-<input type="hidden" data-table="datasheets" data-field="x_duration" name="o<?php echo $datasheets_list->RowIndex ?>_duration" id="o<?php echo $datasheets_list->RowIndex ?>_duration" value="<?php echo HtmlEncode($datasheets->duration->OldValue) ?>">
+<input type="hidden" data-table="datasheets" data-field="x_thirdPartyNo" name="o<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" id="o<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" value="<?php echo HtmlEncode($datasheets->thirdPartyNo->OldValue) ?>">
 <?php } ?>
 <?php if ($datasheets->RowType == ROWTYPE_EDIT) { // Edit record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_duration" class="form-group datasheets_duration">
-<div class="input-group">
-	<select class="custom-select ew-custom-select" data-table="datasheets" data-field="x_duration" data-value-separator="<?php echo $datasheets->duration->displayValueSeparatorAttribute() ?>" id="x<?php echo $datasheets_list->RowIndex ?>_duration" name="x<?php echo $datasheets_list->RowIndex ?>_duration"<?php echo $datasheets->duration->editAttributes() ?>>
-		<?php echo $datasheets->duration->selectOptionListHtml("x<?php echo $datasheets_list->RowIndex ?>_duration") ?>
-	</select>
-</div>
+<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_thirdPartyNo" class="form-group datasheets_thirdPartyNo">
+<input type="text" data-table="datasheets" data-field="x_thirdPartyNo" name="x<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" id="x<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" size="30" placeholder="<?php echo HtmlEncode($datasheets->thirdPartyNo->getPlaceHolder()) ?>" value="<?php echo $datasheets->thirdPartyNo->EditValue ?>"<?php echo $datasheets->thirdPartyNo->editAttributes() ?>>
 </span>
 <?php } ?>
 <?php if ($datasheets->RowType == ROWTYPE_VIEW) { // View record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_duration" class="datasheets_duration">
-<span<?php echo $datasheets->duration->viewAttributes() ?>>
-<?php echo $datasheets->duration->getViewValue() ?></span>
+<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_thirdPartyNo" class="datasheets_thirdPartyNo">
+<span<?php echo $datasheets->thirdPartyNo->viewAttributes() ?>>
+<?php if ((!EmptyString($datasheets->thirdPartyNo->getViewValue())) && $datasheets->thirdPartyNo->linkAttributes() <> "") { ?>
+<a<?php echo $datasheets->thirdPartyNo->linkAttributes() ?>><?php echo $datasheets->thirdPartyNo->getViewValue() ?></a>
+<?php } else { ?>
+<?php echo $datasheets->thirdPartyNo->getViewValue() ?>
+<?php } ?>
+</span>
 </span>
 <?php } ?>
 </td>
@@ -968,33 +958,6 @@ ew.createDateTimePicker("fdatasheetslist", "x<?php echo $datasheets_list->RowInd
 <?php } ?>
 </td>
 	<?php } ?>
-	<?php if ($datasheets->highlighted->Visible) { // highlighted ?>
-		<td data-name="highlighted"<?php echo $datasheets->highlighted->cellAttributes() ?>>
-<?php if ($datasheets->RowType == ROWTYPE_ADD) { // Add record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_highlighted" class="form-group datasheets_highlighted">
-<div id="tp_x<?php echo $datasheets_list->RowIndex ?>_highlighted" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_highlighted" data-value-separator="<?php echo $datasheets->highlighted->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_highlighted" id="x<?php echo $datasheets_list->RowIndex ?>_highlighted" value="{value}"<?php echo $datasheets->highlighted->editAttributes() ?>></div>
-<div id="dsl_x<?php echo $datasheets_list->RowIndex ?>_highlighted" data-repeatcolumn="5" class="ew-item-list d-none"><div>
-<?php echo $datasheets->highlighted->radioButtonListHtml(FALSE, "x{$datasheets_list->RowIndex}_highlighted") ?>
-</div></div>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_highlighted" name="o<?php echo $datasheets_list->RowIndex ?>_highlighted" id="o<?php echo $datasheets_list->RowIndex ?>_highlighted" value="<?php echo HtmlEncode($datasheets->highlighted->OldValue) ?>">
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_EDIT) { // Edit record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_highlighted" class="form-group datasheets_highlighted">
-<div id="tp_x<?php echo $datasheets_list->RowIndex ?>_highlighted" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_highlighted" data-value-separator="<?php echo $datasheets->highlighted->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_highlighted" id="x<?php echo $datasheets_list->RowIndex ?>_highlighted" value="{value}"<?php echo $datasheets->highlighted->editAttributes() ?>></div>
-<div id="dsl_x<?php echo $datasheets_list->RowIndex ?>_highlighted" data-repeatcolumn="5" class="ew-item-list d-none"><div>
-<?php echo $datasheets->highlighted->radioButtonListHtml(FALSE, "x{$datasheets_list->RowIndex}_highlighted") ?>
-</div></div>
-</span>
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_VIEW) { // View record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_highlighted" class="datasheets_highlighted">
-<span<?php echo $datasheets->highlighted->viewAttributes() ?>>
-<?php echo $datasheets->highlighted->getViewValue() ?></span>
-</span>
-<?php } ?>
-</td>
-	<?php } ?>
 	<?php if ($datasheets->coo->Visible) { // coo ?>
 		<td data-name="coo"<?php echo $datasheets->coo->cellAttributes() ?>>
 <?php if ($datasheets->RowType == ROWTYPE_ADD) { // Add record ?>
@@ -1007,7 +970,9 @@ $datasheets->coo->EditAttrs["onchange"] = "";
 <span id="as_x<?php echo $datasheets_list->RowIndex ?>_coo" class="text-nowrap" style="z-index: <?php echo (9000 - $datasheets_list->RowCnt * 10) ?>">
 	<div class="input-group">
 		<input type="text" class="form-control" name="sv_x<?php echo $datasheets_list->RowIndex ?>_coo" id="sv_x<?php echo $datasheets_list->RowIndex ?>_coo" value="<?php echo RemoveHtml($datasheets->coo->EditValue) ?>" size="30" placeholder="<?php echo HtmlEncode($datasheets->coo->getPlaceHolder()) ?>" data-placeholder="<?php echo HtmlEncode($datasheets->coo->getPlaceHolder()) ?>"<?php echo $datasheets->coo->editAttributes() ?>>
+<?php if (AllowAdd(CurrentProjectID() . "countryOfOrigin") && !$datasheets->coo->ReadOnly) { ?>
 <div class="input-group-append"><button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x<?php echo $datasheets_list->RowIndex ?>_coo" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $datasheets->coo->caption() ?>" data-title="<?php echo $datasheets->coo->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_coo',url:'countryOfOriginaddopt.php'});"><i class="fa fa-plus ew-icon"></i></button></div>
+<?php } ?>
 	</div>
 </span>
 <input type="hidden" data-table="datasheets" data-field="x_coo" data-value-separator="<?php echo $datasheets->coo->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_coo" id="x<?php echo $datasheets_list->RowIndex ?>_coo" value="<?php echo HtmlEncode($datasheets->coo->CurrentValue) ?>"<?php echo $wrkonchange ?>>
@@ -1028,7 +993,9 @@ $datasheets->coo->EditAttrs["onchange"] = "";
 <span id="as_x<?php echo $datasheets_list->RowIndex ?>_coo" class="text-nowrap" style="z-index: <?php echo (9000 - $datasheets_list->RowCnt * 10) ?>">
 	<div class="input-group">
 		<input type="text" class="form-control" name="sv_x<?php echo $datasheets_list->RowIndex ?>_coo" id="sv_x<?php echo $datasheets_list->RowIndex ?>_coo" value="<?php echo RemoveHtml($datasheets->coo->EditValue) ?>" size="30" placeholder="<?php echo HtmlEncode($datasheets->coo->getPlaceHolder()) ?>" data-placeholder="<?php echo HtmlEncode($datasheets->coo->getPlaceHolder()) ?>"<?php echo $datasheets->coo->editAttributes() ?>>
+<?php if (AllowAdd(CurrentProjectID() . "countryOfOrigin") && !$datasheets->coo->ReadOnly) { ?>
 <div class="input-group-append"><button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x<?php echo $datasheets_list->RowIndex ?>_coo" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $datasheets->coo->caption() ?>" data-title="<?php echo $datasheets->coo->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_coo',url:'countryOfOriginaddopt.php'});"><i class="fa fa-plus ew-icon"></i></button></div>
+<?php } ?>
 	</div>
 </span>
 <input type="hidden" data-table="datasheets" data-field="x_coo" data-value-separator="<?php echo $datasheets->coo->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_coo" id="x<?php echo $datasheets_list->RowIndex ?>_coo" value="<?php echo HtmlEncode($datasheets->coo->CurrentValue) ?>"<?php echo $wrkonchange ?>>
@@ -1230,7 +1197,9 @@ $datasheets->manufacturer->EditAttrs["onchange"] = "";
 		<input type="text" class="form-control" name="sv_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" id="sv_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" value="<?php echo RemoveHtml($datasheets->manufacturer->EditValue) ?>" size="30" placeholder="<?php echo HtmlEncode($datasheets->manufacturer->getPlaceHolder()) ?>" data-placeholder="<?php echo HtmlEncode($datasheets->manufacturer->getPlaceHolder()) ?>"<?php echo $datasheets->manufacturer->editAttributes() ?>>
 		<div class="input-group-append">
 			<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($datasheets->manufacturer->caption()), $Language->phrase("LookupLink", TRUE))) ?>" onclick="ew.modalLookupShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_manufacturer',m:0,n:10,srch:false});" class="ew-lookup-btn btn btn-default"<?php echo (($datasheets->manufacturer->ReadOnly || $datasheets->manufacturer->Disabled) ? " disabled" : "")?>><i class="fa fa-search ew-icon"></i></button>
+<?php if (AllowAdd(CurrentProjectID() . "manufacturer") && !$datasheets->manufacturer->ReadOnly) { ?>
 <button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $datasheets->manufacturer->caption() ?>" data-title="<?php echo $datasheets->manufacturer->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_manufacturer',url:'manufactureraddopt.php'});"><i class="fa fa-plus ew-icon"></i></button>
+<?php } ?>
 		</div>
 	</div>
 </span>
@@ -1272,16 +1241,12 @@ ew.createDateTimePicker("fdatasheetslist", "x<?php echo $datasheets_list->RowInd
 <input type="hidden" data-table="datasheets" data-field="x_cddno" name="o<?php echo $datasheets_list->RowIndex ?>_cddno" id="o<?php echo $datasheets_list->RowIndex ?>_cddno" value="<?php echo HtmlEncode($datasheets->cddno->OldValue) ?>">
 </td>
 	<?php } ?>
-	<?php if ($datasheets->duration->Visible) { // duration ?>
-		<td data-name="duration">
-<span id="el$rowindex$_datasheets_duration" class="form-group datasheets_duration">
-<div class="input-group">
-	<select class="custom-select ew-custom-select" data-table="datasheets" data-field="x_duration" data-value-separator="<?php echo $datasheets->duration->displayValueSeparatorAttribute() ?>" id="x<?php echo $datasheets_list->RowIndex ?>_duration" name="x<?php echo $datasheets_list->RowIndex ?>_duration"<?php echo $datasheets->duration->editAttributes() ?>>
-		<?php echo $datasheets->duration->selectOptionListHtml("x<?php echo $datasheets_list->RowIndex ?>_duration") ?>
-	</select>
-</div>
+	<?php if ($datasheets->thirdPartyNo->Visible) { // thirdPartyNo ?>
+		<td data-name="thirdPartyNo">
+<span id="el$rowindex$_datasheets_thirdPartyNo" class="form-group datasheets_thirdPartyNo">
+<input type="text" data-table="datasheets" data-field="x_thirdPartyNo" name="x<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" id="x<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" size="30" placeholder="<?php echo HtmlEncode($datasheets->thirdPartyNo->getPlaceHolder()) ?>" value="<?php echo $datasheets->thirdPartyNo->EditValue ?>"<?php echo $datasheets->thirdPartyNo->editAttributes() ?>>
 </span>
-<input type="hidden" data-table="datasheets" data-field="x_duration" name="o<?php echo $datasheets_list->RowIndex ?>_duration" id="o<?php echo $datasheets_list->RowIndex ?>_duration" value="<?php echo HtmlEncode($datasheets->duration->OldValue) ?>">
+<input type="hidden" data-table="datasheets" data-field="x_thirdPartyNo" name="o<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" id="o<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" value="<?php echo HtmlEncode($datasheets->thirdPartyNo->OldValue) ?>">
 </td>
 	<?php } ?>
 	<?php if ($datasheets->expirydt->Visible) { // expirydt ?>
@@ -1297,17 +1262,6 @@ ew.createDateTimePicker("fdatasheetslist", "x<?php echo $datasheets_list->RowInd
 <input type="hidden" data-table="datasheets" data-field="x_expirydt" name="o<?php echo $datasheets_list->RowIndex ?>_expirydt" id="o<?php echo $datasheets_list->RowIndex ?>_expirydt" value="<?php echo HtmlEncode($datasheets->expirydt->OldValue) ?>">
 </td>
 	<?php } ?>
-	<?php if ($datasheets->highlighted->Visible) { // highlighted ?>
-		<td data-name="highlighted">
-<span id="el$rowindex$_datasheets_highlighted" class="form-group datasheets_highlighted">
-<div id="tp_x<?php echo $datasheets_list->RowIndex ?>_highlighted" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_highlighted" data-value-separator="<?php echo $datasheets->highlighted->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_highlighted" id="x<?php echo $datasheets_list->RowIndex ?>_highlighted" value="{value}"<?php echo $datasheets->highlighted->editAttributes() ?>></div>
-<div id="dsl_x<?php echo $datasheets_list->RowIndex ?>_highlighted" data-repeatcolumn="5" class="ew-item-list d-none"><div>
-<?php echo $datasheets->highlighted->radioButtonListHtml(FALSE, "x{$datasheets_list->RowIndex}_highlighted") ?>
-</div></div>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_highlighted" name="o<?php echo $datasheets_list->RowIndex ?>_highlighted" id="o<?php echo $datasheets_list->RowIndex ?>_highlighted" value="<?php echo HtmlEncode($datasheets->highlighted->OldValue) ?>">
-</td>
-	<?php } ?>
 	<?php if ($datasheets->coo->Visible) { // coo ?>
 		<td data-name="coo">
 <span id="el$rowindex$_datasheets_coo" class="form-group datasheets_coo">
@@ -1319,7 +1273,9 @@ $datasheets->coo->EditAttrs["onchange"] = "";
 <span id="as_x<?php echo $datasheets_list->RowIndex ?>_coo" class="text-nowrap" style="z-index: <?php echo (9000 - $datasheets_list->RowCnt * 10) ?>">
 	<div class="input-group">
 		<input type="text" class="form-control" name="sv_x<?php echo $datasheets_list->RowIndex ?>_coo" id="sv_x<?php echo $datasheets_list->RowIndex ?>_coo" value="<?php echo RemoveHtml($datasheets->coo->EditValue) ?>" size="30" placeholder="<?php echo HtmlEncode($datasheets->coo->getPlaceHolder()) ?>" data-placeholder="<?php echo HtmlEncode($datasheets->coo->getPlaceHolder()) ?>"<?php echo $datasheets->coo->editAttributes() ?>>
+<?php if (AllowAdd(CurrentProjectID() . "countryOfOrigin") && !$datasheets->coo->ReadOnly) { ?>
 <div class="input-group-append"><button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x<?php echo $datasheets_list->RowIndex ?>_coo" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $datasheets->coo->caption() ?>" data-title="<?php echo $datasheets->coo->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_coo',url:'countryOfOriginaddopt.php'});"><i class="fa fa-plus ew-icon"></i></button></div>
+<?php } ?>
 	</div>
 </span>
 <input type="hidden" data-table="datasheets" data-field="x_coo" data-value-separator="<?php echo $datasheets->coo->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_coo" id="x<?php echo $datasheets_list->RowIndex ?>_coo" value="<?php echo HtmlEncode($datasheets->coo->CurrentValue) ?>"<?php echo $wrkonchange ?>>

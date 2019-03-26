@@ -23,6 +23,7 @@ $countryOfOrigin_edit = new countryOfOrigin_edit();
 $countryOfOrigin_edit->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)

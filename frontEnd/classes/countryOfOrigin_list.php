@@ -379,6 +379,7 @@ class countryOfOrigin_list extends countryOfOrigin
 	public function __construct()
 	{
 		global $Language, $COMPOSITE_KEY_SEPARATOR;
+		global $UserTable, $UserTableConn;
 
 		// Initialize
 		$GLOBALS["Page"] = &$this;
@@ -413,6 +414,10 @@ class countryOfOrigin_list extends countryOfOrigin
 		$this->MultiUpdateUrl = "countryOfOriginupdate.php";
 		$this->CancelUrl = $this->pageUrl() . "action=cancel";
 
+		// Table object (users)
+		if (!isset($GLOBALS['users']))
+			$GLOBALS['users'] = new users();
+
 		// Page ID
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'list');
@@ -431,6 +436,12 @@ class countryOfOrigin_list extends countryOfOrigin
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = &$this->getConnection();
+
+		// User table object (users)
+		if (!isset($UserTable)) {
+			$UserTable = new users();
+			$UserTableConn = Conn($UserTable->Dbid);
+		}
 
 		// List options
 		$this->ListOptions = new ListOptions();
@@ -605,6 +616,8 @@ class countryOfOrigin_list extends countryOfOrigin
 	{
 		if ($this->isAdd() || $this->isCopy() || $this->isGridAdd())
 			$this->cooId->Visible = FALSE;
+		if ($this->isAddOrEdit())
+			$this->username->Visible = FALSE;
 	}
 
 	// Class variables
@@ -617,7 +630,7 @@ class countryOfOrigin_list extends countryOfOrigin
 	public $ListActions; // List actions
 	public $SelectedCount = 0;
 	public $SelectedIndex = 0;
-	public $DisplayRecs = 50;
+	public $DisplayRecs = 10;
 	public $StartRec;
 	public $StopRec;
 	public $TotalRecs = 0;
@@ -661,6 +674,53 @@ class countryOfOrigin_list extends countryOfOrigin
 			$func = PROJECT_NAMESPACE . CHECK_TOKEN_FUNC;
 			if (is_callable($func) && Param(TOKEN_NAME) !== NULL && $func(Param(TOKEN_NAME), SessionTimeoutTime()))
 				session_start();
+		}
+
+		// User profile
+		$UserProfile = new UserProfile();
+
+		// Security
+		$Security = new AdvancedSecurity();
+		$validRequest = FALSE;
+
+		// Check security for API request
+		If (IsApi()) {
+
+			// Check token first
+			$func = PROJECT_NAMESPACE . CHECK_TOKEN_FUNC;
+			if (is_callable($func) && Post(TOKEN_NAME) !== NULL)
+				$validRequest = $func(Post(TOKEN_NAME), SessionTimeoutTime());
+			elseif (is_array($RequestSecurity) && @$RequestSecurity["username"] <> "") // Login user for API request
+				$Security->loginUser(@$RequestSecurity["username"], @$RequestSecurity["userid"], @$RequestSecurity["parentuserid"], @$RequestSecurity["userlevelid"]);
+		}
+		if (!$validRequest) {
+			if (IsPasswordExpired())
+				$this->terminate(GetUrl("changepwd.php"));
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			if ($Security->isLoggedIn())
+				$Security->TablePermission_Loading();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if ($Security->isLoggedIn())
+				$Security->TablePermission_Loaded();
+			if (!$Security->canList()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				$this->terminate(GetUrl("index.php"));
+				return;
+			}
+			if ($Security->isLoggedIn()) {
+				$Security->UserID_Loading();
+				$Security->loadUserID();
+				$Security->UserID_Loaded();
+			}
+		}
+
+		// Update last accessed time
+		if ($UserProfile->isValidUser(CurrentUserName(), session_id())) {
+		} else {
+			Write($Language->phrase("UserProfileCorrupted"));
+			$this->terminate();
 		}
 
 		// Get export parameters
@@ -819,7 +879,7 @@ class countryOfOrigin_list extends countryOfOrigin
 		if ($this->Command <> "json" && $this->getRecordsPerPage() <> "") {
 			$this->DisplayRecs = $this->getRecordsPerPage(); // Restore from Session
 		} else {
-			$this->DisplayRecs = 50; // Load default
+			$this->DisplayRecs = 10; // Load default
 		}
 
 		// Load Sorting Order
@@ -853,6 +913,8 @@ class countryOfOrigin_list extends countryOfOrigin
 
 		// Build filter
 		$filter = "";
+		if (!$Security->canList())
+			$filter = "(0=1)"; // Filter all records
 		AddFilter($filter, $this->DbDetailFilter);
 		AddFilter($filter, $this->SearchWhere);
 
@@ -894,6 +956,8 @@ class countryOfOrigin_list extends countryOfOrigin
 
 			// Set no record found message
 			if (!$this->CurrentAction && $this->TotalRecs == 0) {
+				if (!$Security->canList())
+					$this->setWarningMessage(DeniedMessage());
 				if ($this->SearchWhere == "0=101")
 					$this->setWarningMessage($Language->phrase("EnterSearchCriteria"));
 				else
@@ -969,6 +1033,10 @@ class countryOfOrigin_list extends countryOfOrigin
 		// Initialize
 		$filterList = "";
 		$savedFilterList = "";
+
+		// Load server side filters
+		if (SEARCH_FILTER_OPTION == "Server" && isset($UserProfile))
+			$savedFilterList = $UserProfile->getSearchFilters(CurrentUserName(), "fcountryOfOriginlistsrch");
 		$filterList = Concat($filterList, $this->cooId->AdvancedSearch->toJson(), ","); // Field cooId
 		$filterList = Concat($filterList, $this->countryName->AdvancedSearch->toJson(), ","); // Field countryName
 		$filterList = Concat($filterList, $this->countryIsoCode->AdvancedSearch->toJson(), ","); // Field countryIsoCode
@@ -1129,6 +1197,8 @@ class countryOfOrigin_list extends countryOfOrigin
 	{
 		global $Security;
 		$searchStr = "";
+		if (!$Security->canSearch())
+			return "";
 		$searchKeyword = ($default) ? $this->BasicSearch->KeywordDefault : $this->BasicSearch->Keyword;
 		$searchType = ($default) ? $this->BasicSearch->TypeDefault : $this->BasicSearch->Type;
 
@@ -1271,37 +1341,37 @@ class countryOfOrigin_list extends countryOfOrigin
 		// Add group option item
 		$item = &$this->ListOptions->add($this->ListOptions->GroupOptionName);
 		$item->Body = "";
-		$item->OnLeft = FALSE;
+		$item->OnLeft = TRUE;
 		$item->Visible = FALSE;
 
 		// "view"
 		$item = &$this->ListOptions->add("view");
 		$item->CssClass = "text-nowrap";
-		$item->Visible = TRUE;
-		$item->OnLeft = FALSE;
+		$item->Visible = $Security->canView();
+		$item->OnLeft = TRUE;
 
 		// "edit"
 		$item = &$this->ListOptions->add("edit");
 		$item->CssClass = "text-nowrap";
-		$item->Visible = TRUE;
-		$item->OnLeft = FALSE;
+		$item->Visible = $Security->canEdit();
+		$item->OnLeft = TRUE;
 
 		// "copy"
 		$item = &$this->ListOptions->add("copy");
 		$item->CssClass = "text-nowrap";
-		$item->Visible = TRUE;
-		$item->OnLeft = FALSE;
+		$item->Visible = $Security->canAdd();
+		$item->OnLeft = TRUE;
 
 		// "delete"
 		$item = &$this->ListOptions->add("delete");
 		$item->CssClass = "text-nowrap";
-		$item->Visible = TRUE;
-		$item->OnLeft = FALSE;
+		$item->Visible = $Security->canDelete();
+		$item->OnLeft = TRUE;
 
 		// List actions
 		$item = &$this->ListOptions->add("listactions");
 		$item->CssClass = "text-nowrap";
-		$item->OnLeft = FALSE;
+		$item->OnLeft = TRUE;
 		$item->Visible = FALSE;
 		$item->ShowInButtonGroup = FALSE;
 		$item->ShowInDropDown = FALSE;
@@ -1309,15 +1379,16 @@ class countryOfOrigin_list extends countryOfOrigin
 		// "checkbox"
 		$item = &$this->ListOptions->add("checkbox");
 		$item->Visible = FALSE;
-		$item->OnLeft = FALSE;
+		$item->OnLeft = TRUE;
 		$item->Header = "<input type=\"checkbox\" name=\"key\" id=\"key\" onclick=\"ew.selectAllKey(this);\">";
+		$item->moveTo(0);
 		$item->ShowInDropDown = FALSE;
 		$item->ShowInButtonGroup = FALSE;
 
 		// Drop down button for ListOptions
 		$this->ListOptions->UseDropDownButton = FALSE;
 		$this->ListOptions->DropDownButtonPhrase = $Language->phrase("ButtonListOptions");
-		$this->ListOptions->UseButtonGroup = FALSE;
+		$this->ListOptions->UseButtonGroup = TRUE;
 		if ($this->ListOptions->UseButtonGroup && IsMobile())
 			$this->ListOptions->UseDropDownButton = TRUE;
 
@@ -1342,7 +1413,7 @@ class countryOfOrigin_list extends countryOfOrigin
 		// "view"
 		$opt = &$this->ListOptions->Items["view"];
 		$viewcaption = HtmlTitle($Language->phrase("ViewLink"));
-		if (TRUE) {
+		if ($Security->canView()) {
 			$opt->Body = "<a class=\"ew-row-link ew-view\" title=\"" . $viewcaption . "\" data-caption=\"" . $viewcaption . "\" href=\"" . HtmlEncode($this->ViewUrl) . "\">" . $Language->phrase("ViewLink") . "</a>";
 		} else {
 			$opt->Body = "";
@@ -1351,7 +1422,7 @@ class countryOfOrigin_list extends countryOfOrigin
 		// "edit"
 		$opt = &$this->ListOptions->Items["edit"];
 		$editcaption = HtmlTitle($Language->phrase("EditLink"));
-		if (TRUE) {
+		if ($Security->canEdit()) {
 			$opt->Body = "<a class=\"ew-row-link ew-edit\" title=\"" . HtmlTitle($Language->phrase("EditLink")) . "\" data-caption=\"" . HtmlTitle($Language->phrase("EditLink")) . "\" href=\"" . HtmlEncode($this->EditUrl) . "\">" . $Language->phrase("EditLink") . "</a>";
 		} else {
 			$opt->Body = "";
@@ -1360,7 +1431,7 @@ class countryOfOrigin_list extends countryOfOrigin
 		// "copy"
 		$opt = &$this->ListOptions->Items["copy"];
 		$copycaption = HtmlTitle($Language->phrase("CopyLink"));
-		if (TRUE) {
+		if ($Security->canAdd()) {
 			$opt->Body = "<a class=\"ew-row-link ew-copy\" title=\"" . $copycaption . "\" data-caption=\"" . $copycaption . "\" href=\"" . HtmlEncode($this->CopyUrl) . "\">" . $Language->phrase("CopyLink") . "</a>";
 		} else {
 			$opt->Body = "";
@@ -1368,7 +1439,7 @@ class countryOfOrigin_list extends countryOfOrigin
 
 		// "delete"
 		$opt = &$this->ListOptions->Items["delete"];
-		if (TRUE)
+		if ($Security->canDelete())
 			$opt->Body = "<a class=\"ew-row-link ew-delete\"" . "" . " title=\"" . HtmlTitle($Language->phrase("DeleteLink")) . "\" data-caption=\"" . HtmlTitle($Language->phrase("DeleteLink")) . "\" href=\"" . HtmlEncode($this->DeleteUrl) . "\">" . $Language->phrase("DeleteLink") . "</a>";
 		else
 			$opt->Body = "";
@@ -1422,7 +1493,7 @@ class countryOfOrigin_list extends countryOfOrigin
 		$item = &$option->add("add");
 		$addcaption = HtmlTitle($Language->phrase("AddLink"));
 		$item->Body = "<a class=\"ew-add-edit ew-add\" title=\"" . $addcaption . "\" data-caption=\"" . $addcaption . "\" href=\"" . HtmlEncode($this->AddUrl) . "\">" . $Language->phrase("AddLink") . "</a>";
-		$item->Visible = ($this->AddUrl <> "");
+		$item->Visible = ($this->AddUrl <> "" && $Security->canAdd());
 		$option = $options["action"];
 
 		// Set up options default
@@ -1597,6 +1668,11 @@ class countryOfOrigin_list extends countryOfOrigin
 		// Hide search options
 		if ($this->isExport() || $this->CurrentAction)
 			$this->SearchOptions->hideAllOptions();
+		global $Security;
+		if (!$Security->canSearch()) {
+			$this->SearchOptions->hideAllOptions();
+			$this->FilterOptions->hideAllOptions();
+		}
 	}
 	protected function setupListOptionsExt()
 	{

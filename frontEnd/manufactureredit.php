@@ -23,6 +23,7 @@ $manufacturer_edit = new manufacturer_edit();
 $manufacturer_edit->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -187,27 +188,6 @@ $manufacturer_edit->showMessage();
 <textarea data-table="manufacturer" data-field="x_manufacturerFactory" name="x_manufacturerFactory" id="x_manufacturerFactory" cols="35" rows="4" placeholder="<?php echo HtmlEncode($manufacturer->manufacturerFactory->getPlaceHolder()) ?>"<?php echo $manufacturer->manufacturerFactory->editAttributes() ?>><?php echo $manufacturer->manufacturerFactory->EditValue ?></textarea>
 </span>
 <?php echo $manufacturer->manufacturerFactory->CustomMsg ?></td>
-	</tr>
-<?php } ?>
-<?php } ?>
-<?php if ($manufacturer->username->Visible) { // username ?>
-<?php if ($manufacturer_edit->IsMobileOrModal) { ?>
-	<div id="r_username" class="form-group row">
-		<label id="elh_manufacturer_username" for="x_username" class="<?php echo $manufacturer_edit->LeftColumnClass ?>"><?php echo $manufacturer->username->caption() ?><?php echo ($manufacturer->username->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
-		<div class="<?php echo $manufacturer_edit->RightColumnClass ?>"><div<?php echo $manufacturer->username->cellAttributes() ?>>
-<span id="el_manufacturer_username">
-<input type="text" data-table="manufacturer" data-field="x_username" name="x_username" id="x_username" size="30" placeholder="<?php echo HtmlEncode($manufacturer->username->getPlaceHolder()) ?>" value="<?php echo $manufacturer->username->EditValue ?>"<?php echo $manufacturer->username->editAttributes() ?>>
-</span>
-<?php echo $manufacturer->username->CustomMsg ?></div></div>
-	</div>
-<?php } else { ?>
-	<tr id="r_username">
-		<td class="<?php echo $manufacturer_edit->TableLeftColumnClass ?>"><span id="elh_manufacturer_username"><?php echo $manufacturer->username->caption() ?><?php echo ($manufacturer->username->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></span></td>
-		<td<?php echo $manufacturer->username->cellAttributes() ?>>
-<span id="el_manufacturer_username">
-<input type="text" data-table="manufacturer" data-field="x_username" name="x_username" id="x_username" size="30" placeholder="<?php echo HtmlEncode($manufacturer->username->getPlaceHolder()) ?>" value="<?php echo $manufacturer->username->EditValue ?>"<?php echo $manufacturer->username->editAttributes() ?>>
-</span>
-<?php echo $manufacturer->username->CustomMsg ?></td>
 	</tr>
 <?php } ?>
 <?php } ?>

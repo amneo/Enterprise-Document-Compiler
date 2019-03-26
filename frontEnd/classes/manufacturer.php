@@ -25,9 +25,9 @@ class manufacturer extends DbTable
 	public $AuditTrailOnAdd = TRUE;
 	public $AuditTrailOnEdit = TRUE;
 	public $AuditTrailOnDelete = TRUE;
-	public $AuditTrailOnView = FALSE;
-	public $AuditTrailOnViewData = FALSE;
-	public $AuditTrailOnSearch = FALSE;
+	public $AuditTrailOnView = TRUE;
+	public $AuditTrailOnViewData = TRUE;
+	public $AuditTrailOnSearch = TRUE;
 
 	// Export
 	public $ExportDoc;
@@ -813,14 +813,8 @@ class manufacturer extends DbTable
 		$this->manufacturerFactory->PlaceHolder = RemoveHtml($this->manufacturerFactory->caption());
 
 		// username
-		$this->username->EditAttrs["class"] = "form-control";
-		$this->username->EditCustomAttributes = "";
-		if (REMOVE_XSS)
-			$this->username->CurrentValue = HtmlDecode($this->username->CurrentValue);
-		$this->username->EditValue = $this->username->CurrentValue;
-		$this->username->PlaceHolder = RemoveHtml($this->username->caption());
-
 		// Call Row Rendered event
+
 		$this->Row_Rendered();
 	}
 
@@ -915,6 +909,47 @@ class manufacturer extends DbTable
 		global $Language, $LANGUAGE_FOLDER, $PROJECT_ID;
 		if (!isset($Language))
 			$Language = new Language($LANGUAGE_FOLDER, Post("language", ""));
+		global $Security, $RequestSecurity;
+
+		// Check token first
+		$func = PROJECT_NAMESPACE . "CheckToken";
+		$validRequest = FALSE;
+		if (is_callable($func) && Post(TOKEN_NAME) !== NULL) {
+			$validRequest = $func(Post(TOKEN_NAME), SessionTimeoutTime());
+			if ($validRequest) {
+				if (!isset($Security)) {
+					if (session_status() !== PHP_SESSION_ACTIVE)
+						session_start(); // Init session data
+					$Security = new AdvancedSecurity();
+					if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
+					$Security->loadCurrentUserLevel($PROJECT_ID . $this->TableName);
+					if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
+					$validRequest = $Security->canList(); // List permission
+					if ($validRequest) {
+						$Security->UserID_Loading();
+						$Security->loadUserID();
+						$Security->UserID_Loaded();
+					}
+				}
+			}
+		} else {
+
+			// User profile
+			$UserProfile = new UserProfile();
+
+			// Security
+			$Security = new AdvancedSecurity();
+			if (is_array($RequestSecurity)) // Login user for API request
+				$Security->loginUser(@$RequestSecurity["username"], @$RequestSecurity["userid"], @$RequestSecurity["parentuserid"], @$RequestSecurity["userlevelid"]);
+			$Security->TablePermission_Loading();
+			$Security->loadCurrentUserLevel(CurrentProjectID() . $this->TableName);
+			$Security->TablePermission_Loaded();
+			$validRequest = $Security->canList(); // List permission
+		}
+
+		// Reject invalid request
+		if (!$validRequest)
+			return FALSE;
 
 		// Load lookup parameters
 		$distinct = ConvertToBool(Post("distinct"));
@@ -1014,7 +1049,7 @@ class manufacturer extends DbTable
 	public function writeAuditTrailDummy($typ)
 	{
 		$table = 'manufacturer';
-		$usr = CurrentUserName();
+		$usr = CurrentUserID();
 		WriteAuditTrail("log", DbCurrentDateTime(), ScriptName(), $usr, $typ, $table, "", "", "", "");
 	}
 
@@ -1035,7 +1070,7 @@ class manufacturer extends DbTable
 		// Write Audit Trail
 		$dt = DbCurrentDateTime();
 		$id = ScriptName();
-		$usr = CurrentUserName();
+		$usr = CurrentUserID();
 		foreach (array_keys($rs) as $fldname) {
 			if (array_key_exists($fldname, $this->fields) && $this->fields[$fldname]->DataType <> DATATYPE_BLOB) { // Ignore BLOB fields
 				if ($this->fields[$fldname]->HtmlTag == "PASSWORD") {
@@ -1072,7 +1107,7 @@ class manufacturer extends DbTable
 		// Write Audit Trail
 		$dt = DbCurrentDateTime();
 		$id = ScriptName();
-		$usr = CurrentUserName();
+		$usr = CurrentUserID();
 		foreach (array_keys($rsnew) as $fldname) {
 			if (array_key_exists($fldname, $this->fields) && array_key_exists($fldname, $rsold) && $this->fields[$fldname]->DataType <> DATATYPE_BLOB) { // Ignore BLOB fields
 				if ($this->fields[$fldname]->DataType == DATATYPE_DATE) { // DateTime field
@@ -1122,7 +1157,7 @@ class manufacturer extends DbTable
 		// Write Audit Trail
 		$dt = DbCurrentDateTime();
 		$id = ScriptName();
-		$curUser = CurrentUserName();
+		$curUser = CurrentUserID();
 		foreach (array_keys($rs) as $fldname) {
 			if (array_key_exists($fldname, $this->fields) && $this->fields[$fldname]->DataType <> DATATYPE_BLOB) { // Ignore BLOB fields
 				if ($this->fields[$fldname]->HtmlTag == "PASSWORD") {
@@ -1140,6 +1175,62 @@ class manufacturer extends DbTable
 				WriteAuditTrail("log", $dt, $id, $curUser, "D", $table, $fldname, $key, $oldvalue, "");
 			}
 		}
+	}
+
+	// Write Audit Trail (view page)
+	public function writeAuditTrailOnView(&$rs)
+	{
+		global $Language;
+		if (!$this->AuditTrailOnView)
+			return;
+		$table = 'manufacturer';
+
+		// Get key value
+		$key = "";
+		if ($key <> "")
+			$key .= $GLOBALS["COMPOSITE_KEY_SEPARATOR"];
+		$key .= $rs['manufacturerId'];
+
+		// Write Audit Trail
+		$dt = DbCurrentDateTime();
+		$id = ScriptName();
+		$usr = CurrentUserID();
+		if ($this->AuditTrailOnViewData) { // Write all data
+			foreach (array_keys($rs) as $fldname) {
+				if (array_key_exists($fldname, $this->fields) && $this->fields[$fldname]->DataType <> DATATYPE_BLOB) { // Ignore BLOB fields
+					if ($this->fields[$fldname]->HtmlTag == "PASSWORD") {
+						$oldvalue = $Language->phrase("PasswordMask"); // Password Field
+					} elseif ($this->fields[$fldname]->DataType == DATATYPE_MEMO) {
+						if (AUDIT_TRAIL_TO_DATABASE)
+							$oldvalue = $rs[$fldname];
+						else
+							$oldvalue = "[MEMO]"; // Memo Field
+					} elseif ($this->fields[$fldname]->DataType == DATATYPE_XML) {
+						$oldvalue = "[XML]"; // XML Field
+					} else {
+						$oldvalue = $rs[$fldname];
+					}
+					WriteAuditTrail("log", $dt, $id, $usr, "V", $table, $fldname, $key, $oldvalue, "");
+				}
+			}
+		} else { // Write record id only
+			WriteAuditTrail("log", $dt, $id, $usr, "V", $table, "", $key, "", "");
+		}
+	}
+
+	// Write Audit Trail (search)
+	public function writeAuditTrailOnSearch($searchparm, $searchsql)
+	{
+		global $Language;
+		if (!$this->AuditTrailOnSearch)
+			return;
+		$table = 'manufacturer';
+
+		// Write Audit Trail
+		$dt = DbCurrentDateTime();
+		$id = ScriptName();
+		$usr = CurrentUserID();
+		WriteAuditTrail("log", $dt, $id, $usr, "search", $table, "", "", $searchsql, $searchparm);
 	}
 
 	// Table level events

@@ -23,6 +23,7 @@ $index = new index();
 $index->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 ?>
 <?php include_once "header.php" ?>

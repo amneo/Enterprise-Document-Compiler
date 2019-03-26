@@ -371,6 +371,7 @@ class datasheets_view extends datasheets
 	public function __construct()
 	{
 		global $Language, $COMPOSITE_KEY_SEPARATOR;
+		global $UserTable, $UserTableConn;
 
 		// Initialize
 		$GLOBALS["Page"] = &$this;
@@ -402,6 +403,10 @@ class datasheets_view extends datasheets
 		$this->ExportPdfUrl = $this->pageUrl() . "export=pdf" . $keyUrl;
 		$this->CancelUrl = $this->pageUrl() . "action=cancel";
 
+		// Table object (users)
+		if (!isset($GLOBALS['users']))
+			$GLOBALS['users'] = new users();
+
 		// Page ID
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
 			define(PROJECT_NAMESPACE . "PAGE_ID", 'view');
@@ -420,6 +425,12 @@ class datasheets_view extends datasheets
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = &$this->getConnection();
+
+		// User table object (users)
+		if (!isset($UserTable)) {
+			$UserTable = new users();
+			$UserTableConn = Conn($UserTable->Dbid);
+		}
 
 		// Export options
 		$this->ExportOptions = new ListOptions();
@@ -625,6 +636,56 @@ class datasheets_view extends datasheets
 		// Is modal
 		$this->IsModal = (Param("modal") == "1");
 
+		// User profile
+		$UserProfile = new UserProfile();
+
+		// Security
+		$Security = new AdvancedSecurity();
+		$validRequest = FALSE;
+
+		// Check security for API request
+		If (IsApi()) {
+
+			// Check token first
+			$func = PROJECT_NAMESPACE . CHECK_TOKEN_FUNC;
+			if (is_callable($func) && Post(TOKEN_NAME) !== NULL)
+				$validRequest = $func(Post(TOKEN_NAME), SessionTimeoutTime());
+			elseif (is_array($RequestSecurity) && @$RequestSecurity["username"] <> "") // Login user for API request
+				$Security->loginUser(@$RequestSecurity["username"], @$RequestSecurity["userid"], @$RequestSecurity["parentuserid"], @$RequestSecurity["userlevelid"]);
+		}
+		if (!$validRequest) {
+			if (IsPasswordExpired())
+				$this->terminate(GetUrl("changepwd.php"));
+			if (!$Security->isLoggedIn())
+				$Security->autoLogin();
+			if ($Security->isLoggedIn())
+				$Security->TablePermission_Loading();
+			$Security->loadCurrentUserLevel($this->ProjectID . $this->TableName);
+			if ($Security->isLoggedIn())
+				$Security->TablePermission_Loaded();
+			if (!$Security->canView()) {
+				$Security->saveLastUrl();
+				$this->setFailureMessage(DeniedMessage()); // Set no permission
+				if ($Security->canList())
+					$this->terminate(GetUrl("datasheetslist.php"));
+				else
+					$this->terminate(GetUrl("login.php"));
+				return;
+			}
+			if ($Security->isLoggedIn()) {
+				$Security->UserID_Loading();
+				$Security->loadUserID();
+				$Security->UserID_Loaded();
+			}
+		}
+
+		// Update last accessed time
+		if ($UserProfile->isValidUser(CurrentUserName(), session_id())) {
+		} else {
+			Write($Language->phrase("UserProfileCorrupted"));
+			$this->terminate();
+		}
+
 		// Get export parameters
 		$custom = "";
 		if (Param("export") !== NULL) {
@@ -673,22 +734,23 @@ class datasheets_view extends datasheets
 		$this->partno->setVisibility();
 		$this->dataSheetFile->Visible = FALSE;
 		$this->manufacturer->setVisibility();
-		$this->cdd->Visible = FALSE;
-		$this->thirdParty->Visible = FALSE;
+		$this->cddFile->Visible = FALSE;
+		$this->thirdPartyFile->Visible = FALSE;
 		$this->tittle->setVisibility();
 		$this->cover->Visible = FALSE;
 		$this->cddissue->setVisibility();
 		$this->cddno->setVisibility();
+		$this->thirdPartyNo->Visible = FALSE;
 		$this->duration->setVisibility();
 		$this->expirydt->setVisibility();
-		$this->highlighted->setVisibility();
+		$this->highlighted->Visible = FALSE;
 		$this->coo->setVisibility();
 		$this->hssCode->setVisibility();
 		$this->systrade->setVisibility();
 		$this->isdatasheet->setVisibility();
-		$this->nativeFiles->setVisibility();
 		$this->datasheetdate->Visible = FALSE;
 		$this->username->Visible = FALSE;
+		$this->nativeFiles->setVisibility();
 		$this->hideFieldsForAddEdit();
 
 		// Do not use lookup cache
@@ -823,7 +885,16 @@ class datasheets_view extends datasheets
 			$item->Body = "<a class=\"ew-action ew-add\" title=\"" . $addcaption . "\" data-caption=\"" . $addcaption . "\" href=\"javascript:void(0);\" onclick=\"ew.modalDialogShow({lnk:this,url:'" . HtmlEncode($this->AddUrl) . "'});\">" . $Language->phrase("ViewPageAddLink") . "</a>";
 		else
 			$item->Body = "<a class=\"ew-action ew-add\" title=\"" . $addcaption . "\" data-caption=\"" . $addcaption . "\" href=\"" . HtmlEncode($this->AddUrl) . "\">" . $Language->phrase("ViewPageAddLink") . "</a>";
-		$item->Visible = ($this->AddUrl <> "");
+		$item->Visible = ($this->AddUrl <> "" && $Security->canAdd());
+
+		// Edit
+		$item = &$option->add("edit");
+		$editcaption = HtmlTitle($Language->phrase("ViewPageEditLink"));
+		if ($this->IsModal) // Modal
+			$item->Body = "<a class=\"ew-action ew-edit\" title=\"" . $editcaption . "\" data-caption=\"" . $editcaption . "\" href=\"javascript:void(0);\" onclick=\"ew.modalDialogShow({lnk:this,url:'" . HtmlEncode($this->EditUrl) . "'});\">" . $Language->phrase("ViewPageEditLink") . "</a>";
+		else
+			$item->Body = "<a class=\"ew-action ew-edit\" title=\"" . $editcaption . "\" data-caption=\"" . $editcaption . "\" href=\"" . HtmlEncode($this->EditUrl) . "\">" . $Language->phrase("ViewPageEditLink") . "</a>";
+		$item->Visible = ($this->EditUrl <> "" && $Security->canEdit());
 
 		// Set up action default
 		$option = &$options["action"];
@@ -946,15 +1017,16 @@ class datasheets_view extends datasheets
 		} else {
 			$this->manufacturer->VirtualValue = ""; // Clear value
 		}
-		$this->cdd->Upload->DbValue = $row['cdd'];
-		$this->cdd->setDbValue($this->cdd->Upload->DbValue);
-		$this->thirdParty->Upload->DbValue = $row['thirdParty'];
-		$this->thirdParty->setDbValue($this->thirdParty->Upload->DbValue);
+		$this->cddFile->Upload->DbValue = $row['cddFile'];
+		$this->cddFile->setDbValue($this->cddFile->Upload->DbValue);
+		$this->thirdPartyFile->Upload->DbValue = $row['thirdPartyFile'];
+		$this->thirdPartyFile->setDbValue($this->thirdPartyFile->Upload->DbValue);
 		$this->tittle->setDbValue($row['tittle']);
 		$this->cover->Upload->DbValue = $row['cover'];
 		$this->cover->setDbValue($this->cover->Upload->DbValue);
 		$this->cddissue->setDbValue($row['cddissue']);
 		$this->cddno->setDbValue($row['cddno']);
+		$this->thirdPartyNo->setDbValue($row['thirdPartyNo']);
 		$this->duration->setDbValue($row['duration']);
 		$this->expirydt->setDbValue($row['expirydt']);
 		$this->highlighted->setDbValue((ConvertToBool($row['highlighted']) ? "1" : "0"));
@@ -967,9 +1039,9 @@ class datasheets_view extends datasheets
 		$this->hssCode->setDbValue($row['hssCode']);
 		$this->systrade->setDbValue($row['systrade']);
 		$this->isdatasheet->setDbValue((ConvertToBool($row['isdatasheet']) ? "1" : "0"));
-		$this->nativeFiles->setDbValue($row['nativeFiles']);
 		$this->datasheetdate->setDbValue($row['datasheetdate']);
 		$this->username->setDbValue($row['username']);
+		$this->nativeFiles->setDbValue($row['nativeFiles']);
 	}
 
 	// Return a row with default values
@@ -980,12 +1052,13 @@ class datasheets_view extends datasheets
 		$row['partno'] = NULL;
 		$row['dataSheetFile'] = NULL;
 		$row['manufacturer'] = NULL;
-		$row['cdd'] = NULL;
-		$row['thirdParty'] = NULL;
+		$row['cddFile'] = NULL;
+		$row['thirdPartyFile'] = NULL;
 		$row['tittle'] = NULL;
 		$row['cover'] = NULL;
 		$row['cddissue'] = NULL;
 		$row['cddno'] = NULL;
+		$row['thirdPartyNo'] = NULL;
 		$row['duration'] = NULL;
 		$row['expirydt'] = NULL;
 		$row['highlighted'] = NULL;
@@ -993,9 +1066,9 @@ class datasheets_view extends datasheets
 		$row['hssCode'] = NULL;
 		$row['systrade'] = NULL;
 		$row['isdatasheet'] = NULL;
-		$row['nativeFiles'] = NULL;
 		$row['datasheetdate'] = NULL;
 		$row['username'] = NULL;
+		$row['nativeFiles'] = NULL;
 		return $row;
 	}
 
@@ -1020,12 +1093,13 @@ class datasheets_view extends datasheets
 		// partno
 		// dataSheetFile
 		// manufacturer
-		// cdd
-		// thirdParty
+		// cddFile
+		// thirdPartyFile
 		// tittle
 		// cover
 		// cddissue
 		// cddno
+		// thirdPartyNo
 		// duration
 		// expirydt
 		// highlighted
@@ -1033,15 +1107,16 @@ class datasheets_view extends datasheets
 		// hssCode
 		// systrade
 		// isdatasheet
-		// nativeFiles
 		// datasheetdate
 		// username
+		// nativeFiles
 
 		if ($this->RowType == ROWTYPE_VIEW) { // View row
 
 			// partno
 			$this->partno->ViewValue = $this->partno->CurrentValue;
 			$this->partno->ViewValue = strtoupper($this->partno->ViewValue);
+			$this->partno->CssClass = "font-weight-bold";
 			$this->partno->ViewCustomAttributes = "";
 
 			// manufacturer
@@ -1086,6 +1161,10 @@ class datasheets_view extends datasheets
 			$this->cddno->ViewValue = strtoupper($this->cddno->ViewValue);
 			$this->cddno->ViewCustomAttributes = "";
 
+			// thirdPartyNo
+			$this->thirdPartyNo->ViewValue = $this->thirdPartyNo->CurrentValue;
+			$this->thirdPartyNo->ViewCustomAttributes = "";
+
 			// duration
 			if (strval($this->duration->CurrentValue) <> "") {
 				$this->duration->ViewValue = $this->duration->optionCaption($this->duration->CurrentValue);
@@ -1098,14 +1177,6 @@ class datasheets_view extends datasheets
 			$this->expirydt->ViewValue = $this->expirydt->CurrentValue;
 			$this->expirydt->ViewValue = FormatDateTime($this->expirydt->ViewValue, 5);
 			$this->expirydt->ViewCustomAttributes = "";
-
-			// highlighted
-			if (ConvertToBool($this->highlighted->CurrentValue)) {
-				$this->highlighted->ViewValue = $this->highlighted->tagCaption(1) <> "" ? $this->highlighted->tagCaption(1) : "Yes";
-			} else {
-				$this->highlighted->ViewValue = $this->highlighted->tagCaption(2) <> "" ? $this->highlighted->tagCaption(2) : "No";
-			}
-			$this->highlighted->ViewCustomAttributes = "";
 
 			// coo
 			if ($this->coo->VirtualValue <> "") {
@@ -1188,8 +1259,8 @@ class datasheets_view extends datasheets
 
 			// cddno
 			$this->cddno->LinkCustomAttributes = "";
-			if (!EmptyValue($this->cdd->Upload->DbValue)) {
-				$this->cddno->HrefValue = GetFileUploadUrl($this->cdd, $this->cdd->Upload->DbValue); // Add prefix/suffix
+			if (!EmptyValue($this->cddFile->Upload->DbValue)) {
+				$this->cddno->HrefValue = GetFileUploadUrl($this->cddFile, $this->cddFile->Upload->DbValue); // Add prefix/suffix
 				$this->cddno->LinkAttrs["target"] = "_blank"; // Add target
 				if ($this->isExport()) $this->cddno->HrefValue = FullUrl($this->cddno->HrefValue, "href");
 			} else {
@@ -1206,11 +1277,6 @@ class datasheets_view extends datasheets
 			$this->expirydt->LinkCustomAttributes = "";
 			$this->expirydt->HrefValue = "";
 			$this->expirydt->TooltipValue = "";
-
-			// highlighted
-			$this->highlighted->LinkCustomAttributes = "";
-			$this->highlighted->HrefValue = "";
-			$this->highlighted->TooltipValue = "";
 
 			// coo
 			$this->coo->LinkCustomAttributes = "";

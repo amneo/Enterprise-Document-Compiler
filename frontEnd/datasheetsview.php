@@ -23,6 +23,7 @@ $datasheets_view = new datasheets_view();
 $datasheets_view->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -55,8 +56,6 @@ fdatasheetsview.lists["x_manufacturer"].options = <?php echo JsonEncode($datashe
 fdatasheetsview.autoSuggests["x_manufacturer"] = <?php echo json_encode(["data" => "ajax=autosuggest"]) ?>;
 fdatasheetsview.lists["x_duration"] = <?php echo $datasheets_view->duration->Lookup->toClientList() ?>;
 fdatasheetsview.lists["x_duration"].options = <?php echo JsonEncode($datasheets_view->duration->options(FALSE, TRUE)) ?>;
-fdatasheetsview.lists["x_highlighted"] = <?php echo $datasheets_view->highlighted->Lookup->toClientList() ?>;
-fdatasheetsview.lists["x_highlighted"].options = <?php echo JsonEncode($datasheets_view->highlighted->options(FALSE, TRUE)) ?>;
 fdatasheetsview.lists["x_coo"] = <?php echo $datasheets_view->coo->Lookup->toClientList() ?>;
 fdatasheetsview.lists["x_coo"].options = <?php echo JsonEncode($datasheets_view->coo->lookupOptions()) ?>;
 fdatasheetsview.autoSuggests["x_coo"] = <?php echo json_encode(["data" => "ajax=autosuggest"]) ?>;
@@ -202,17 +201,6 @@ $datasheets_view->showMessage();
 <span id="el_datasheets_expirydt">
 <span<?php echo $datasheets->expirydt->viewAttributes() ?>>
 <?php echo $datasheets->expirydt->getViewValue() ?></span>
-</span>
-</td>
-	</tr>
-<?php } ?>
-<?php if ($datasheets->highlighted->Visible) { // highlighted ?>
-	<tr id="r_highlighted">
-		<td class="<?php echo $datasheets_view->TableLeftColumnClass ?>"><span id="elh_datasheets_highlighted"><?php echo $datasheets->highlighted->caption() ?></span></td>
-		<td data-name="highlighted"<?php echo $datasheets->highlighted->cellAttributes() ?>>
-<span id="el_datasheets_highlighted">
-<span<?php echo $datasheets->highlighted->viewAttributes() ?>>
-<?php echo $datasheets->highlighted->getViewValue() ?></span>
 </span>
 </td>
 	</tr>

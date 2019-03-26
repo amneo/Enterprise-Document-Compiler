@@ -1836,7 +1836,7 @@ class Breadcrumb
 	public function __construct()
 	{
 		global $Language;
-		$this->Links[] = ["home", "HomePage", "datasheetlist.php", "ew-home", "", FALSE]; // Home
+		$this->Links[] = ["home", "HomePage", "datasheetslist.php", "ew-home", "", FALSE]; // Home
 	}
 
 	// Check if an item exists
@@ -5201,6 +5201,204 @@ class SubPage
 }
 ?>
 <?php
+$EXPORT['word'] = 'ExportPhpWord'; // Replace the default ExportWord class
+
+/**
+ * Class for export to Word by PHPWord
+ */
+class ExportPhpWord extends ExportBase
+{
+	protected $PhpWord;
+	protected $Section;
+	protected $CellWidth;
+	protected $StyleTable;
+	protected $PhpWordTbl;
+	protected $RowType;
+	public static $MaxImageWidth = 250; // Max image width
+
+	// Constructor
+	public function __construct(&$tbl, $style)
+	{
+		global $EXPORT_WORD_CELL_WIDTH;
+		parent::__construct($tbl, $style);
+		$this->PhpWord = new \PhpOffice\PhpWord\PhpWord();
+		$this->Section = $this->PhpWord->createSection(array("orientation" => $tbl->ExportWordPageOrientation));
+		$this->CellWidth = $tbl->ExportWordColumnWidth;
+		$this->StyleTable = array("borderSize" => 6, "borderColor" => "A9A9A9", "cellMargin" => 60); // Customize table cell styles here
+		$this->PhpWord->addTableStyle("phpWord", $this->StyleTable);
+		$this->PhpWordTbl = $this->Section->addTable("phpWord");
+	}
+
+	// Convert to UTF-8
+	protected function convertToUtf8($value)
+	{
+		$value = RemoveHtml($value);
+		$value = HtmlDecode($value);
+		$value = HtmlEncode($value);
+		return ConvertToUtf8($value);
+	}
+
+	// Table header
+	public function exportTableHeader() {}
+
+	// Field aggregate
+	public function exportAggregate(&$fld, $type)
+	{
+		if (!$fld->Exportable)
+			return;
+		$this->FldCnt++;
+		if ($this->Horizontal) {
+			global $Language;
+			if ($this->FldCnt == 1)
+				$this->PhpWordTbl->addRow(0);
+			$val = "";
+			if (in_array($type, array("TOTAL", "COUNT", "AVERAGE")))
+				$val = $Language->phrase($type) . ": " . $this->convertToUtf8($fld->exportValue());
+			$this->PhpWordTbl->addCell($this->CellWidth, array("gridSpan" => 1))->addText(trim($val));
+		}
+	}
+
+	// Field caption
+	public function exportCaption(&$fld)
+	{
+		if (!$fld->Exportable)
+			return;
+		$this->FldCnt++;
+		$this->exportCaptionBy($fld, $this->FldCnt - 1, $this->RowCnt);
+	}
+
+	// Field caption by column and row
+	public function exportCaptionBy(&$fld, $col, $row)
+	{
+		if ($col == 0)
+			$this->PhpWordTbl->addRow(0);
+		$val = $this->convertToUtf8($fld->exportCaption());
+		$this->PhpWordTbl->addCell($this->CellWidth, array("gridSpan" => 1, "bgColor" => "E4E4E4"))->addText(trim($val), array("bold" => TRUE)); // Customize table header cell styles here
+	}
+
+	// Field value by column and row
+	public function exportValueBy(&$fld, $col, $row)
+	{
+		if ($col == 0)
+			$this->PhpWordTbl->addRow(0);
+		$val = "";
+		$maxImageWidth = self::$MaxImageWidth;
+		if ($fld->ExportFieldImage && $fld->ViewTag == "IMAGE") { // Image
+			$imagefn = $fld->getTempImage();
+			$cell =	$this->PhpWordTbl->addCell($this->CellWidth);
+			if (!$fld->UploadMultiple || !ContainsString($imagefn, ",")) {
+				$fn = ServerMapPath($imagefn, TRUE);
+				if ($imagefn <> "" && file_exists($fn) && !is_dir($fn)) {
+					$size = @getimagesize($fn);
+					$style = array();
+					if ($maxImageWidth > 0 && @$size[0] > $maxImageWidth) {
+						$style["width"] = $maxImageWidth;
+						$style["height"] = $maxImageWidth / $size[0] * $size[1];
+					}
+					$cell->addImage($fn, $style);
+				}
+			} else {
+				$ar = explode(",", $imagefn);
+				foreach ($ar as $imagefn) {
+					$fn = ServerMapPath($imagefn, TRUE);
+					if ($imagefn <> "" && file_exists($fn) && !is_dir($fn)) {
+						$size = @getimagesize($fn);
+						$style = array();
+						if ($maxImageWidth > 0 && @$size[0] > $maxImageWidth) {
+							$style["width"] = $maxImageWidth;
+							$style["height"] = $maxImageWidth / $size[0] * $size[1];
+						}
+						$cell->addImage($fn, $style);
+					}
+				}
+			}
+		} elseif ($fld->ExportFieldImage && $fld->ExportHrefValue <> "") { // Export custom view tag
+			$imagefn = $fld->ExportHrefValue;
+			$cell =	$this->PhpWordTbl->addCell($this->CellWidth);
+			$fn = ServerMapPath($imagefn, TRUE);
+			if ($imagefn <> "" && file_exists($fn) && !is_dir($fn)) {
+				$size = @getimagesize($fn);
+				$style = array();
+				if ($maxImageWidth > 0 && @$size[0] > $maxImageWidth) {
+					$style["width"] = $maxImageWidth;
+					$style["height"] = $maxImageWidth / $size[0] * $size[1];
+				}
+				$cell->addImage($fn, $style);
+			}
+		} else { // Formatted Text
+			$val = $this->convertToUtf8($fld->exportValue());
+			if ($this->RowType > 0) { // Not table header/footer
+				if (in_array($fld->Type, array(4, 5, 6, 14, 131))) // If float or currency
+					$val = $this->convertToUtf8($fld->CurrentValue); // Use original value instead of formatted value
+			}
+			$this->PhpWordTbl->addCell($this->CellWidth, array("gridSpan" => 1))->addText(trim($val));
+		}
+	}
+
+	// Begin a row
+	public function beginExportRow($rowCnt = 0, $useStyle = TRUE)
+	{
+		$this->RowCnt++;
+		$this->FldCnt = 0;
+		$this->RowType = $rowCnt;
+	}
+
+	// End a row
+	public function endExportRow($rowcnt = 0) {}
+
+	// Empty row
+	public function exportEmptyRow()
+	{
+		$this->RowCnt++;
+	}
+
+	// Page break
+	public function exportPageBreak() {}
+
+	// Export a field
+	public function exportField(&$fld)
+	{
+		if (!$fld->Exportable)
+			return;
+		$this->FldCnt++;
+		if ($this->Horizontal) {
+			$this->exportValueBy($fld, $this->FldCnt - 1, $this->RowCnt);
+		} else { // Vertical, export as a row
+			$this->RowCnt++;
+			$this->exportCaptionBy($fld, 0, $this->RowCnt);
+			$this->exportValueBy($fld, 1, $this->RowCnt);
+		}
+	}
+
+	// Table footer
+	public function exportTableFooter() {}
+
+	// Add HTML tags
+	public function exportHeaderAndFooter() {}
+
+	// Export
+	public function export()
+	{
+		global $ExportFileName;
+		if (!DEBUG_ENABLED && ob_get_length())
+			ob_end_clean();
+		header('Set-Cookie: fileDownload=true; path=/');
+		header('Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+		header('Content-Disposition: attachment; filename=' . $ExportFileName . '.docx');
+		header('Cache-Control: max-age=0');
+		$objWriter = \PhpOffice\PhpWord\IOFactory::createWriter($this->PhpWord, 'Word2007');
+		@$objWriter->save('php://output');
+		DeleteTempImages();
+	}
+
+	// Destructor
+	public function __destruct()
+	{
+		DeleteTempImages();
+	}
+}
+?>
+<?php
 $EXPORT['excel'] = 'ExportExcel5'; // Replace the default ExportExcel class
 $EXPORT['excel2007'] = 'ExportExcel2007';
 
@@ -5877,6 +6075,37 @@ class HttpUpload
 		// Language object
 		if (!isset($Language))
 			$Language = new Language();
+
+		// Requires JWT login for action=upload request
+		global $UserProfile, $Security, $RequestSecurity;
+		if ($name == "") {
+
+			// User profile
+			$UserProfile = new UserProfile();
+
+			// Check token first
+			$validRequest = FALSE;
+			$func = PROJECT_NAMESPACE . CHECK_TOKEN_FUNC;
+			if (is_callable($func) && Post(TOKEN_NAME) !== NULL) {
+				$validRequest = $func(Post(TOKEN_NAME), SessionTimeoutTime());
+				if ($validRequest) {
+					if (!isset($Security)) {
+						if (session_status() !== PHP_SESSION_ACTIVE)
+							session_start(); // Init session data
+						$Security = new AdvancedSecurity();
+					}
+				}
+			}
+			if (!$validRequest) {
+
+				// Security
+				$Security = new AdvancedSecurity();
+				if (is_array($RequestSecurity) && @$RequestSecurity["username"] <> "") // Login user
+					$Security->loginUser(@$RequestSecurity["username"], @$RequestSecurity["userid"], @$RequestSecurity["parentuserid"], @$RequestSecurity["userlevelid"]);
+			}
+			if (!$Security->isLoggedIn())
+				return FALSE;
+		}
 		$res = TRUE;
 		$req = $Request->getUploadedFiles();
 		$files = [];
@@ -6203,6 +6432,7 @@ class AdvancedSecurity
 	public $CurrentUserLevel; // Permissions
 	public $CurrentUserID;
 	public $CurrentParentUserID;
+	protected $AnoymousUserLevelChecked = FALSE; // Dynamic User Level security
 	private $_isLoggedIn = FALSE;
 	private $_userName;
 
@@ -6528,6 +6758,7 @@ class AdvancedSecurity
 	public function validateUser(&$usr, &$pwd, $autologin, $provider = "")
 	{
 		global $Language, $UserProfile, $AUTH_CONFIG;
+		global $UserTable, $UserTableConn;
 		$valid = FALSE;
 		$customValid = FALSE;
 		$providerValid = FALSE;
@@ -6572,9 +6803,123 @@ class AdvancedSecurity
 			//$_SESSION[SESSION_STATUS] = "login"; // To be setup below
 			$this->setCurrentUserName($usr); // Load user name
 		}
-		if ($customValid) {
-			$rs = NULL;
-			$customValid = $this->User_Validated($rs) !== FALSE;
+
+		// Check hard coded admin first
+		if (!$valid) {
+			$adminUserName = ADMIN_USER_NAME;
+			$adminPassword = ADMIN_PASSWORD;
+			if (ENCRYPTION_ENABLED) {
+				try {
+					$adminUserName = PhpDecrypt(ADMIN_USER_NAME, ENCRYPTION_KEY);
+					$adminPassword = PhpDecrypt(ADMIN_PASSWORD, ENCRYPTION_KEY);
+				} catch (\Defuse\Crypto\Exception\WrongKeyOrModifiedCiphertextException $e) {
+					$adminUserName = ADMIN_USER_NAME;
+					$adminPassword = ADMIN_PASSWORD;
+				}
+			}
+			if (CASE_SENSITIVE_PASSWORD) {
+				$valid = (!$customValid && $adminUserName === $usr && $adminPassword === $pwd) ||
+					($customValid && $adminUserName === $usr);
+			} else {
+				$valid = (!$customValid && SameText($adminUserName, $usr) && SameText($adminPassword, $pwd)) ||
+					($customValid && SameText($adminUserName, $usr));
+			}
+			if ($valid) {
+				$this->_isLoggedIn = TRUE;
+				$_SESSION[SESSION_STATUS] = "login";
+				$_SESSION[SESSION_SYS_ADMIN] = 1; // System Administrator
+				$this->setCurrentUserName($Language->phrase("UserAdministrator")); // Load user name
+				$this->setSessionUserID(-1); // System Administrator
+				$this->setSessionUserLevelID(-1); // System Administrator
+				$this->setupUserLevel();
+				$UserProfile->setValue(USER_PROFILE_LAST_PASSWORD_CHANGED_DATE, StdCurrentDate());
+			}
+		}
+
+		// Check other users
+		if (!$valid) {
+			$filter = str_replace("%u", AdjustSql($usr, USER_TABLE_DBID), USER_NAME_FILTER);
+			$filter .= " AND " . USER_ACTIVATE_FILTER;
+
+			// User table object (users)
+			if (!isset($UserTable)) {
+				$UserTable = new users();
+				$UserTableConn = Conn($UserTable->Dbid);
+			}
+
+			// Set up filter (WHERE Clause)
+			$sql = $UserTable->getSql($filter);
+			if ($rs = $UserTableConn->execute($sql)) {
+				if (!$rs->EOF) {
+					$valid = $customValid || ComparePassword($rs->fields('uPassword'), $pwd);
+
+					// Set up retry count from manual login
+					if (!$autologin) {
+						$UserProfile->loadProfileFromDatabase($usr);
+						if (!$valid) {
+							$retrycount = $UserProfile->getValue(USER_PROFILE_LOGIN_RETRY_COUNT);
+							$retrycount++;
+							$UserProfile->setValue(USER_PROFILE_LOGIN_RETRY_COUNT, $retrycount);
+							$UserProfile->setValue(USER_PROFILE_LAST_BAD_LOGIN_DATE_TIME, StdCurrentDateTime());
+							WriteAuditTrail("log", DbCurrentDateTime(), ScriptName(), $usr, str_replace("%n", $retrycount, $Language->phrase("AuditTrailFailedAttempt")), CurrentUserIP(), "", "", "", "");
+						} else {
+							$UserProfile->setValue(USER_PROFILE_LOGIN_RETRY_COUNT, 0);
+						}
+						$UserProfile->saveProfileToDatabase($usr); // Save profile
+					}
+
+					// Check concurrent user login
+					if ($valid) {
+						if ($UserProfile->isValidUser($usr, session_id())) {
+						} else {
+							$_SESSION[SESSION_FAILURE_MESSAGE] = str_replace("%u", $usr, $Language->phrase("UserLoggedIn"));
+							WriteAuditTrail("log", DbCurrentDateTime(), ScriptName(), $usr, $Language->phrase("AuditTrailUserLoggedIn"), CurrentUserIP(), "", "", "", "");
+							$valid = FALSE;
+						}
+					}
+
+					// Password expiry checking
+					if ($valid && !$autologin && $UserProfile->passwordExpired($usr)) {
+							$this->setSessionPasswordExpired();
+							$row = $rs->fields;
+							$this->User_PasswordExpired($row);
+							if (IsPasswordExpired()) {
+								WriteAuditTrail("log", DbCurrentDateTime(), ScriptName(), $usr, $Language->phrase("AuditTrailPasswordExpired"), CurrentUserIP(), "", "", "", "");
+								$rs->close();
+								return FALSE;
+							}
+					}
+					if ($valid) {
+						$this->_isLoggedIn = TRUE;
+						$_SESSION[SESSION_STATUS] = "login";
+						$_SESSION[SESSION_SYS_ADMIN] = 0; // Non System Administrator
+						$this->setCurrentUserName($rs->fields('userLoginId')); // Load user name
+						$this->setSessionUserID($rs->fields('userLoginId')); // Load User ID
+						$this->setSessionParentUserID($rs->fields('uReportsTo')); // Load parent User ID
+						if ($rs->fields('uLevel') == NULL) {
+							$this->setSessionUserLevelID(0);
+						} else {
+							$this->setSessionUserLevelID((int)$rs->fields('uLevel')); // Load User Level
+						}
+						$this->setupUserLevel();
+
+						// Call User Validated event
+						$row = $rs->fields;
+						$UserProfile->assign($row);
+						$UserProfile->delete('uPassword'); // Delete password
+						$valid = $this->User_Validated($row) !== FALSE; // For backward compatibility
+					}
+				} else { // User not found in user table
+					if ($customValid) { // Grant default permissions
+						$this->setSessionUserID($usr); // User name as User ID
+						$this->setSessionUserLevelID(-2); // Anonymous User Level
+						$this->setupUserLevel();
+						$row = NULL;
+						$customValid = $this->User_Validated($row) !== FALSE;
+					}
+				}
+				$rs->close();
+			}
 		}
 		$UserProfile->save();
 		if ($customValid)
@@ -6687,8 +7032,155 @@ class AdvancedSecurity
 		}
 	}
 
-	// No User Level security
-	public function setupUserLevel() {}
+	// Get User Level settings from database
+	public function setupUserLevel()
+	{
+		$this->setupUserLevelEx(); // Load all user levels
+
+		// User Level loaded event
+		$this->UserLevel_Loaded();
+
+		// Save the User Level to Session variable
+		$this->saveUserLevel();
+	}
+
+	// Get all User Level settings from database
+	public function setupUserLevelEx()
+	{
+		global $Language;
+		global $Page;
+		global $RELATED_PROJECT_ID;
+
+		// Load user level from config file first
+		$arTable = [];
+		$arUserLevel = [];
+		$arUserLevelPriv = [];
+		$this->loadUserLevelFromConfigFile($arUserLevel, $arUserLevelPriv, $arTable);
+
+		// Add Anonymous user level
+		$conn = &Conn(USER_LEVEL_DBID);
+		if (!$this->AnoymousUserLevelChecked) {
+			$sql = "SELECT COUNT(*) FROM " . USER_LEVEL_TABLE . " WHERE " . USER_LEVEL_ID_FIELD . " = -2";
+			if (ExecuteScalar($sql, $conn) == 0) {
+				$sql = "INSERT INTO " . USER_LEVEL_TABLE .
+					" (" . USER_LEVEL_ID_FIELD . ", " . USER_LEVEL_NAME_FIELD . ") VALUES (-2, '" . AdjustSql($Language->phrase("UserAnonymous"), USER_LEVEL_DBID) . "')";
+				$conn->execute($sql);
+			}
+		}
+
+		// Get the User Level definitions
+		$sql = "SELECT " . USER_LEVEL_ID_FIELD . ", " . USER_LEVEL_NAME_FIELD . " FROM " . USER_LEVEL_TABLE;
+		if ($rs = $conn->execute($sql)) {
+			$this->UserLevel = $rs->getRows();
+			$rs->close();
+		}
+
+		// Add Anonymous user privileges
+		$conn = &Conn(USER_LEVEL_PRIV_DBID);
+		if (!$this->AnoymousUserLevelChecked) {
+			$sql = "SELECT COUNT(*) FROM " . USER_LEVEL_PRIV_TABLE . " WHERE " . USER_LEVEL_PRIV_USER_LEVEL_ID_FIELD . " = -2";
+			if (ExecuteScalar($sql, $conn) == 0) {
+				$wrkUserLevel = [];
+				$wrkUserLevelPriv = [];
+				$wrkTable = [];
+				$this->loadUserLevelFromConfigFile($wrkUserLevel, $wrkUserLevelPriv, $wrkTable, TRUE);
+				foreach ($wrkTable as $table) {
+					$wrkPriv = 0;
+					foreach ($wrkUserLevelPriv as $userpriv) {
+						if (@$userpriv[0] == @$table[4] . @$table[0] && @$userpriv[1] == -2) {
+							$wrkPriv = @$userpriv[2];
+							break;
+						}
+					}
+					$sql = "INSERT INTO " . USER_LEVEL_PRIV_TABLE .
+						" (" . USER_LEVEL_PRIV_USER_LEVEL_ID_FIELD . ", " . USER_LEVEL_PRIV_TABLE_NAME_FIELD . ", " . USER_LEVEL_PRIV_PRIV_FIELD .
+						") VALUES (-2, '" . AdjustSql(@$table[4] . @$table[0], USER_LEVEL_PRIV_DBID) . "', " . $wrkPriv . ")";
+					$conn->execute($sql);
+				}
+			}
+			$this->AnoymousUserLevelChecked = TRUE;
+		}
+
+		// Get the User Level privileges
+		$userPrivSql = "SELECT " . USER_LEVEL_PRIV_TABLE_NAME_FIELD . ", " . USER_LEVEL_PRIV_USER_LEVEL_ID_FIELD . ", " . USER_LEVEL_PRIV_PRIV_FIELD . " FROM " . USER_LEVEL_PRIV_TABLE;
+		if (!$this->isAdmin() && count($this->UserLevelID) > 0) {
+			$userPrivSql .= " WHERE " . USER_LEVEL_PRIV_USER_LEVEL_ID_FIELD . " IN (" . $this->userLevelList() . ")";
+			$_SESSION[SESSION_USER_LEVEL_LIST_LOADED] = $this->userLevelList(); // Save last loaded list
+		} else {
+			$_SESSION[SESSION_USER_LEVEL_LIST_LOADED] = ""; // Save last loaded list
+		}
+		if ($rs = $conn->execute($userPrivSql)) {
+			$this->UserLevelPriv = $rs->getRows();
+			$rs->close();
+		}
+
+		// Increase table name field size if necessary
+		if (GetConnectionType(USER_LEVEL_PRIV_DBID) == "MYSQL") {
+			try {
+				if ($rs = $conn->execute("SHOW COLUMNS FROM " . USER_LEVEL_PRIV_TABLE . " LIKE '" . AdjustSql(USER_LEVEL_PRIV_TABLE_NAME_FIELD_2, USER_LEVEL_PRIV_DBID) . "'")) {
+					$type = $rs->fields("Type");
+					$rs->Close();
+					if (preg_match('/varchar\(([\d]+)\)/i', $type, $matches)) {
+						$size = (int)$matches[1];
+						if ($size < USER_LEVEL_PRIV_TABLE_NAME_FIELD_SIZE)
+							$conn->execute("ALTER TABLE " . USER_LEVEL_PRIV_TABLE . " MODIFY COLUMN " . USER_LEVEL_PRIV_TABLE_NAME_FIELD . " VARCHAR(" . USER_LEVEL_PRIV_TABLE_NAME_FIELD_SIZE . ")");
+					}
+				}
+			} catch (\Exception $e) {}
+		}
+
+		// Update User Level privileges record if necessary
+		$projectID = CurrentProjectID();
+		$reloadUserPriv = 0;
+
+		// Update table without prefix
+		$sql = "SELECT COUNT(*) FROM " . USER_LEVEL_PRIV_TABLE . " WHERE EXISTS(SELECT * FROM " .
+				USER_LEVEL_PRIV_TABLE . " WHERE " . USER_LEVEL_PRIV_TABLE_NAME_FIELD . " NOT LIKE '{%')";
+		if (ExecuteScalar($sql, $conn) > 0) {
+			$ar = array_map(function ($t) {
+				return "'" . AdjustSql($t, USER_LEVEL_PRIV_DBID) . "'";
+			}, $arTable);
+			$sql = "UPDATE " . USER_LEVEL_PRIV_TABLE . " SET " .
+				USER_LEVEL_PRIV_TABLE_NAME_FIELD . " = " . $conn->concat("'" . AdjustSql($projectID, USER_LEVEL_PRIV_DBID) . "'", USER_LEVEL_PRIV_TABLE_NAME_FIELD) . " WHERE " .
+				USER_LEVEL_PRIV_TABLE_NAME_FIELD . " IN (" . implode(",", $ar) . ")";
+			if ($conn->execute($Sql))
+				$reloadUserPriv += $conn->Affected_Rows();
+		}
+
+		// Update table with report prefix
+		if ($RELATED_PROJECT_ID <> "") {
+			$sql = "SELECT COUNT(*) FROM " . USER_LEVEL_PRIV_TABLE . " WHERE EXISTS(SELECT * FROM " .
+				USER_LEVEL_PRIV_TABLE . " WHERE " . USER_LEVEL_PRIV_TABLE_NAME_FIELD . " LIKE '" .
+				AdjustSql(TABLE_PREFIX, USER_LEVEL_PRIV_DBID) . "%')";
+			if (ExecuteScalar($sql, $conn) > 0) {
+				$ar = array_map(function ($t) {
+					return "'" . AdjustSql(TABLE_PREFIX . $t, USER_LEVEL_PRIV_DBID) . "'";
+				}, $arTable);
+				$sql = "UPDATE " . USER_LEVEL_PRIV_TABLE . " SET " .
+					USER_LEVEL_PRIV_TABLE_NAME_FIELD . " = REPLACE(" . USER_LEVEL_PRIV_TABLE_NAME_FIELD . "," .
+					"'" . AdjustSql(TABLE_PREFIX, USER_LEVEL_PRIV_DBID) . "','" . AdjustSql($RELATED_PROJECT_ID, USER_LEVEL_PRIV_DBID) . "') WHERE " .
+					USER_LEVEL_PRIV_TABLE_NAME_FIELD . " IN (" . implode(",", $ar) . ")";
+				if ($conn->execute($sql))
+					$reloadUserPriv += $conn->Affected_Rows();
+			}
+		}
+
+		// Reload the User Level privileges
+		if ($reloadUserPriv) {
+			if ($rs = $conn->execute($userPrivSql)) {
+				$this->UserLevelPriv = $rs->getRows();
+				$rs->close();
+			}
+		}
+
+		// Warn user if user level not setup
+		if (count($this->UserLevelPriv) == 0 && $this->isAdmin() && $Page != NULL && @$_SESSION[SESSION_USER_LEVEL_MSG] == "") {
+			$Page->setFailureMessage($Language->phrase("NoUserLevel"));
+			$_SESSION[SESSION_USER_LEVEL_MSG] = "1"; // Show only once
+			$Page->terminate("userlevelslist.php");
+		}
+		return TRUE;
+	}
 
 	// Add user permission
 	protected function addUserPermissionEx($userLevelName, $tableName, $userPermission)
@@ -6786,7 +7278,10 @@ class AdvancedSecurity
 	protected function currentUserLevelPriv($tableName)
 	{
 		if ($this->isLoggedIn()) {
-			return ALLOW_ALL;
+			$priv = 0;
+			foreach ($this->UserLevelID as $userLevelID)
+				$priv |= $this->getUserLevelPrivEx($tableName, $userLevelID);
+			return $priv;
 		} else { // Anonymous
 			return $this->getUserLevelPrivEx($tableName, -2);
 		}
@@ -7019,6 +7514,10 @@ class AdvancedSecurity
 	public function isAdmin()
 	{
 		$isAdmin = $this->isSysAdmin();
+		if (!$isAdmin)
+			$isAdmin = $this->CurrentUserLevelID == -1 || in_array(-1, $this->UserLevelID) || $this->canAdmin();
+		if (!$isAdmin)
+			$isAdmin = $this->CurrentUserID == -1 || in_array(-1, $this->UserID);
 		return $isAdmin;
 	}
 
@@ -7047,18 +7546,180 @@ class AdvancedSecurity
 		}
 	}
 
+	// Get user email
+	public function currentUserEmail()
+	{
+		return $this->currentUserInfo("uEmail");
+	}
+
 	// Get current user info
 	public function currentUserInfo($fldname)
 	{
 		global $UserTableConn;
 		$info = NULL;
-		if (defined(PROJECT_NAMESPACE . "USER_TABLE") && !$this->isSysAdmin()) {
-			$user = $this->currentUserName();
-			if (strval($user) <> "")
-				return ExecuteScalar("SELECT " . QuotedName($fldname, USER_TABLE_DBID) . " FROM " . USER_TABLE . " WHERE " .
-					str_replace("%u", AdjustSql($user, USER_TABLE_DBID), USER_NAME_FILTER), $UserTableConn);
-		}
+		$info = $this->getUserInfo($fldname, $this->CurrentUserID);
 		return $info;
+	}
+
+	// Get user info
+	public function getUserInfo($fieldName, $userID)
+	{
+		global $UserTable, $UserTableConn;
+		if (strval($userID) <> "") {
+
+			// Get SQL from getSql() method in <UserTable> class
+			$filter = str_replace("%u", AdjustSql($userID, USER_TABLE_DBID), USER_ID_FILTER);
+			$sql = $UserTable->getSql($filter);
+			if (($rsUser = $UserTableConn->execute($sql)) && !$rsUser->EOF) {
+				$info = $rsUser->fields($fieldName);
+				$rsUser->close();
+				return $info;
+			}
+		}
+		return NULL;
+	}
+
+	// Get User ID by user name
+	public function getUserIDByUserName($userName)
+	{
+		global $UserTable, $UserTableConn;
+		if (strval($userName) <> "") {
+			$filter = str_replace("%u", AdjustSql($userName, USER_TABLE_DBID), USER_NAME_FILTER);
+			$sql = $UserTable->getSql($filter);
+			if (($rsUser = $UserTableConn->execute($sql)) && !$rsUser->EOF) {
+				$userID = $rsUser->fields('userLoginId');
+				$rsUser->close();
+				return $userID;
+			}
+		}
+		return "";
+	}
+
+	// Load User ID
+	public function loadUserID()
+	{
+		global $UserTable, $UserTableConn;
+		$this->UserID = [];
+		if (strval($this->CurrentUserID) == "") {
+
+			// Handle empty User ID here
+		} elseif ($this->CurrentUserID <> "-1") {
+
+			// Get first level
+			$this->addUserID($this->CurrentUserID);
+			if (!isset($UserTable)) {
+				$UserTable = new users();
+				$UserTableConn = Conn($UserTable->Dbid);
+			}
+			$filter = $UserTable->getUserIDFilter($this->CurrentUserID);
+			$sql = $UserTable->getSql($filter);
+			if ($rsUser = $UserTableConn->execute($sql)) {
+				while (!$rsUser->EOF) {
+					$this->addUserID($rsUser->fields('userLoginId'));
+					$rsUser->moveNext();
+				}
+				$rsUser->close();
+			}
+
+			// Recurse all levels (hierarchical User ID)
+			if (USER_ID_IS_HIERARCHICAL) {
+				$curUserIDList = $this->userIDList();
+				$userIDList = "";
+				while ($userIDList <> $curUserIDList) {
+					$filter = '"uReportsTo" IN (' . $curUserIDList . ')';
+					$sql = $UserTable->getSql($filter);
+					if ($rsUser = $UserTableConn->execute($sql)) {
+						while (!$rsUser->EOF) {
+							$this->addUserID($rsUser->fields('userLoginId'));
+							$rsUser->moveNext();
+						}
+						$rsUser->close();
+					}
+					$userIDList = $curUserIDList;
+					$curUserIDList = $this->userIDList();
+				}
+			}
+		}
+	}
+
+	// Add user name
+	public function addUserName($userName)
+	{
+		$this->addUserID($this->getUserIDByUserName($userName));
+	}
+
+	// Add User ID
+	public function addUserID($userId)
+	{
+		if (strval($userId) == "")
+			return;
+		if (!in_array(trim(strval($userId)), $this->UserID))
+			$this->UserID[] = trim(strval($userId));
+	}
+
+	// Delete user name
+	public function deleteUserName($userName)
+	{
+		$this->deleteUserID($this->getUserIDByUserName($userName));
+	}
+
+	// Delete User ID
+	public function deleteUserID($userId)
+	{
+		if (strval($userId) == "")
+			return;
+		$cnt = count($this->UserID);
+		for ($i = 0; $i < $cnt; $i++) {
+			if ($this->UserID[$i] == trim(strval($userId))) {
+				unset($this->UserID[$i]);
+				break;
+			}
+		}
+	}
+
+	// User ID list
+	public function userIDList()
+	{
+		$ar = $this->UserID;
+		$len = count($ar);
+		for ($i = 0; $i < $len; $i++)
+			$ar[$i] = QuotedValue($ar[$i], DATATYPE_STRING, USER_TABLE_DBID);
+		return implode(", ", $ar);
+	}
+
+	// Parent User ID list
+	public function parentUserIDList($userId)
+	{
+		$result = "";
+
+		// Own record
+		if (SameString($userId, CurrentUserID())) {
+			if (strval(CurrentParentUserID()) <> "")
+				$result = QuotedValue(CurrentParentUserID(), DATATYPE_STRING, USER_TABLE_DBID);
+			return $result;
+		}
+
+		// One level only, must be CurrentUserID
+		if (!USER_ID_IS_HIERARCHICAL) {
+			return QuotedValue(CurrentUserID(), DATATYPE_STRING, USER_TABLE_DBID);
+		} else { // Hierarchical, all users except userid
+			$ar = $this->UserID;
+			$len = count($ar);
+			for ($i = 0; $i < $len; $i++) {
+				if (strval($ar[$i]) <> trim(strval($userId))) {
+					if ($result <> "")
+						$result .= ", ";
+					$result .= QuotedValue($ar[$i], DATATYPE_STRING, USER_TABLE_DBID);
+				}
+			}
+			return $result;
+		}
+	}
+
+	// List of allowed User IDs for this user
+	public function isValidUserID($userId)
+	{
+		return in_array(trim(strval($userId)), $this->UserID);
 	}
 
 	// UserID Loading event
@@ -10203,11 +10864,26 @@ class UserProfile
 	public $Profile = [];
 	public $Provider = "";
 	public $Auth = "";
+	public $TimeoutTime = USER_PROFILE_SESSION_TIMEOUT;
+	public $MaxRetryCount = USER_PROFILE_MAX_RETRY;
+	public $RetryLockoutTime = USER_PROFILE_RETRY_LOCKOUT;
+	public $PasswordExpiryTime = USER_PROFILE_PASSWORD_EXPIRE;
 
 	// Constructor
 	public function __construct()
 	{
 		$this->load();
+
+		// Concurrent login checking
+		$this->Profile[USER_PROFILE_SESSION_ID] = "";
+		$this->Profile[USER_PROFILE_LAST_ACCESSED_DATE_TIME] = "";
+
+		// Max login retry
+		$this->Profile[USER_PROFILE_LOGIN_RETRY_COUNT] = 0;
+		$this->Profile[USER_PROFILE_LAST_BAD_LOGIN_DATE_TIME] = "";
+
+		// Password Expiry
+		$this->Profile[USER_PROFILE_LAST_PASSWORD_CHANGED_DATE] = "";
 	}
 
 	// Has value
@@ -10289,6 +10965,126 @@ class UserProfile
 		return $usr == "" || $usr == $adminUserName || $usr == $Language->phrase("UserAdministrator");
 	}
 
+	// Get language id
+	public function getLanguageId($usr)
+	{
+		$p = $this->Profile; // Backup current profile
+		if ($this->loadProfileFromDatabase($usr)) {
+			try {
+				$langid = @$this->Profile[USER_PROFILE_LANGUAGE_ID];
+				$this->Profile = $p; // Restore current profile
+				return $langid;
+			} catch (\Exception $e) {
+				if (DEBUG_ENABLED)
+					throw $e;
+				$this->Profile = $p; // Restore current profile
+				return "";
+			}
+		}
+		return "";
+	}
+
+	// Set language id
+	public function setLanguageId($usr, $langid)
+	{
+		$p = $this->Profile; // Backup current profile
+		if ($this->loadProfileFromDatabase($usr)) {
+			try {
+				$this->Profile[USER_PROFILE_LANGUAGE_ID] = $langid;
+				$this->saveProfileToDatabase($usr);
+				$this->Profile = $p; // Restore current profile
+				return TRUE;
+			} catch (\Exception $e) {
+				if (DEBUG_ENABLED)
+					throw $e;
+				$this->Profile = $p; // Restore current profile
+				return FALSE;
+			}
+		}
+		return FALSE;
+	}
+
+	// Get search filters
+	public function getSearchFilters($usr, $pageid)
+	{
+		$sameProfile = CurrentUserName() == $usr;
+		if (!$sameProfile)
+			$p = $this->Profile; // Backup current profile
+		if ($this->loadProfileFromDatabase($usr)) {
+			try {
+				$allfilters = @unserialize($this->Profile[USER_PROFILE_SEARCH_FILTERS]);
+				if (!$sameProfile)
+					$this->Profile = $p; // Restore current profile
+				return @$allfilters[$pageid];
+			} catch (\Exception $e) {
+				if (DEBUG_ENABLED)
+					throw $e;
+				if (!$sameProfile)
+					$this->Profile = $p; // Restore current profile
+				return "";
+			}
+		}
+		return "";
+	}
+
+	// Set search filters
+	public function setSearchFilters($usr, $pageid, $filters)
+	{
+		$sameProfile = CurrentUserName() == $usr;
+		if (!$sameProfile)
+			$p = $this->Profile; // Backup current profile
+		if ($this->loadProfileFromDatabase($usr)) {
+			try {
+				$allfilters = @unserialize($this->Profile[USER_PROFILE_SEARCH_FILTERS]);
+				if (!is_array($allfilters))
+					$allfilters = [];
+				$allfilters[$pageid] = $filters;
+				$this->Profile[USER_PROFILE_SEARCH_FILTERS] = serialize($allfilters);
+				$this->saveProfileToDatabase($usr);
+				if (!$sameProfile)
+					$this->Profile = $p; // Restore current profile
+				return TRUE;
+			} catch (\Exception $e) {
+				if (DEBUG_ENABLED)
+					throw $e;
+				if (!$sameProfile)
+					$this->Profile = $p; // Restore current profile
+				return FALSE;
+			}
+		}
+		return FALSE;
+	}
+
+	// Load profile from database
+	public function loadProfileFromDatabase($usr)
+	{
+		global $UserTable, $UserTableConn;
+		if ($this->isSystemAdmin($usr)) // Ignore system admin
+			return FALSE;
+		$filter = str_replace("%u", AdjustSql($usr, USER_TABLE_DBID), USER_NAME_FILTER);
+
+		// Get SQL from getSql() method in <UserTable> class
+		$sql = $UserTable->getSql($filter);
+		$rswrk = $UserTableConn->execute($sql);
+		if ($rswrk && !$rswrk->EOF) {
+			$this->loadProfile(HtmlDecode($rswrk->fields(USER_PROFILE_FIELD_NAME)));
+			$rswrk->close();
+			return TRUE;
+		}
+		return FALSE;
+	}
+
+	// Save profile to database
+	public function saveProfileToDatabase($usr)
+	{
+		global $UserTable;
+		if ($this->isSystemAdmin($usr)) // Ignore system admin
+			return FALSE;
+		$filter = str_replace("%u", AdjustSql($usr, USER_TABLE_DBID), USER_NAME_FILTER);
+		$rs = [USER_PROFILE_FIELD_NAME => $this->profileToString()];
+		$UserTable->update($rs, $filter);
+	}
+
 	// Load profile from session
 	public function load()
 	{
@@ -10332,6 +11128,191 @@ class UserProfile
 	protected function profileToString()
 	{
 		return serialize($this->Profile);
+	}
+
+	// Is valid user
+	public function isValidUser($usr, $sessionID)
+	{
+		if ($this->isSystemAdmin($usr)) // Ignore system admin
+			return TRUE;
+		$this->loadProfileFromDatabase($usr);
+		$sessid = strval(@$this->Profile[USER_PROFILE_SESSION_ID]);
+		$dt = strval(@$this->Profile[USER_PROFILE_LAST_ACCESSED_DATE_TIME]);
+		$valid = FALSE;
+		if ($sessid == "" || $sessid == $sessionID || $dt == "") {
+			$sessid = $sessionID;
+			$dt = StdCurrentDateTime();
+			$valid = TRUE;
+		} elseif ($sessid <> "" && $dt <> "") {
+			$ars = explode(",", $sessid);
+			$ard = explode(",", $dt);
+			$cnt = (count($ars) <= count($ard)) ? count($ars) : count($ard);
+			$ars = array_slice($ars, 0, $cnt);
+			$ard = array_slice($ard, 0, $cnt);
+			for ($i = 0; $i < $cnt; $i++) {
+				$sessid = $ars[$i];
+				$dt = $ard[$i];
+				if ($sessid == "" || $sessid == $sessionID || $dt == "" || DateDiff($dt, StdCurrentDateTime(), "n") > $this->TimeoutTime) {
+					$valid = TRUE;
+					$ars[$i] = $sessionID;
+					$ard[$i] = StdCurrentDateTime();
+					break;
+				}
+			}
+			if (!$valid && $cnt < USER_PROFILE_CONCURRENT_SESSION_COUNT) {
+				$valid = TRUE;
+				$ars[] = $sessionID;
+				$ard[] = StdCurrentDateTime();
+			}
+			$sessid = implode(",", $ars);
+			$dt = implode(",", $ard);
+		}
+		if ($valid) {
+			$this->Profile[USER_PROFILE_SESSION_ID] = $sessid;
+			$this->Profile[USER_PROFILE_LAST_ACCESSED_DATE_TIME] = $dt;
+			$this->saveProfileToDatabase($usr);
+		}
+		return $valid;
+	}
+
+	// Remove user
+	public function removeUser($usr, $sessionID)
+	{
+		if ($this->isSystemAdmin($usr)) // Ignore system admin
+			return TRUE;
+		$this->loadProfileFromDatabase($usr);
+		$sessid = strval(@$this->Profile[USER_PROFILE_SESSION_ID]);
+		$dt = strval(@$this->Profile[USER_PROFILE_LAST_ACCESSED_DATE_TIME]);
+		if ($sessid == $sessionID) {
+			$this->Profile[USER_PROFILE_SESSION_ID] = "";
+			$this->Profile[USER_PROFILE_LAST_ACCESSED_DATE_TIME] = "";
+			$this->saveProfileToDatabase($usr);
+			return TRUE;
+		} elseif ($sessid <> "" && $dt <> "") {
+			$ars = explode(",", $sessid);
+			$ard = explode(",", $dt);
+			$cnt = (count($ars) <= count($ard)) ? count($ars) : count($ard);
+			$ars = array_slice($ars, 0, $cnt);
+			$ard = array_slice($ard, 0, $cnt);
+			for ($i = 0; $i < $cnt; $i++) {
+				$sessid = $ars[$i];
+				$dt = $ard[$i];
+				if ($sessid == $sessionID) {
+					unset($ars[$i]);
+					unset($ard[$i]);
+					$this->Profile[USER_PROFILE_SESSION_ID] = implode(",", $ars);
+					$this->Profile[USER_PROFILE_LAST_ACCESSED_DATE_TIME] = implode(",", $ard);
+					$this->saveProfileToDatabase($usr);
+					return TRUE;
+				}
+			}
+		}
+		return FALSE;
+	}
+
+	// Reset concurrent user
+	public function resetConcurrentUser($usr)
+	{
+		$p = $this->Profile; // Backup current profile
+		if ($this->loadProfileFromDatabase($usr)) {
+			try {
+				$this->Profile[USER_PROFILE_SESSION_ID] = "";
+				$this->Profile[USER_PROFILE_LAST_ACCESSED_DATE_TIME] = "";
+				$this->saveProfileToDatabase($usr);
+				$this->Profile = $p; // Restore current profile
+				return TRUE;
+			} catch (\Exception $e) {
+				if (DEBUG_ENABLED)
+					throw $e;
+				$this->Profile = $p; // Restore current profile
+				return FALSE;
+			}
+		}
+		return FALSE;
+	}
+
+	// Exceed login retry
+	public function exceedLoginRetry($usr)
+	{
+		if ($this->isSystemAdmin($usr)) // Ignore system admin
+			return FALSE;
+		$this->loadProfileFromDatabase($usr);
+		$retrycount = @$this->Profile[USER_PROFILE_LOGIN_RETRY_COUNT];
+		$dt = @$this->Profile[USER_PROFILE_LAST_BAD_LOGIN_DATE_TIME];
+		if ((int)$retrycount >= (int)$this->MaxRetryCount) {
+			if (DateDiff($dt, StdCurrentDateTime(), "n") < $this->RetryLockoutTime) {
+				$exceed = TRUE;
+			} else {
+				$exceed = FALSE;
+				$this->Profile[USER_PROFILE_LOGIN_RETRY_COUNT] = 0;
+				$this->saveProfileToDatabase($usr);
+			}
+		} else {
+			$exceed = FALSE;
+		}
+		return $exceed;
+	}
+
+	// Reset login retry
+	public function resetLoginRetry($usr)
+	{
+		$p = $this->Profile; // Backup current profile
+		if ($this->loadProfileFromDatabase($usr)) {
+			try {
+				$this->Profile[USER_PROFILE_LOGIN_RETRY_COUNT] = 0;
+				$this->saveProfileToDatabase($usr);
+				$this->Profile = $p; // Restore current profile
+				return TRUE;
+			} catch (\Exception $e) {
+				if (DEBUG_ENABLED)
+					throw $e;
+				$this->Profile = $p; // Restore current profile
+				return FALSE;
+			}
+		}
+		return FALSE;
+	}
+
+	// Password expired
+	public function passwordExpired($usr)
+	{
+		if ($this->isSystemAdmin($usr)) // Ignore system admin
+			return FALSE;
+		$this->loadProfileFromDatabase($usr);
+		$dt = @$this->Profile[USER_PROFILE_LAST_PASSWORD_CHANGED_DATE];
+		if (strval($dt) == "")
+			$dt = StdCurrentDate();
+		return (DateDiff($dt, StdCurrentDate(), "d") >= $this->PasswordExpiryTime);
+	}
+
+	// Empty password changed date
+	public function emptyPasswordChangedDate($usr)
+	{
+		if ($this->isSystemAdmin($usr)) // Ignore system admin
+			return FALSE;
+		$this->loadProfileFromDatabase($usr);
+		$dt = @$this->Profile[USER_PROFILE_LAST_PASSWORD_CHANGED_DATE];
+		return (strval($dt) == "");
+	}
+
+	// Set password expired
+	public function setPasswordExpired($usr)
+	{
+		$p = $this->Profile; // Backup current profile
+		if ($this->loadProfileFromDatabase($usr)) {
+			try {
+				$this->Profile[USER_PROFILE_LAST_PASSWORD_CHANGED_DATE] = StdDate(strtotime('-' . ($this->PasswordExpiryTime + 1) . ' days'));
+				$this->saveProfileToDatabase($usr);
+				$this->Profile = $p; // Restore current profile
+				return TRUE;
+			} catch (\Exception $e) {
+				if (DEBUG_ENABLED)
+					throw $e;
+				$this->Profile = $p; // Restore current profile
+				return FALSE;
+			}
+		}
+		return FALSE;
 	}
 }
 
@@ -12600,6 +13581,9 @@ function SetupLoginStatus() {
 	$LoginStatus["loginText"] = $Language->phrase("Login");
 	$LoginStatus["canLogin"] = !IsLoggedIn() && !EndsString($LoginStatus["loginUrl"], @$_SERVER["URL"]);
 	$LoginStatus["canLogout"] = IsLoggedIn();
+	$LoginStatus["changePasswordUrl"] = GetUrl("changepwd.php");
+	$LoginStatus["changePasswordText"] = $Language->phrase("ChangePwd");
+	$LoginStatus["canChangePassword"] = IsLoggedIn() && !IsSysAdmin();
 	$LoginStatus["hasPersonalData"] = IsLoggedIn() && !IsSysAdmin();
 	$LoginStatus["personalDataUrl"] = GetUrl("personaldata.php");
 	$LoginStatus["personalDataText"] = $Language->phrase("PersonalDataBtn");

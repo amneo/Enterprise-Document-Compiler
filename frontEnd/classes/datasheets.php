@@ -37,12 +37,13 @@ class datasheets extends DbTable
 	public $partno;
 	public $dataSheetFile;
 	public $manufacturer;
-	public $cdd;
-	public $thirdParty;
+	public $cddFile;
+	public $thirdPartyFile;
 	public $tittle;
 	public $cover;
 	public $cddissue;
 	public $cddno;
+	public $thirdPartyNo;
 	public $duration;
 	public $expirydt;
 	public $highlighted;
@@ -50,9 +51,9 @@ class datasheets extends DbTable
 	public $hssCode;
 	public $systrade;
 	public $isdatasheet;
-	public $nativeFiles;
 	public $datasheetdate;
 	public $username;
+	public $nativeFiles;
 
 	// Constructor
 	public function __construct()
@@ -70,15 +71,15 @@ class datasheets extends DbTable
 		$this->UpdateTable = "\"public\".\"datasheets\"";
 		$this->Dbid = 'DB';
 		$this->ExportAll = TRUE;
-		$this->ExportPageBreakCount = 0; // Page break per every n record (PDF only)
-		$this->ExportPageOrientation = "portrait"; // Page orientation (PDF only)
+		$this->ExportPageBreakCount = 20; // Page break per every n record (PDF only)
+		$this->ExportPageOrientation = "landscape"; // Page orientation (PDF only)
 		$this->ExportPageSize = "a4"; // Page size (PDF only)
 		$this->ExportExcelPageOrientation = \PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_DEFAULT; // Page orientation (PhpSpreadsheet only)
 		$this->ExportExcelPageSize = \PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4; // Page size (PhpSpreadsheet only)
 		$this->ExportWordPageOrientation = "portrait"; // Page orientation (PHPWord only)
 		$this->ExportWordColumnWidth = NULL; // Cell width (PHPWord only)
 		$this->DetailAdd = FALSE; // Allow detail add
-		$this->DetailEdit = FALSE; // Allow detail edit
+		$this->DetailEdit = TRUE; // Allow detail edit
 		$this->DetailView = TRUE; // Allow detail view
 		$this->ShowMultipleDetails = FALSE; // Show multiple details
 		$this->GridAddRowCount = 5;
@@ -119,20 +120,20 @@ class datasheets extends DbTable
 		$this->manufacturer->Lookup = new Lookup('manufacturer', 'manufacturer', FALSE, 'manufacturerName', ["manufacturerName","","",""], [], [], [], [], [], [], '"manufacturerId" DESC', '');
 		$this->fields['manufacturer'] = &$this->manufacturer;
 
-		// cdd
-		$this->cdd = new DbField('datasheets', 'datasheets', 'x_cdd', 'cdd', '"cdd"', '"cdd"', 200, -1, TRUE, '"cdd"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'FILE');
-		$this->cdd->Required = TRUE; // Required field
-		$this->cdd->Sortable = FALSE; // Allow sort
-		$this->cdd->UploadAllowedFileExt = "pdf";
-		$this->fields['cdd'] = &$this->cdd;
+		// cddFile
+		$this->cddFile = new DbField('datasheets', 'datasheets', 'x_cddFile', 'cddFile', '"cddFile"', '"cddFile"', 200, -1, TRUE, '"cddFile"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'FILE');
+		$this->cddFile->Required = TRUE; // Required field
+		$this->cddFile->Sortable = FALSE; // Allow sort
+		$this->cddFile->UploadAllowedFileExt = "pdf";
+		$this->fields['cddFile'] = &$this->cddFile;
 
-		// thirdParty
-		$this->thirdParty = new DbField('datasheets', 'datasheets', 'x_thirdParty', 'thirdParty', '"thirdParty"', '"thirdParty"', 200, -1, TRUE, '"thirdParty"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'FILE');
-		$this->thirdParty->Nullable = FALSE; // NOT NULL field
-		$this->thirdParty->Required = TRUE; // Required field
-		$this->thirdParty->Sortable = FALSE; // Allow sort
-		$this->thirdParty->UploadAllowedFileExt = "pdf";
-		$this->fields['thirdParty'] = &$this->thirdParty;
+		// thirdPartyFile
+		$this->thirdPartyFile = new DbField('datasheets', 'datasheets', 'x_thirdPartyFile', 'thirdPartyFile', '"thirdPartyFile"', '"thirdPartyFile"', 200, -1, TRUE, '"thirdPartyFile"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'FILE');
+		$this->thirdPartyFile->Nullable = FALSE; // NOT NULL field
+		$this->thirdPartyFile->Required = TRUE; // Required field
+		$this->thirdPartyFile->Sortable = FALSE; // Allow sort
+		$this->thirdPartyFile->UploadAllowedFileExt = "pdf";
+		$this->fields['thirdPartyFile'] = &$this->thirdPartyFile;
 
 		// tittle
 		$this->tittle = new DbField('datasheets', 'datasheets', 'x_tittle', 'tittle', '"tittle"', '"tittle"', 200, -1, FALSE, '"tittle"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
@@ -164,10 +165,17 @@ class datasheets extends DbTable
 		$this->cddno->Sortable = TRUE; // Allow sort
 		$this->fields['cddno'] = &$this->cddno;
 
+		// thirdPartyNo
+		$this->thirdPartyNo = new DbField('datasheets', 'datasheets', 'x_thirdPartyNo', 'thirdPartyNo', '"thirdPartyNo"', '"thirdPartyNo"', 200, -1, FALSE, '"thirdPartyNo"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->thirdPartyNo->Nullable = FALSE; // NOT NULL field
+		$this->thirdPartyNo->Required = TRUE; // Required field
+		$this->thirdPartyNo->Sortable = TRUE; // Allow sort
+		$this->fields['thirdPartyNo'] = &$this->thirdPartyNo;
+
 		// duration
 		$this->duration = new DbField('datasheets', 'datasheets', 'x_duration', 'duration', '"duration"', '"duration"', 200, -1, FALSE, '"duration"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'SELECT');
 		$this->duration->Required = TRUE; // Required field
-		$this->duration->Sortable = TRUE; // Allow sort
+		$this->duration->Sortable = FALSE; // Allow sort
 		$this->duration->UsePleaseSelect = TRUE; // Use PleaseSelect by default
 		$this->duration->PleaseSelectText = $Language->phrase("PleaseSelect"); // PleaseSelect text
 		$this->duration->Lookup = new Lookup('duration', 'datasheets', FALSE, '', ["","","",""], [], [], [], [], [], [], '', '');
@@ -182,7 +190,7 @@ class datasheets extends DbTable
 
 		// highlighted
 		$this->highlighted = new DbField('datasheets', 'datasheets', 'x_highlighted', 'highlighted', '"highlighted"', 'CAST("highlighted" AS varchar(255))', 11, -1, FALSE, '"highlighted"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'RADIO');
-		$this->highlighted->Sortable = TRUE; // Allow sort
+		$this->highlighted->Sortable = FALSE; // Allow sort
 		$this->highlighted->DataType = DATATYPE_BOOLEAN;
 		$this->highlighted->Lookup = new Lookup('highlighted', 'datasheets', FALSE, '', ["","","",""], [], [], [], [], [], [], '', '');
 		$this->highlighted->OptionCount = 2;
@@ -221,13 +229,6 @@ class datasheets extends DbTable
 		$this->isdatasheet->OptionCount = 2;
 		$this->fields['isdatasheet'] = &$this->isdatasheet;
 
-		// nativeFiles
-		$this->nativeFiles = new DbField('datasheets', 'datasheets', 'x_nativeFiles', 'nativeFiles', '"nativeFiles"', '"nativeFiles"', 200, -1, FALSE, '"nativeFiles"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
-		$this->nativeFiles->Nullable = FALSE; // NOT NULL field
-		$this->nativeFiles->Required = TRUE; // Required field
-		$this->nativeFiles->Sortable = TRUE; // Allow sort
-		$this->fields['nativeFiles'] = &$this->nativeFiles;
-
 		// datasheetdate
 		$this->datasheetdate = new DbField('datasheets', 'datasheets', 'x_datasheetdate', 'datasheetdate', '"datasheetdate"', CastDateFieldForLike('"datasheetdate"', 0, "DB"), 133, 0, FALSE, '"datasheetdate"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'NO');
 		$this->datasheetdate->Sortable = FALSE; // Allow sort
@@ -238,6 +239,13 @@ class datasheets extends DbTable
 		$this->username = new DbField('datasheets', 'datasheets', 'x_username', 'username', '"username"', '"username"', 200, -1, FALSE, '"username"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'NO');
 		$this->username->Sortable = FALSE; // Allow sort
 		$this->fields['username'] = &$this->username;
+
+		// nativeFiles
+		$this->nativeFiles = new DbField('datasheets', 'datasheets', 'x_nativeFiles', 'nativeFiles', '"nativeFiles"', '"nativeFiles"', 200, -1, FALSE, '"nativeFiles"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
+		$this->nativeFiles->Nullable = FALSE; // NOT NULL field
+		$this->nativeFiles->Required = TRUE; // Required field
+		$this->nativeFiles->Sortable = TRUE; // Allow sort
+		$this->fields['nativeFiles'] = &$this->nativeFiles;
 	}
 
 	// Field Visibility
@@ -681,12 +689,13 @@ class datasheets extends DbTable
 		$this->partno->DbValue = $row['partno'];
 		$this->dataSheetFile->Upload->DbValue = $row['dataSheetFile'];
 		$this->manufacturer->DbValue = $row['manufacturer'];
-		$this->cdd->Upload->DbValue = $row['cdd'];
-		$this->thirdParty->Upload->DbValue = $row['thirdParty'];
+		$this->cddFile->Upload->DbValue = $row['cddFile'];
+		$this->thirdPartyFile->Upload->DbValue = $row['thirdPartyFile'];
 		$this->tittle->DbValue = $row['tittle'];
 		$this->cover->Upload->DbValue = $row['cover'];
 		$this->cddissue->DbValue = $row['cddissue'];
 		$this->cddno->DbValue = $row['cddno'];
+		$this->thirdPartyNo->DbValue = $row['thirdPartyNo'];
 		$this->duration->DbValue = $row['duration'];
 		$this->expirydt->DbValue = $row['expirydt'];
 		$this->highlighted->DbValue = (ConvertToBool($row['highlighted']) ? "1" : "0");
@@ -694,9 +703,9 @@ class datasheets extends DbTable
 		$this->hssCode->DbValue = $row['hssCode'];
 		$this->systrade->DbValue = $row['systrade'];
 		$this->isdatasheet->DbValue = (ConvertToBool($row['isdatasheet']) ? "1" : "0");
-		$this->nativeFiles->DbValue = $row['nativeFiles'];
 		$this->datasheetdate->DbValue = $row['datasheetdate'];
 		$this->username->DbValue = $row['username'];
+		$this->nativeFiles->DbValue = $row['nativeFiles'];
 	}
 
 	// Delete uploaded files
@@ -708,15 +717,15 @@ class datasheets extends DbTable
 			if (file_exists($this->dataSheetFile->oldPhysicalUploadPath() . $oldFile))
 				@unlink($this->dataSheetFile->oldPhysicalUploadPath() . $oldFile);
 		}
-		$oldFiles = EmptyValue($row['cdd']) ? [] : [$row['cdd']];
+		$oldFiles = EmptyValue($row['cddFile']) ? [] : [$row['cddFile']];
 		foreach ($oldFiles as $oldFile) {
-			if (file_exists($this->cdd->oldPhysicalUploadPath() . $oldFile))
-				@unlink($this->cdd->oldPhysicalUploadPath() . $oldFile);
+			if (file_exists($this->cddFile->oldPhysicalUploadPath() . $oldFile))
+				@unlink($this->cddFile->oldPhysicalUploadPath() . $oldFile);
 		}
-		$oldFiles = EmptyValue($row['thirdParty']) ? [] : [$row['thirdParty']];
+		$oldFiles = EmptyValue($row['thirdPartyFile']) ? [] : [$row['thirdPartyFile']];
 		foreach ($oldFiles as $oldFile) {
-			if (file_exists($this->thirdParty->oldPhysicalUploadPath() . $oldFile))
-				@unlink($this->thirdParty->oldPhysicalUploadPath() . $oldFile);
+			if (file_exists($this->thirdPartyFile->oldPhysicalUploadPath() . $oldFile))
+				@unlink($this->thirdPartyFile->oldPhysicalUploadPath() . $oldFile);
 		}
 		$oldFiles = EmptyValue($row['cover']) ? [] : [$row['cover']];
 		foreach ($oldFiles as $oldFile) {
@@ -946,12 +955,13 @@ class datasheets extends DbTable
 		$this->partno->setDbValue($rs->fields('partno'));
 		$this->dataSheetFile->Upload->DbValue = $rs->fields('dataSheetFile');
 		$this->manufacturer->setDbValue($rs->fields('manufacturer'));
-		$this->cdd->Upload->DbValue = $rs->fields('cdd');
-		$this->thirdParty->Upload->DbValue = $rs->fields('thirdParty');
+		$this->cddFile->Upload->DbValue = $rs->fields('cddFile');
+		$this->thirdPartyFile->Upload->DbValue = $rs->fields('thirdPartyFile');
 		$this->tittle->setDbValue($rs->fields('tittle'));
 		$this->cover->Upload->DbValue = $rs->fields('cover');
 		$this->cddissue->setDbValue($rs->fields('cddissue'));
 		$this->cddno->setDbValue($rs->fields('cddno'));
+		$this->thirdPartyNo->setDbValue($rs->fields('thirdPartyNo'));
 		$this->duration->setDbValue($rs->fields('duration'));
 		$this->expirydt->setDbValue($rs->fields('expirydt'));
 		$this->highlighted->setDbValue(ConvertToBool($rs->fields('highlighted')) ? "1" : "0");
@@ -959,9 +969,9 @@ class datasheets extends DbTable
 		$this->hssCode->setDbValue($rs->fields('hssCode'));
 		$this->systrade->setDbValue($rs->fields('systrade'));
 		$this->isdatasheet->setDbValue(ConvertToBool($rs->fields('isdatasheet')) ? "1" : "0");
-		$this->nativeFiles->setDbValue($rs->fields('nativeFiles'));
 		$this->datasheetdate->setDbValue($rs->fields('datasheetdate'));
 		$this->username->setDbValue($rs->fields('username'));
+		$this->nativeFiles->setDbValue($rs->fields('nativeFiles'));
 	}
 
 	// Render list row values
@@ -974,35 +984,35 @@ class datasheets extends DbTable
 
 		// Common render codes
 		// partid
-
-		$this->partid->CellCssStyle = "white-space: nowrap;";
-
 		// partno
-		$this->partno->CellCssStyle = "width: 5px;";
+
+		$this->partno->CellCssStyle = "width: 10px;";
 
 		// dataSheetFile
-		$this->dataSheetFile->CellCssStyle = "width: 5px;";
+		$this->dataSheetFile->CellCssStyle = "width: 10px;";
 
 		// manufacturer
-		$this->manufacturer->CellCssStyle = "width: 5px;";
+		$this->manufacturer->CellCssStyle = "width: 10px;";
 
-		// cdd
-		$this->cdd->CellCssStyle = "width: 5px;";
+		// cddFile
+		$this->cddFile->CellCssStyle = "width: 10px;";
 
-		// thirdParty
-		$this->thirdParty->CellCssStyle = "width: 5px;";
+		// thirdPartyFile
+		$this->thirdPartyFile->CellCssStyle = "width: 10px;";
 
 		// tittle
-		$this->tittle->CellCssStyle = "width: 20px;";
-
 		// cover
-		$this->cover->CellCssStyle = "width: 5px;";
+
+		$this->cover->CellCssStyle = "width: 10px;";
 
 		// cddissue
 		$this->cddissue->CellCssStyle = "width: 10px;";
 
 		// cddno
 		$this->cddno->CellCssStyle = "width: 10px;";
+
+		// thirdPartyNo
+		$this->thirdPartyNo->CellCssStyle = "width: 5px;";
 
 		// duration
 		$this->duration->CellCssStyle = "width: 10px;";
@@ -1017,21 +1027,22 @@ class datasheets extends DbTable
 		$this->coo->CellCssStyle = "width: 10px;";
 
 		// hssCode
-		$this->hssCode->CellCssStyle = "width: 5px;";
+		$this->hssCode->CellCssStyle = "width: 10px;";
 
 		// systrade
-		$this->systrade->CellCssStyle = "width: 5px;";
+		$this->systrade->CellCssStyle = "width: 10px;";
 
 		// isdatasheet
-		$this->isdatasheet->CellCssStyle = "width: 5px;";
+		$this->isdatasheet->CellCssStyle = "width: 10px;";
 
-		// nativeFiles
 		// datasheetdate
-
-		$this->datasheetdate->CellCssStyle = "white-space: nowrap;";
+		$this->datasheetdate->CellCssStyle = "width: 10px;";
 
 		// username
-		$this->username->CellCssStyle = "white-space: nowrap;";
+		$this->username->CellCssStyle = "width: 10px;";
+
+		// nativeFiles
+		$this->nativeFiles->CellCssStyle = "width: 10px;";
 
 		// partid
 		$this->partid->ViewValue = $this->partid->CurrentValue;
@@ -1040,6 +1051,7 @@ class datasheets extends DbTable
 		// partno
 		$this->partno->ViewValue = $this->partno->CurrentValue;
 		$this->partno->ViewValue = strtoupper($this->partno->ViewValue);
+		$this->partno->CssClass = "font-weight-bold";
 		$this->partno->ViewCustomAttributes = "";
 
 		// dataSheetFile
@@ -1077,21 +1089,21 @@ class datasheets extends DbTable
 		}
 		$this->manufacturer->ViewCustomAttributes = "";
 
-		// cdd
-		if (!EmptyValue($this->cdd->Upload->DbValue)) {
-			$this->cdd->ViewValue = $this->cdd->Upload->DbValue;
+		// cddFile
+		if (!EmptyValue($this->cddFile->Upload->DbValue)) {
+			$this->cddFile->ViewValue = $this->cddFile->Upload->DbValue;
 		} else {
-			$this->cdd->ViewValue = "";
+			$this->cddFile->ViewValue = "";
 		}
-		$this->cdd->ViewCustomAttributes = "";
+		$this->cddFile->ViewCustomAttributes = "";
 
-		// thirdParty
-		if (!EmptyValue($this->thirdParty->Upload->DbValue)) {
-			$this->thirdParty->ViewValue = $this->thirdParty->Upload->DbValue;
+		// thirdPartyFile
+		if (!EmptyValue($this->thirdPartyFile->Upload->DbValue)) {
+			$this->thirdPartyFile->ViewValue = $this->thirdPartyFile->Upload->DbValue;
 		} else {
-			$this->thirdParty->ViewValue = "";
+			$this->thirdPartyFile->ViewValue = "";
 		}
-		$this->thirdParty->ViewCustomAttributes = "";
+		$this->thirdPartyFile->ViewCustomAttributes = "";
 
 		// tittle
 		$this->tittle->ViewValue = $this->tittle->CurrentValue;
@@ -1115,6 +1127,10 @@ class datasheets extends DbTable
 		$this->cddno->ViewValue = $this->cddno->CurrentValue;
 		$this->cddno->ViewValue = strtoupper($this->cddno->ViewValue);
 		$this->cddno->ViewCustomAttributes = "";
+
+		// thirdPartyNo
+		$this->thirdPartyNo->ViewValue = $this->thirdPartyNo->CurrentValue;
+		$this->thirdPartyNo->ViewCustomAttributes = "";
 
 		// duration
 		if (strval($this->duration->CurrentValue) <> "") {
@@ -1186,10 +1202,6 @@ class datasheets extends DbTable
 		}
 		$this->isdatasheet->ViewCustomAttributes = "";
 
-		// nativeFiles
-		$this->nativeFiles->ViewValue = $this->nativeFiles->CurrentValue;
-		$this->nativeFiles->ViewCustomAttributes = "";
-
 		// datasheetdate
 		$this->datasheetdate->ViewValue = $this->datasheetdate->CurrentValue;
 		$this->datasheetdate->ViewValue = FormatDateTime($this->datasheetdate->ViewValue, 0);
@@ -1198,6 +1210,10 @@ class datasheets extends DbTable
 		// username
 		$this->username->ViewValue = $this->username->CurrentValue;
 		$this->username->ViewCustomAttributes = "";
+
+		// nativeFiles
+		$this->nativeFiles->ViewValue = $this->nativeFiles->CurrentValue;
+		$this->nativeFiles->ViewCustomAttributes = "";
 
 		// partid
 		$this->partid->LinkCustomAttributes = "";
@@ -1232,29 +1248,29 @@ class datasheets extends DbTable
 		$this->manufacturer->HrefValue = "";
 		$this->manufacturer->TooltipValue = "";
 
-		// cdd
-		$this->cdd->LinkCustomAttributes = "";
-		if (!EmptyValue($this->cdd->Upload->DbValue)) {
-			$this->cdd->HrefValue = GetFileUploadUrl($this->cdd, $this->cdd->Upload->DbValue); // Add prefix/suffix
-			$this->cdd->LinkAttrs["target"] = "_blank"; // Add target
-			if ($this->isExport()) $this->cdd->HrefValue = FullUrl($this->cdd->HrefValue, "href");
+		// cddFile
+		$this->cddFile->LinkCustomAttributes = "";
+		if (!EmptyValue($this->cddFile->Upload->DbValue)) {
+			$this->cddFile->HrefValue = GetFileUploadUrl($this->cddFile, $this->cddFile->Upload->DbValue); // Add prefix/suffix
+			$this->cddFile->LinkAttrs["target"] = "_blank"; // Add target
+			if ($this->isExport()) $this->cddFile->HrefValue = FullUrl($this->cddFile->HrefValue, "href");
 		} else {
-			$this->cdd->HrefValue = "";
+			$this->cddFile->HrefValue = "";
 		}
-		$this->cdd->ExportHrefValue = $this->cdd->UploadPath . $this->cdd->Upload->DbValue;
-		$this->cdd->TooltipValue = "";
+		$this->cddFile->ExportHrefValue = $this->cddFile->UploadPath . $this->cddFile->Upload->DbValue;
+		$this->cddFile->TooltipValue = "";
 
-		// thirdParty
-		$this->thirdParty->LinkCustomAttributes = "";
-		if (!EmptyValue($this->thirdParty->Upload->DbValue)) {
-			$this->thirdParty->HrefValue = GetFileUploadUrl($this->thirdParty, $this->thirdParty->Upload->DbValue); // Add prefix/suffix
-			$this->thirdParty->LinkAttrs["target"] = "_blank"; // Add target
-			if ($this->isExport()) $this->thirdParty->HrefValue = FullUrl($this->thirdParty->HrefValue, "href");
+		// thirdPartyFile
+		$this->thirdPartyFile->LinkCustomAttributes = "";
+		if (!EmptyValue($this->thirdPartyFile->Upload->DbValue)) {
+			$this->thirdPartyFile->HrefValue = GetFileUploadUrl($this->thirdPartyFile, $this->thirdPartyFile->Upload->DbValue); // Add prefix/suffix
+			$this->thirdPartyFile->LinkAttrs["target"] = "_blank"; // Add target
+			if ($this->isExport()) $this->thirdPartyFile->HrefValue = FullUrl($this->thirdPartyFile->HrefValue, "href");
 		} else {
-			$this->thirdParty->HrefValue = "";
+			$this->thirdPartyFile->HrefValue = "";
 		}
-		$this->thirdParty->ExportHrefValue = $this->thirdParty->UploadPath . $this->thirdParty->Upload->DbValue;
-		$this->thirdParty->TooltipValue = "";
+		$this->thirdPartyFile->ExportHrefValue = $this->thirdPartyFile->UploadPath . $this->thirdPartyFile->Upload->DbValue;
+		$this->thirdPartyFile->TooltipValue = "";
 
 		// tittle
 		$this->tittle->LinkCustomAttributes = "";
@@ -1280,14 +1296,25 @@ class datasheets extends DbTable
 
 		// cddno
 		$this->cddno->LinkCustomAttributes = "";
-		if (!EmptyValue($this->cdd->Upload->DbValue)) {
-			$this->cddno->HrefValue = GetFileUploadUrl($this->cdd, $this->cdd->Upload->DbValue); // Add prefix/suffix
+		if (!EmptyValue($this->cddFile->Upload->DbValue)) {
+			$this->cddno->HrefValue = GetFileUploadUrl($this->cddFile, $this->cddFile->Upload->DbValue); // Add prefix/suffix
 			$this->cddno->LinkAttrs["target"] = "_blank"; // Add target
 			if ($this->isExport()) $this->cddno->HrefValue = FullUrl($this->cddno->HrefValue, "href");
 		} else {
 			$this->cddno->HrefValue = "";
 		}
 		$this->cddno->TooltipValue = "";
+
+		// thirdPartyNo
+		$this->thirdPartyNo->LinkCustomAttributes = "";
+		if (!EmptyValue($this->thirdPartyFile->Upload->DbValue)) {
+			$this->thirdPartyNo->HrefValue = GetFileUploadUrl($this->thirdPartyFile, $this->thirdPartyFile->Upload->DbValue); // Add prefix/suffix
+			$this->thirdPartyNo->LinkAttrs["target"] = "_blank"; // Add target
+			if ($this->isExport()) $this->thirdPartyNo->HrefValue = FullUrl($this->thirdPartyNo->HrefValue, "href");
+		} else {
+			$this->thirdPartyNo->HrefValue = "";
+		}
+		$this->thirdPartyNo->TooltipValue = "";
 
 		// duration
 		$this->duration->LinkCustomAttributes = "";
@@ -1324,11 +1351,6 @@ class datasheets extends DbTable
 		$this->isdatasheet->HrefValue = "";
 		$this->isdatasheet->TooltipValue = "";
 
-		// nativeFiles
-		$this->nativeFiles->LinkCustomAttributes = "";
-		$this->nativeFiles->HrefValue = "";
-		$this->nativeFiles->TooltipValue = "";
-
 		// datasheetdate
 		$this->datasheetdate->LinkCustomAttributes = "";
 		$this->datasheetdate->HrefValue = "";
@@ -1338,6 +1360,11 @@ class datasheets extends DbTable
 		$this->username->LinkCustomAttributes = "";
 		$this->username->HrefValue = "";
 		$this->username->TooltipValue = "";
+
+		// nativeFiles
+		$this->nativeFiles->LinkCustomAttributes = "";
+		$this->nativeFiles->HrefValue = "";
+		$this->nativeFiles->TooltipValue = "";
 
 		// Call Row Rendered event
 		$this->Row_Rendered();
@@ -1365,6 +1392,7 @@ class datasheets extends DbTable
 		$this->partno->EditCustomAttributes = "";
 		$this->partno->EditValue = $this->partno->CurrentValue;
 		$this->partno->EditValue = strtoupper($this->partno->EditValue);
+		$this->partno->CssClass = "font-weight-bold";
 		$this->partno->ViewCustomAttributes = "";
 
 		// dataSheetFile
@@ -1381,51 +1409,32 @@ class datasheets extends DbTable
 		// manufacturer
 		$this->manufacturer->EditAttrs["class"] = "form-control";
 		$this->manufacturer->EditCustomAttributes = "";
-		if ($this->manufacturer->VirtualValue <> "") {
-			$this->manufacturer->EditValue = $this->manufacturer->VirtualValue;
-		} else {
-			$this->manufacturer->EditValue = $this->manufacturer->CurrentValue;
-		$curVal = strval($this->manufacturer->CurrentValue);
-		if ($curVal <> "") {
-			$this->manufacturer->EditValue = $this->manufacturer->lookupCacheOption($curVal);
-			if ($this->manufacturer->EditValue === NULL) { // Lookup from database
-				$filterWrk = "\"manufacturerName\"" . SearchString("=", $curVal, DATATYPE_STRING, "");
-				$sqlWrk = $this->manufacturer->Lookup->getSql(FALSE, $filterWrk, '', $this);
-				$rswrk = Conn()->execute($sqlWrk);
-				if ($rswrk && !$rswrk->EOF) { // Lookup values found
-					$arwrk = array();
-					$arwrk[1] = $rswrk->fields('df');
-					$this->manufacturer->EditValue = $this->manufacturer->displayValue($arwrk);
-					$rswrk->Close();
-				} else {
-					$this->manufacturer->EditValue = $this->manufacturer->CurrentValue;
-				}
-			}
-		} else {
-			$this->manufacturer->EditValue = NULL;
-		}
-		}
-		$this->manufacturer->ViewCustomAttributes = "";
+		if (REMOVE_XSS)
+			$this->manufacturer->CurrentValue = HtmlDecode($this->manufacturer->CurrentValue);
+		$this->manufacturer->EditValue = $this->manufacturer->CurrentValue;
+		$this->manufacturer->PlaceHolder = RemoveHtml($this->manufacturer->caption());
 
-		// cdd
-		$this->cdd->EditAttrs["class"] = "form-control";
-		$this->cdd->EditCustomAttributes = "";
-		if (!EmptyValue($this->cdd->Upload->DbValue)) {
-			$this->cdd->EditValue = $this->cdd->Upload->DbValue;
+		// cddFile
+		$this->cddFile->EditAttrs["class"] = "form-control";
+		$this->cddFile->EditCustomAttributes = "";
+		if (!EmptyValue($this->cddFile->Upload->DbValue)) {
+			$this->cddFile->EditValue = $this->cddFile->Upload->DbValue;
 		} else {
-			$this->cdd->EditValue = "";
+			$this->cddFile->EditValue = "";
 		}
-		$this->cdd->ViewCustomAttributes = "";
+		if (!EmptyValue($this->cddFile->CurrentValue))
+				$this->cddFile->Upload->FileName = $this->cddFile->CurrentValue;
 
-		// thirdParty
-		$this->thirdParty->EditAttrs["class"] = "form-control";
-		$this->thirdParty->EditCustomAttributes = "";
-		if (!EmptyValue($this->thirdParty->Upload->DbValue)) {
-			$this->thirdParty->EditValue = $this->thirdParty->Upload->DbValue;
+		// thirdPartyFile
+		$this->thirdPartyFile->EditAttrs["class"] = "form-control";
+		$this->thirdPartyFile->EditCustomAttributes = "";
+		if (!EmptyValue($this->thirdPartyFile->Upload->DbValue)) {
+			$this->thirdPartyFile->EditValue = $this->thirdPartyFile->Upload->DbValue;
 		} else {
-			$this->thirdParty->EditValue = "";
+			$this->thirdPartyFile->EditValue = "";
 		}
-		$this->thirdParty->ViewCustomAttributes = "";
+		if (!EmptyValue($this->thirdPartyFile->CurrentValue))
+				$this->thirdPartyFile->Upload->FileName = $this->thirdPartyFile->CurrentValue;
 
 		// tittle
 		$this->tittle->EditAttrs["class"] = "form-control";
@@ -1443,7 +1452,8 @@ class datasheets extends DbTable
 		} else {
 			$this->cover->EditValue = "";
 		}
-		$this->cover->ViewCustomAttributes = "";
+		if (!EmptyValue($this->cover->CurrentValue))
+				$this->cover->Upload->FileName = $this->cover->CurrentValue;
 
 		// cddissue
 		$this->cddissue->EditAttrs["class"] = "form-control";
@@ -1458,6 +1468,14 @@ class datasheets extends DbTable
 			$this->cddno->CurrentValue = HtmlDecode($this->cddno->CurrentValue);
 		$this->cddno->EditValue = $this->cddno->CurrentValue;
 		$this->cddno->PlaceHolder = RemoveHtml($this->cddno->caption());
+
+		// thirdPartyNo
+		$this->thirdPartyNo->EditAttrs["class"] = "form-control";
+		$this->thirdPartyNo->EditCustomAttributes = "";
+		if (REMOVE_XSS)
+			$this->thirdPartyNo->CurrentValue = HtmlDecode($this->thirdPartyNo->CurrentValue);
+		$this->thirdPartyNo->EditValue = $this->thirdPartyNo->CurrentValue;
+		$this->thirdPartyNo->PlaceHolder = RemoveHtml($this->thirdPartyNo->caption());
 
 		// duration
 		$this->duration->EditAttrs["class"] = "form-control";
@@ -1498,12 +1516,6 @@ class datasheets extends DbTable
 		$this->isdatasheet->EditCustomAttributes = "";
 		$this->isdatasheet->EditValue = $this->isdatasheet->options(FALSE);
 
-		// nativeFiles
-		$this->nativeFiles->EditAttrs["class"] = "form-control";
-		$this->nativeFiles->EditCustomAttributes = "";
-		$this->nativeFiles->EditValue = $this->nativeFiles->CurrentValue;
-		$this->nativeFiles->PlaceHolder = RemoveHtml($this->nativeFiles->caption());
-
 		// datasheetdate
 		$this->datasheetdate->EditAttrs["class"] = "form-control";
 		$this->datasheetdate->EditCustomAttributes = "";
@@ -1511,12 +1523,12 @@ class datasheets extends DbTable
 		$this->datasheetdate->PlaceHolder = RemoveHtml($this->datasheetdate->caption());
 
 		// username
-		$this->username->EditAttrs["class"] = "form-control";
-		$this->username->EditCustomAttributes = "";
-		if (REMOVE_XSS)
-			$this->username->CurrentValue = HtmlDecode($this->username->CurrentValue);
-		$this->username->EditValue = $this->username->CurrentValue;
-		$this->username->PlaceHolder = RemoveHtml($this->username->caption());
+		// nativeFiles
+
+		$this->nativeFiles->EditAttrs["class"] = "form-control";
+		$this->nativeFiles->EditCustomAttributes = "";
+		$this->nativeFiles->EditValue = $this->nativeFiles->CurrentValue;
+		$this->nativeFiles->PlaceHolder = RemoveHtml($this->nativeFiles->caption());
 
 		// Call Row Rendered event
 		$this->Row_Rendered();
@@ -1554,7 +1566,6 @@ class datasheets extends DbTable
 					$doc->exportCaption($this->cddno);
 					$doc->exportCaption($this->duration);
 					$doc->exportCaption($this->expirydt);
-					$doc->exportCaption($this->highlighted);
 					$doc->exportCaption($this->coo);
 					$doc->exportCaption($this->hssCode);
 					$doc->exportCaption($this->systrade);
@@ -1566,9 +1577,8 @@ class datasheets extends DbTable
 					$doc->exportCaption($this->tittle);
 					$doc->exportCaption($this->cddissue);
 					$doc->exportCaption($this->cddno);
-					$doc->exportCaption($this->duration);
+					$doc->exportCaption($this->thirdPartyNo);
 					$doc->exportCaption($this->expirydt);
-					$doc->exportCaption($this->highlighted);
 					$doc->exportCaption($this->coo);
 					$doc->exportCaption($this->hssCode);
 					$doc->exportCaption($this->systrade);
@@ -1612,7 +1622,6 @@ class datasheets extends DbTable
 						$doc->exportField($this->cddno);
 						$doc->exportField($this->duration);
 						$doc->exportField($this->expirydt);
-						$doc->exportField($this->highlighted);
 						$doc->exportField($this->coo);
 						$doc->exportField($this->hssCode);
 						$doc->exportField($this->systrade);
@@ -1624,9 +1633,8 @@ class datasheets extends DbTable
 						$doc->exportField($this->tittle);
 						$doc->exportField($this->cddissue);
 						$doc->exportField($this->cddno);
-						$doc->exportField($this->duration);
+						$doc->exportField($this->thirdPartyNo);
 						$doc->exportField($this->expirydt);
-						$doc->exportField($this->highlighted);
 						$doc->exportField($this->coo);
 						$doc->exportField($this->hssCode);
 						$doc->exportField($this->systrade);
@@ -1653,6 +1661,47 @@ class datasheets extends DbTable
 		global $Language, $LANGUAGE_FOLDER, $PROJECT_ID;
 		if (!isset($Language))
 			$Language = new Language($LANGUAGE_FOLDER, Post("language", ""));
+		global $Security, $RequestSecurity;
+
+		// Check token first
+		$func = PROJECT_NAMESPACE . "CheckToken";
+		$validRequest = FALSE;
+		if (is_callable($func) && Post(TOKEN_NAME) !== NULL) {
+			$validRequest = $func(Post(TOKEN_NAME), SessionTimeoutTime());
+			if ($validRequest) {
+				if (!isset($Security)) {
+					if (session_status() !== PHP_SESSION_ACTIVE)
+						session_start(); // Init session data
+					$Security = new AdvancedSecurity();
+					if ($Security->isLoggedIn()) $Security->TablePermission_Loading();
+					$Security->loadCurrentUserLevel($PROJECT_ID . $this->TableName);
+					if ($Security->isLoggedIn()) $Security->TablePermission_Loaded();
+					$validRequest = $Security->canList(); // List permission
+					if ($validRequest) {
+						$Security->UserID_Loading();
+						$Security->loadUserID();
+						$Security->UserID_Loaded();
+					}
+				}
+			}
+		} else {
+
+			// User profile
+			$UserProfile = new UserProfile();
+
+			// Security
+			$Security = new AdvancedSecurity();
+			if (is_array($RequestSecurity)) // Login user for API request
+				$Security->loginUser(@$RequestSecurity["username"], @$RequestSecurity["userid"], @$RequestSecurity["parentuserid"], @$RequestSecurity["userlevelid"]);
+			$Security->TablePermission_Loading();
+			$Security->loadCurrentUserLevel(CurrentProjectID() . $this->TableName);
+			$Security->TablePermission_Loaded();
+			$validRequest = $Security->canList(); // List permission
+		}
+
+		// Reject invalid request
+		if (!$validRequest)
+			return FALSE;
 
 		// Load lookup parameters
 		$distinct = ConvertToBool(Post("distinct"));
@@ -1752,12 +1801,12 @@ class datasheets extends DbTable
 		if ($fldparm == 'dataSheetFile') {
 			$fldName = "dataSheetFile";
 			$fileNameFld = "dataSheetFile";
-		} elseif ($fldparm == 'cdd') {
-			$fldName = "cdd";
-			$fileNameFld = "cdd";
-		} elseif ($fldparm == 'thirdParty') {
-			$fldName = "thirdParty";
-			$fileNameFld = "thirdParty";
+		} elseif ($fldparm == 'cddFile') {
+			$fldName = "cddFile";
+			$fileNameFld = "cddFile";
+		} elseif ($fldparm == 'thirdPartyFile') {
+			$fldName = "thirdPartyFile";
+			$fileNameFld = "thirdPartyFile";
 		} elseif ($fldparm == 'cover') {
 			$fldName = "cover";
 			$fileNameFld = "cover";
@@ -1844,7 +1893,7 @@ class datasheets extends DbTable
 	public function writeAuditTrailDummy($typ)
 	{
 		$table = 'datasheets';
-		$usr = CurrentUserName();
+		$usr = CurrentUserID();
 		WriteAuditTrail("log", DbCurrentDateTime(), ScriptName(), $usr, $typ, $table, "", "", "", "");
 	}
 
@@ -1865,7 +1914,7 @@ class datasheets extends DbTable
 		// Write Audit Trail
 		$dt = DbCurrentDateTime();
 		$id = ScriptName();
-		$usr = CurrentUserName();
+		$usr = CurrentUserID();
 		foreach (array_keys($rs) as $fldname) {
 			if (array_key_exists($fldname, $this->fields) && $this->fields[$fldname]->DataType <> DATATYPE_BLOB) { // Ignore BLOB fields
 				if ($this->fields[$fldname]->HtmlTag == "PASSWORD") {
@@ -1902,7 +1951,7 @@ class datasheets extends DbTable
 		// Write Audit Trail
 		$dt = DbCurrentDateTime();
 		$id = ScriptName();
-		$usr = CurrentUserName();
+		$usr = CurrentUserID();
 		foreach (array_keys($rsnew) as $fldname) {
 			if (array_key_exists($fldname, $this->fields) && array_key_exists($fldname, $rsold) && $this->fields[$fldname]->DataType <> DATATYPE_BLOB) { // Ignore BLOB fields
 				if ($this->fields[$fldname]->DataType == DATATYPE_DATE) { // DateTime field
@@ -1952,7 +2001,7 @@ class datasheets extends DbTable
 		// Write Audit Trail
 		$dt = DbCurrentDateTime();
 		$id = ScriptName();
-		$curUser = CurrentUserName();
+		$curUser = CurrentUserID();
 		foreach (array_keys($rs) as $fldname) {
 			if (array_key_exists($fldname, $this->fields) && $this->fields[$fldname]->DataType <> DATATYPE_BLOB) { // Ignore BLOB fields
 				if ($this->fields[$fldname]->HtmlTag == "PASSWORD") {
@@ -2019,10 +2068,11 @@ class datasheets extends DbTable
 		//Code to change the file name to our requirement and save the same way at server and database.
 		// Code to change the file names to match the command line submital tool generator
 
-		$rsnew["dataSheetFile"] = $rsnew["partno"].".pdf";
-		$rsnew["cdd"] = $rsnew["partno"]."-CDD".".pdf";
-		$rsnew["thirdParty"] = $rsnew["partno"]."-UL".".pdf";
-		$rsnew["cover"] = $rsnew["partno"]."-COVER".".pdf";
+		$suffix_file = rand(99999,10000);
+		$rsnew["dataSheetFile"] = $rsnew["partno"]."-".$suffix_file.".pdf";
+		$rsnew["cddFile"] = $rsnew["cddno"]."-CDD-".$suffix_file.".pdf";
+		$rsnew["thirdPartyFile"] = $rsnew["thirdPartyNo"]."-UL-".$suffix_file.".pdf";
+		$rsnew["cover"] = $rsnew["partno"]."-COVER-".$suffix_file.".pdf";
 		return TRUE;
 	}
 
@@ -2038,6 +2088,31 @@ class datasheets extends DbTable
 		// Enter your code here
 		// To cancel, set return value to FALSE
 
+		$suffix_file = rand(99999,10000);
+		if(isset($rsnew["dataSheetFile"]) == TRUE )
+	 	{
+		$rsnew["dataSheetFile"] = $rsold["partno"]."-".$suffix_file.".pdf";
+		}
+
+		// formating CDD File
+		if(isset($rsnew["cddFile"]) == TRUE )
+	 	{
+
+	 		//need to check if the third party update happens only after 
+			$rsnew["cddFile"] = $rsnew["cddno"]."-CDD-".$suffix_file.".pdf";
+		}
+
+		//formating third party File and field
+		if(isset($rsnew["thirdPartyFile"]) == TRUE )
+	 	{
+		$rsnew["thirdPartyFile"] = $rsnew["thirdPartyNo"]."-UL-".$suffix_file.".pdf";
+		}
+
+		//formating cover file
+		if(isset($rsnew["cover"]) == TRUE )
+	 	{
+		$rsnew["cover"] = $rsold["partno"]."-COVER-".$suffix_file.".pdf";
+		}
 		return TRUE;
 	}
 

@@ -288,6 +288,7 @@ class index
 	public function __construct()
 	{
 		global $Language, $COMPOSITE_KEY_SEPARATOR;
+		global $UserTable, $UserTableConn;
 
 		// Initialize
 		$GLOBALS["Page"] = &$this;
@@ -311,6 +312,12 @@ class index
 		// Open connection
 		if (!isset($GLOBALS["Conn"]))
 			$GLOBALS["Conn"] = &GetConnection();
+
+		// User table object (users)
+		if (!isset($UserTable)) {
+			$UserTable = new users();
+			$UserTableConn = Conn($UserTable->Dbid);
+		}
 	}
 
 	// Terminate page
@@ -365,6 +372,26 @@ class index
 				session_start();
 		}
 
+		// User profile
+		$UserProfile = new UserProfile();
+
+		// Security
+		$Security = new AdvancedSecurity();
+		$validRequest = FALSE;
+
+		// Check security for API request
+		If (IsApi()) {
+
+			// Check token first
+			$func = PROJECT_NAMESPACE . CHECK_TOKEN_FUNC;
+			if (is_callable($func) && Post(TOKEN_NAME) !== NULL)
+				$validRequest = $func(Post(TOKEN_NAME), SessionTimeoutTime());
+			elseif (is_array($RequestSecurity) && @$RequestSecurity["username"] <> "") // Login user for API request
+				$Security->loginUser(@$RequestSecurity["username"], @$RequestSecurity["userid"], @$RequestSecurity["parentuserid"], @$RequestSecurity["userlevelid"]);
+		}
+		if (!$validRequest) {
+		}
+
 		// Global Page Loading event (in userfn*.php)
 		Page_Loading();
 
@@ -384,7 +411,28 @@ class index
 		// If session expired, show session expired message
 		if (Get("expired") == "1")
 			$this->setFailureMessage($Language->phrase("SessionExpired"));
-		$this->terminate("datasheetlist.php"); // Exit and go to default page
+		if (!$Security->isLoggedIn())
+			$Security->autoLogin();
+		$Security->loadUserLevel(); // Load User Level
+		if ($Security->allowList(CurrentProjectID() . 'datasheets'))
+			$this->terminate("datasheetslist.php"); // Exit and go to default page
+		if ($Security->allowList(CurrentProjectID() . 'manufacturer'))
+			$this->terminate("manufacturerlist.php");
+		if ($Security->allowList(CurrentProjectID() . 'countryOfOrigin'))
+			$this->terminate("countryOfOriginlist.php");
+		if ($Security->allowList(CurrentProjectID() . 'audittrail'))
+			$this->terminate("audittraillist.php");
+		if ($Security->allowList(CurrentProjectID() . 'users'))
+			$this->terminate("userslist.php");
+		if ($Security->allowList(CurrentProjectID() . 'userlevels'))
+			$this->terminate("userlevelslist.php");
+		if ($Security->allowList(CurrentProjectID() . 'userlevelpermissions'))
+			$this->terminate("userlevelpermissionslist.php");
+		if ($Security->isLoggedIn()) {
+			$this->setFailureMessage(DeniedMessage() . "<br><br><a href=\"logout.php\">" . $Language->phrase("BackToLogin") . "</a>");
+		} else {
+			$this->terminate("login.php"); // Exit and go to login page
+		}
 	}
 
 	// Page Load event

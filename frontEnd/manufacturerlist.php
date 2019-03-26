@@ -23,6 +23,7 @@ $manufacturer_list = new manufacturer_list();
 $manufacturer_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -83,6 +84,7 @@ fmanufacturerlistsrch.filterList = <?php echo $manufacturer_list->getFilterList(
 <?php
 $manufacturer_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$manufacturer->isExport() && !$manufacturer->CurrentAction) { ?>
 <form name="fmanufacturerlistsrch" id="fmanufacturerlistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <?php $searchPanelClass = ($manufacturer_list->SearchWhere <> "") ? " show" : " show"; ?>
@@ -109,6 +111,7 @@ $manufacturer_list->renderOtherOptions();
 	</div>
 </div>
 </form>
+<?php } ?>
 <?php } ?>
 <?php $manufacturer_list->showPageHeader(); ?>
 <?php

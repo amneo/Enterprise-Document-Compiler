@@ -23,6 +23,7 @@ $manufacturer_delete = new manufacturer_delete();
 $manufacturer_delete->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)

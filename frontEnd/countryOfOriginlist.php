@@ -23,6 +23,7 @@ $countryOfOrigin_list = new countryOfOrigin_list();
 $countryOfOrigin_list->run();
 
 // Setup login status
+SetupLoginStatus();
 SetClientVar("login", LoginStatus());
 
 // Global Page Rendering event (in userfn*.php)
@@ -83,6 +84,7 @@ fcountryOfOriginlistsrch.filterList = <?php echo $countryOfOrigin_list->getFilte
 <?php
 $countryOfOrigin_list->renderOtherOptions();
 ?>
+<?php if ($Security->CanSearch()) { ?>
 <?php if (!$countryOfOrigin->isExport() && !$countryOfOrigin->CurrentAction) { ?>
 <form name="fcountryOfOriginlistsrch" id="fcountryOfOriginlistsrch" class="form-inline ew-form ew-ext-search-form" action="<?php echo CurrentPageName() ?>">
 <?php $searchPanelClass = ($countryOfOrigin_list->SearchWhere <> "") ? " show" : " show"; ?>
@@ -109,6 +111,7 @@ $countryOfOrigin_list->renderOtherOptions();
 	</div>
 </div>
 </form>
+<?php } ?>
 <?php } ?>
 <?php $countryOfOrigin_list->showPageHeader(); ?>
 <?php
