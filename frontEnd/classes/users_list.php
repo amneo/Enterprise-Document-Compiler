@@ -1991,7 +1991,7 @@ class users_list extends users
 			$this->uLevel->ViewCustomAttributes = "";
 
 			// uPassword
-			$this->uPassword->ViewValue = $this->uPassword->CurrentValue;
+			$this->uPassword->ViewValue = $Language->phrase("PasswordMask");
 			$this->uPassword->ViewCustomAttributes = "";
 
 			// uProfile

@@ -290,7 +290,7 @@ $users_add->showMessage();
 		<label id="elh_users_uPassword" for="x_uPassword" class="<?php echo $users_add->LeftColumnClass ?>"><?php echo $users->uPassword->caption() ?><?php echo ($users->uPassword->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $users_add->RightColumnClass ?>"><div<?php echo $users->uPassword->cellAttributes() ?>>
 <span id="el_users_uPassword">
-<input type="text" data-table="users" data-field="x_uPassword" name="x_uPassword" id="x_uPassword" size="30" placeholder="<?php echo HtmlEncode($users->uPassword->getPlaceHolder()) ?>" value="<?php echo $users->uPassword->EditValue ?>"<?php echo $users->uPassword->editAttributes() ?>>
+<input type="password" data-field="x_uPassword" name="x_uPassword" id="x_uPassword" size="30" placeholder="<?php echo HtmlEncode($users->uPassword->getPlaceHolder()) ?>"<?php echo $users->uPassword->editAttributes() ?>>
 </span>
 <?php echo $users->uPassword->CustomMsg ?></div></div>
 	</div>
@@ -299,7 +299,7 @@ $users_add->showMessage();
 		<td class="<?php echo $users_add->TableLeftColumnClass ?>"><span id="elh_users_uPassword"><?php echo $users->uPassword->caption() ?><?php echo ($users->uPassword->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></span></td>
 		<td<?php echo $users->uPassword->cellAttributes() ?>>
 <span id="el_users_uPassword">
-<input type="text" data-table="users" data-field="x_uPassword" name="x_uPassword" id="x_uPassword" size="30" placeholder="<?php echo HtmlEncode($users->uPassword->getPlaceHolder()) ?>" value="<?php echo $users->uPassword->EditValue ?>"<?php echo $users->uPassword->editAttributes() ?>>
+<input type="password" data-field="x_uPassword" name="x_uPassword" id="x_uPassword" size="30" placeholder="<?php echo HtmlEncode($users->uPassword->getPlaceHolder()) ?>"<?php echo $users->uPassword->editAttributes() ?>>
 </span>
 <?php echo $users->uPassword->CustomMsg ?></td>
 	</tr>

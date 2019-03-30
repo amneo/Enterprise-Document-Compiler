@@ -54,11 +54,6 @@ fusersedit.validate = function() {
 	for (var i = startcnt; i <= rowcnt; i++) {
 		var infix = ($k[0]) ? String(i) : "";
 		$fobj.data("rowindex", infix);
-		<?php if ($users_edit->seqid->Required) { ?>
-			elm = this.getElements("x" + infix + "_seqid");
-			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
-				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $users->seqid->caption(), $users->seqid->RequiredErrorMessage)) ?>");
-		<?php } ?>
 		<?php if ($users_edit->userName->Required) { ?>
 			elm = this.getElements("x" + infix + "_userName");
 			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -162,31 +157,6 @@ $users_edit->showMessage();
 <div class="ew-edit-div"><!-- page* -->
 <?php } else { ?>
 <table id="tbl_usersedit" class="table table-striped table-sm ew-desktop-table"><!-- table* -->
-<?php } ?>
-<?php if ($users->seqid->Visible) { // seqid ?>
-<?php if ($users_edit->IsMobileOrModal) { ?>
-	<div id="r_seqid" class="form-group row">
-		<label id="elh_users_seqid" class="<?php echo $users_edit->LeftColumnClass ?>"><?php echo $users->seqid->caption() ?><?php echo ($users->seqid->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
-		<div class="<?php echo $users_edit->RightColumnClass ?>"><div<?php echo $users->seqid->cellAttributes() ?>>
-<span id="el_users_seqid">
-<span<?php echo $users->seqid->viewAttributes() ?>>
-<input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($users->seqid->EditValue) ?>"></span>
-</span>
-<input type="hidden" data-table="users" data-field="x_seqid" name="x_seqid" id="x_seqid" value="<?php echo HtmlEncode($users->seqid->CurrentValue) ?>">
-<?php echo $users->seqid->CustomMsg ?></div></div>
-	</div>
-<?php } else { ?>
-	<tr id="r_seqid">
-		<td class="<?php echo $users_edit->TableLeftColumnClass ?>"><span id="elh_users_seqid"><?php echo $users->seqid->caption() ?><?php echo ($users->seqid->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></span></td>
-		<td<?php echo $users->seqid->cellAttributes() ?>>
-<span id="el_users_seqid">
-<span<?php echo $users->seqid->viewAttributes() ?>>
-<input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($users->seqid->EditValue) ?>"></span>
-</span>
-<input type="hidden" data-table="users" data-field="x_seqid" name="x_seqid" id="x_seqid" value="<?php echo HtmlEncode($users->seqid->CurrentValue) ?>">
-<?php echo $users->seqid->CustomMsg ?></td>
-	</tr>
-<?php } ?>
 <?php } ?>
 <?php if ($users->userName->Visible) { // userName ?>
 <?php if ($users_edit->IsMobileOrModal) { ?>
@@ -320,7 +290,7 @@ $users_edit->showMessage();
 		<label id="elh_users_uPassword" for="x_uPassword" class="<?php echo $users_edit->LeftColumnClass ?>"><?php echo $users->uPassword->caption() ?><?php echo ($users->uPassword->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="<?php echo $users_edit->RightColumnClass ?>"><div<?php echo $users->uPassword->cellAttributes() ?>>
 <span id="el_users_uPassword">
-<input type="text" data-table="users" data-field="x_uPassword" name="x_uPassword" id="x_uPassword" size="30" placeholder="<?php echo HtmlEncode($users->uPassword->getPlaceHolder()) ?>" value="<?php echo $users->uPassword->EditValue ?>"<?php echo $users->uPassword->editAttributes() ?>>
+<input type="password" data-field="x_uPassword" name="x_uPassword" id="x_uPassword" value="<?php echo $users->uPassword->EditValue ?>" size="30" placeholder="<?php echo HtmlEncode($users->uPassword->getPlaceHolder()) ?>"<?php echo $users->uPassword->editAttributes() ?>>
 </span>
 <?php echo $users->uPassword->CustomMsg ?></div></div>
 	</div>
@@ -329,7 +299,7 @@ $users_edit->showMessage();
 		<td class="<?php echo $users_edit->TableLeftColumnClass ?>"><span id="elh_users_uPassword"><?php echo $users->uPassword->caption() ?><?php echo ($users->uPassword->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></span></td>
 		<td<?php echo $users->uPassword->cellAttributes() ?>>
 <span id="el_users_uPassword">
-<input type="text" data-table="users" data-field="x_uPassword" name="x_uPassword" id="x_uPassword" size="30" placeholder="<?php echo HtmlEncode($users->uPassword->getPlaceHolder()) ?>" value="<?php echo $users->uPassword->EditValue ?>"<?php echo $users->uPassword->editAttributes() ?>>
+<input type="password" data-field="x_uPassword" name="x_uPassword" id="x_uPassword" value="<?php echo $users->uPassword->EditValue ?>" size="30" placeholder="<?php echo HtmlEncode($users->uPassword->getPlaceHolder()) ?>"<?php echo $users->uPassword->editAttributes() ?>>
 </span>
 <?php echo $users->uPassword->CustomMsg ?></td>
 	</tr>
@@ -445,6 +415,7 @@ $selwrk = (ConvertToBool($users->uActivated->CurrentValue)) ? " checked" : "";
 <?php } else { ?>
 </table><!-- /table* -->
 <?php } ?>
+	<input type="hidden" data-table="users" data-field="x_seqid" name="x_seqid" id="x_seqid" value="<?php echo HtmlEncode($users->seqid->CurrentValue) ?>">
 <?php if (!$users_edit->IsModal) { ?>
 <div class="form-group row"><!-- buttons .form-group -->
 	<div class="<?php echo $users_edit->OffsetColumnClass ?>"><!-- buttons offset -->

@@ -233,7 +233,7 @@ $users_list->ListOptions->render("header", "left");
 		<th data-name="uPassword" class="<?php echo $users->uPassword->headerCellClass() ?>"><div id="elh_users_uPassword" class="users_uPassword"><div class="ew-table-header-caption"><?php echo $users->uPassword->caption() ?></div></div></th>
 	<?php } else { ?>
 		<th data-name="uPassword" class="<?php echo $users->uPassword->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event,'<?php echo $users->SortUrl($users->uPassword) ?>',2);"><div id="elh_users_uPassword" class="users_uPassword">
-			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $users->uPassword->caption() ?><?php echo $Language->phrase("SrchLegend") ?></span><span class="ew-table-header-sort"><?php if ($users->uPassword->getSort() == "ASC") { ?><i class="fa fa-sort-up"></i><?php } elseif ($users->uPassword->getSort() == "DESC") { ?><i class="fa fa-sort-down"></i><?php } ?></span></div>
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $users->uPassword->caption() ?></span><span class="ew-table-header-sort"><?php if ($users->uPassword->getSort() == "ASC") { ?><i class="fa fa-sort-up"></i><?php } elseif ($users->uPassword->getSort() == "DESC") { ?><i class="fa fa-sort-down"></i><?php } ?></span></div>
 		</div></div></th>
 	<?php } ?>
 <?php } ?>

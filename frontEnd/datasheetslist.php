@@ -181,6 +181,34 @@ fdatasheetslist.lists["x_isdatasheet"].options = <?php echo JsonEncode($datashee
 // Form object for search
 var fdatasheetslistsrch = currentSearchForm = new ew.Form("fdatasheetslistsrch");
 
+// Validate function for search
+fdatasheetslistsrch.validate = function(fobj) {
+	if (!this.validateRequired)
+		return true; // Ignore validation
+	fobj = fobj || this._form;
+	var infix = "";
+
+	// Fire Form_CustomValidate event
+	if (!this.Form_CustomValidate(fobj))
+		return false;
+	return true;
+}
+
+// Form_CustomValidate event
+fdatasheetslistsrch.Form_CustomValidate = function(fobj) { // DO NOT CHANGE THIS LINE!
+
+	// Your custom validation code here, return false if invalid.
+	return true;
+}
+
+// Use JavaScript validation or not
+fdatasheetslistsrch.validateRequired = <?php echo json_encode(CLIENT_VALIDATE) ?>;
+
+// Dynamic selection lists
+fdatasheetslistsrch.lists["x_manufacturer"] = <?php echo $datasheets_list->manufacturer->Lookup->toClientList() ?>;
+fdatasheetslistsrch.lists["x_manufacturer"].options = <?php echo JsonEncode($datasheets_list->manufacturer->lookupOptions()) ?>;
+fdatasheetslistsrch.autoSuggests["x_manufacturer"] = <?php echo json_encode(["data" => "ajax=autosuggest"]) ?>;
+
 // Filters
 fdatasheetslistsrch.filterList = <?php echo $datasheets_list->getFilterList() ?>;
 </script>
@@ -217,7 +245,68 @@ $datasheets_list->renderOtherOptions();
 <input type="hidden" name="cmd" value="search">
 <input type="hidden" name="t" value="datasheets">
 	<div class="ew-basic-search">
+<?php
+if ($SearchError == "")
+	$datasheets_list->LoadAdvancedSearch(); // Load advanced search
+
+// Render for search
+$datasheets->RowType = ROWTYPE_SEARCH;
+
+// Render row
+$datasheets->resetAttributes();
+$datasheets_list->renderRow();
+?>
 <div id="xsr_1" class="ew-row d-sm-flex">
+<?php if ($datasheets->partno->Visible) { // partno ?>
+	<div id="xsc_partno" class="ew-cell form-group">
+		<label for="x_partno" class="ew-search-caption ew-label"><?php echo $datasheets->partno->caption() ?></label>
+		<span class="ew-search-operator"><?php echo $Language->phrase("LIKE") ?><input type="hidden" name="z_partno" id="z_partno" value="LIKE"></span>
+		<span class="ew-search-field">
+<input type="text" data-table="datasheets" data-field="x_partno" name="x_partno" id="x_partno" size="30" placeholder="<?php echo HtmlEncode($datasheets->partno->getPlaceHolder()) ?>" value="<?php echo $datasheets->partno->EditValue ?>"<?php echo $datasheets->partno->editAttributes() ?>>
+</span>
+	</div>
+<?php } ?>
+</div>
+<div id="xsr_2" class="ew-row d-sm-flex">
+<?php if ($datasheets->manufacturer->Visible) { // manufacturer ?>
+	<div id="xsc_manufacturer" class="ew-cell form-group">
+		<label class="ew-search-caption ew-label"><?php echo $datasheets->manufacturer->caption() ?></label>
+		<span class="ew-search-operator"><?php echo $Language->phrase("LIKE") ?><input type="hidden" name="z_manufacturer" id="z_manufacturer" value="LIKE"></span>
+		<span class="ew-search-field">
+<?php
+$wrkonchange = "" . trim(@$datasheets->manufacturer->EditAttrs["onchange"]);
+if (trim($wrkonchange) <> "") $wrkonchange = " onchange=\"" . JsEncode($wrkonchange) . "\"";
+$datasheets->manufacturer->EditAttrs["onchange"] = "";
+?>
+<span id="as_x_manufacturer" class="text-nowrap" style="z-index: 8960">
+	<div class="input-group mb-3">
+		<input type="text" class="form-control" name="sv_x_manufacturer" id="sv_x_manufacturer" value="<?php echo RemoveHtml($datasheets->manufacturer->EditValue) ?>" size="30" placeholder="<?php echo HtmlEncode($datasheets->manufacturer->getPlaceHolder()) ?>" data-placeholder="<?php echo HtmlEncode($datasheets->manufacturer->getPlaceHolder()) ?>"<?php echo $datasheets->manufacturer->editAttributes() ?>>
+		<div class="input-group-append">
+			<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($datasheets->manufacturer->caption()), $Language->phrase("LookupLink", TRUE))) ?>" onclick="ew.modalLookupShow({lnk:this,el:'x_manufacturer',m:0,n:10,srch:true});" class="ew-lookup-btn btn btn-default"<?php echo (($datasheets->manufacturer->ReadOnly || $datasheets->manufacturer->Disabled) ? " disabled" : "")?>><i class="fa fa-search ew-icon"></i></button>
+		</div>
+	</div>
+</span>
+<input type="hidden" data-table="datasheets" data-field="x_manufacturer" data-multiple="0" data-lookup="1" data-value-separator="<?php echo $datasheets->manufacturer->displayValueSeparatorAttribute() ?>" name="x_manufacturer" id="x_manufacturer" value="<?php echo HtmlEncode($datasheets->manufacturer->AdvancedSearch->SearchValue) ?>"<?php echo $wrkonchange ?>>
+<script>
+fdatasheetslistsrch.createAutoSuggest({"id":"x_manufacturer","forceSelect":false});
+</script>
+<?php echo $datasheets->manufacturer->Lookup->getParamTag("p_x_manufacturer") ?>
+</span>
+	</div>
+<?php } ?>
+</div>
+<div id="xsr_3" class="ew-row d-sm-flex">
+<?php if ($datasheets->tittle->Visible) { // tittle ?>
+	<div id="xsc_tittle" class="ew-cell form-group">
+		<label for="x_tittle" class="ew-search-caption ew-label"><?php echo $datasheets->tittle->caption() ?></label>
+		<span class="ew-search-operator"><?php echo $Language->phrase("LIKE") ?><input type="hidden" name="z_tittle" id="z_tittle" value="LIKE"></span>
+		<span class="ew-search-field">
+<input type="text" data-table="datasheets" data-field="x_tittle" name="x_tittle" id="x_tittle" placeholder="<?php echo HtmlEncode($datasheets->tittle->getPlaceHolder()) ?>" value="<?php echo $datasheets->tittle->EditValue ?>"<?php echo $datasheets->tittle->editAttributes() ?>>
+</span>
+	</div>
+<?php } ?>
+</div>
+<div id="xsr_4" class="ew-row d-sm-flex">
 	<div class="ew-quick-search input-group">
 		<input type="text" name="<?php echo TABLE_BASIC_SEARCH ?>" id="<?php echo TABLE_BASIC_SEARCH ?>" class="form-control" value="<?php echo HtmlEncode($datasheets_list->BasicSearch->getKeyword()) ?>" placeholder="<?php echo HtmlEncode($Language->phrase("Search")) ?>">
 		<input type="hidden" name="<?php echo TABLE_BASIC_SEARCH_TYPE ?>" id="<?php echo TABLE_BASIC_SEARCH_TYPE ?>" value="<?php echo HtmlEncode($datasheets_list->BasicSearch->getType()) ?>">
@@ -488,7 +577,7 @@ fdatasheetslist.createAutoSuggest({"id":"x<?php echo $datasheets_list->RowIndex 
 	<?php if ($datasheets->tittle->Visible) { // tittle ?>
 		<td data-name="tittle">
 <span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_tittle" class="form-group datasheets_tittle">
-<input type="text" data-table="datasheets" data-field="x_tittle" name="x<?php echo $datasheets_list->RowIndex ?>_tittle" id="x<?php echo $datasheets_list->RowIndex ?>_tittle" size="30" placeholder="<?php echo HtmlEncode($datasheets->tittle->getPlaceHolder()) ?>" value="<?php echo $datasheets->tittle->EditValue ?>"<?php echo $datasheets->tittle->editAttributes() ?>>
+<textarea data-table="datasheets" data-field="x_tittle" name="x<?php echo $datasheets_list->RowIndex ?>_tittle" id="x<?php echo $datasheets_list->RowIndex ?>_tittle" cols="35" rows="4" placeholder="<?php echo HtmlEncode($datasheets->tittle->getPlaceHolder()) ?>"<?php echo $datasheets->tittle->editAttributes() ?>><?php echo $datasheets->tittle->EditValue ?></textarea>
 </span>
 <input type="hidden" data-table="datasheets" data-field="x_tittle" name="o<?php echo $datasheets_list->RowIndex ?>_tittle" id="o<?php echo $datasheets_list->RowIndex ?>_tittle" value="<?php echo HtmlEncode($datasheets->tittle->OldValue) ?>">
 </td>
@@ -827,13 +916,13 @@ fdatasheetslist.createAutoSuggest({"id":"x<?php echo $datasheets_list->RowIndex 
 		<td data-name="tittle"<?php echo $datasheets->tittle->cellAttributes() ?>>
 <?php if ($datasheets->RowType == ROWTYPE_ADD) { // Add record ?>
 <span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_tittle" class="form-group datasheets_tittle">
-<input type="text" data-table="datasheets" data-field="x_tittle" name="x<?php echo $datasheets_list->RowIndex ?>_tittle" id="x<?php echo $datasheets_list->RowIndex ?>_tittle" size="30" placeholder="<?php echo HtmlEncode($datasheets->tittle->getPlaceHolder()) ?>" value="<?php echo $datasheets->tittle->EditValue ?>"<?php echo $datasheets->tittle->editAttributes() ?>>
+<textarea data-table="datasheets" data-field="x_tittle" name="x<?php echo $datasheets_list->RowIndex ?>_tittle" id="x<?php echo $datasheets_list->RowIndex ?>_tittle" cols="35" rows="4" placeholder="<?php echo HtmlEncode($datasheets->tittle->getPlaceHolder()) ?>"<?php echo $datasheets->tittle->editAttributes() ?>><?php echo $datasheets->tittle->EditValue ?></textarea>
 </span>
 <input type="hidden" data-table="datasheets" data-field="x_tittle" name="o<?php echo $datasheets_list->RowIndex ?>_tittle" id="o<?php echo $datasheets_list->RowIndex ?>_tittle" value="<?php echo HtmlEncode($datasheets->tittle->OldValue) ?>">
 <?php } ?>
 <?php if ($datasheets->RowType == ROWTYPE_EDIT) { // Edit record ?>
 <span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_tittle" class="form-group datasheets_tittle">
-<input type="text" data-table="datasheets" data-field="x_tittle" name="x<?php echo $datasheets_list->RowIndex ?>_tittle" id="x<?php echo $datasheets_list->RowIndex ?>_tittle" size="30" placeholder="<?php echo HtmlEncode($datasheets->tittle->getPlaceHolder()) ?>" value="<?php echo $datasheets->tittle->EditValue ?>"<?php echo $datasheets->tittle->editAttributes() ?>>
+<textarea data-table="datasheets" data-field="x_tittle" name="x<?php echo $datasheets_list->RowIndex ?>_tittle" id="x<?php echo $datasheets_list->RowIndex ?>_tittle" cols="35" rows="4" placeholder="<?php echo HtmlEncode($datasheets->tittle->getPlaceHolder()) ?>"<?php echo $datasheets->tittle->editAttributes() ?>><?php echo $datasheets->tittle->EditValue ?></textarea>
 </span>
 <?php } ?>
 <?php if ($datasheets->RowType == ROWTYPE_VIEW) { // View record ?>
@@ -1215,7 +1304,7 @@ fdatasheetslist.createAutoSuggest({"id":"x<?php echo $datasheets_list->RowIndex 
 	<?php if ($datasheets->tittle->Visible) { // tittle ?>
 		<td data-name="tittle">
 <span id="el$rowindex$_datasheets_tittle" class="form-group datasheets_tittle">
-<input type="text" data-table="datasheets" data-field="x_tittle" name="x<?php echo $datasheets_list->RowIndex ?>_tittle" id="x<?php echo $datasheets_list->RowIndex ?>_tittle" size="30" placeholder="<?php echo HtmlEncode($datasheets->tittle->getPlaceHolder()) ?>" value="<?php echo $datasheets->tittle->EditValue ?>"<?php echo $datasheets->tittle->editAttributes() ?>>
+<textarea data-table="datasheets" data-field="x_tittle" name="x<?php echo $datasheets_list->RowIndex ?>_tittle" id="x<?php echo $datasheets_list->RowIndex ?>_tittle" cols="35" rows="4" placeholder="<?php echo HtmlEncode($datasheets->tittle->getPlaceHolder()) ?>"<?php echo $datasheets->tittle->editAttributes() ?>><?php echo $datasheets->tittle->EditValue ?></textarea>
 </span>
 <input type="hidden" data-table="datasheets" data-field="x_tittle" name="o<?php echo $datasheets_list->RowIndex ?>_tittle" id="o<?php echo $datasheets_list->RowIndex ?>_tittle" value="<?php echo HtmlEncode($datasheets->tittle->OldValue) ?>">
 </td>

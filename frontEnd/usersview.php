@@ -110,17 +110,6 @@ $users_view->showMessage();
 <input type="hidden" name="t" value="users">
 <input type="hidden" name="modal" value="<?php echo (int)$users_view->IsModal ?>">
 <table class="table table-striped table-sm ew-view-table">
-<?php if ($users->seqid->Visible) { // seqid ?>
-	<tr id="r_seqid">
-		<td class="<?php echo $users_view->TableLeftColumnClass ?>"><span id="elh_users_seqid"><?php echo $users->seqid->caption() ?></span></td>
-		<td data-name="seqid"<?php echo $users->seqid->cellAttributes() ?>>
-<span id="el_users_seqid">
-<span<?php echo $users->seqid->viewAttributes() ?>>
-<?php echo $users->seqid->getViewValue() ?></span>
-</span>
-</td>
-	</tr>
-<?php } ?>
 <?php if ($users->userName->Visible) { // userName ?>
 	<tr id="r_userName">
 		<td class="<?php echo $users_view->TableLeftColumnClass ?>"><span id="elh_users_userName"><?php echo $users->userName->caption() ?></span></td>

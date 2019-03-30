@@ -4,11 +4,11 @@ namespace PHPMaker2019\SUBMITTAL;
 /**
  * Page class
  */
-class datasheets_edit extends datasheets
+class datasheets_update extends datasheets
 {
 
 	// Page ID
-	public $PageID = "edit";
+	public $PageID = "update";
 
 	// Project ID
 	public $ProjectID = "vishal-sub";
@@ -17,7 +17,7 @@ class datasheets_edit extends datasheets
 	public $TableName = 'datasheets';
 
 	// Page object name
-	public $PageObjName = "datasheets_edit";
+	public $PageObjName = "datasheets_update";
 
 	// Audit Trail
 	public $AuditTrailOnAdd = TRUE;
@@ -364,7 +364,7 @@ class datasheets_edit extends datasheets
 
 		// Page ID
 		if (!defined(PROJECT_NAMESPACE . "PAGE_ID"))
-			define(PROJECT_NAMESPACE . "PAGE_ID", 'edit');
+			define(PROJECT_NAMESPACE . "PAGE_ID", 'update');
 
 		// Table name (for backward compatibility)
 		if (!defined(PROJECT_NAMESPACE . "TABLE_NAME"))
@@ -542,12 +542,12 @@ class datasheets_edit extends datasheets
 		if ($this->isAdd() || $this->isCopy() || $this->isGridAdd())
 			$this->partid->Visible = FALSE;
 	}
-	public $FormClassName = "ew-horizontal ew-form ew-edit-form";
+	public $FormClassName = "ew-horizontal ew-form ew-update-form";
 	public $IsModal = FALSE;
 	public $IsMobileOrModal = FALSE;
-	public $DbMasterFilter;
-	public $DbDetailFilter;
-	public $MultiPages; // Multi pages object
+	public $RecKeys;
+	public $Disabled;
+	public $UpdateCount = 0;
 
 	//
 	// Page run
@@ -637,8 +637,8 @@ class datasheets_edit extends datasheets
 		$this->highlighted->setVisibility();
 		$this->coo->setVisibility();
 		$this->hssCode->setVisibility();
-		$this->systrade->setVisibility();
-		$this->isdatasheet->setVisibility();
+		$this->systrade->Visible = FALSE;
+		$this->isdatasheet->Visible = FALSE;
 		$this->datasheetdate->Visible = FALSE;
 		$this->username->Visible = FALSE;
 		$this->nativeFiles->setVisibility();
@@ -647,9 +647,6 @@ class datasheets_edit extends datasheets
 
 		// Do not use lookup cache
 		$this->setUseLookupCache(FALSE);
-
-		// Set up multi page object
-		$this->setupMultiPages();
 
 		// Global Page Loading event (in userfn*.php)
 		Page_Loading();
@@ -674,141 +671,162 @@ class datasheets_edit extends datasheets
 		if ($this->IsModal)
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
-		$this->FormClassName = "ew-form ew-edit-form ew-horizontal";
-		$loaded = FALSE;
-		$postBack = FALSE;
-
-		// Set up current action and primary key
-		if (IsApi()) {
-			$this->CurrentAction = "update"; // Update record directly
-			$postBack = TRUE;
-		} elseif (Post("action") !== NULL) {
-			$this->CurrentAction = Post("action"); // Get action code
-			if (!$this->isShow()) // Not reload record, handle as postback
-				$postBack = TRUE;
-
-			// Load key from Form
-			if ($CurrentForm->hasValue("x_partid")) {
-				$this->partid->setFormValue($CurrentForm->getValue("x_partid"));
-			}
-		} else {
-			$this->CurrentAction = "show"; // Default action is display
-
-			// Load key from QueryString
-			$loadByQuery = FALSE;
-			if (Get("partid") !== NULL) {
-				$this->partid->setQueryStringValue(Get("partid"));
-				$loadByQuery = TRUE;
-			} else {
-				$this->partid->CurrentValue = NULL;
-			}
-		}
-
-		// Load current record
-		$loaded = $this->loadRow();
-
-		// Process form if post back
-		if ($postBack) {
-			$this->loadFormValues(); // Get form values
-		}
-
-		// Validate form if post back
-		if ($postBack) {
-			if (!$this->validateForm()) {
-				$this->setFailureMessage($FormError);
-				$this->EventCancelled = TRUE; // Event cancelled
-				$this->restoreFormValues();
-				if (IsApi()) {
-					$this->terminate();
-					return;
-				} else {
-					$this->CurrentAction = ""; // Form error, reset action
-				}
-			}
-		}
-
-		// Perform current action
-		switch ($this->CurrentAction) {
-			case "show": // Get a record to display
-				if (!$loaded) { // Load record based on key
-					if ($this->getFailureMessage() == "")
-						$this->setFailureMessage($Language->phrase("NoRecord")); // No record found
-					$this->terminate("datasheetslist.php"); // No matching record, return to list
-				}
-				break;
-			case "update": // Update
-				$returnUrl = $this->getReturnUrl();
-				if (GetPageName($returnUrl) == "datasheetslist.php")
-					$returnUrl = $this->addMasterUrl($returnUrl); // List page, return to List page with correct master key if necessary
-				$this->SendEmail = TRUE; // Send email on update success
-				if ($this->editRow()) { // Update record based on key
-					if ($this->getSuccessMessage() == "")
-						$this->setSuccessMessage($Language->phrase("UpdateSuccess")); // Update success
-					if (IsApi()) {
-						$this->terminate(TRUE);
-						return;
-					} else {
-						$this->terminate($returnUrl); // Return to caller
-					}
-				} elseif (IsApi()) { // API request, return
-					$this->terminate();
-					return;
-				} elseif ($this->getFailureMessage() == $Language->phrase("NoRecord")) {
-					$this->terminate($returnUrl); // Return to caller
-				} else {
-					$this->EventCancelled = TRUE; // Event cancelled
-					$this->restoreFormValues(); // Restore form values if update failed
-				}
-		}
+		$this->FormClassName = "ew-form ew-update-form ew-horizontal";
 
 		// Set up Breadcrumb
 		$this->setupBreadcrumb();
 
-		// Render the record
-		if ($this->isConfirm()) { // Confirm page
-			$this->RowType = ROWTYPE_VIEW; // Render as View
+		// Try to load keys from list form
+		$this->RecKeys = $this->getRecordKeys(); // Load record keys
+		if (Post("action") !== NULL && Post("action") !== "") {
+
+			// Get action
+			$this->CurrentAction = Post("action");
+			$this->loadFormValues(); // Get form values
+
+			// Validate form
+			if (!$this->validateForm()) {
+				$this->CurrentAction = "show"; // Form error, reset action
+				$this->setFailureMessage($FormError);
+			}
 		} else {
-			$this->RowType = ROWTYPE_EDIT; // Render as Edit
+			$this->loadMultiUpdateValues(); // Load initial values to form
+		}
+		if (count($this->RecKeys) <= 0)
+			$this->terminate("datasheetslist.php"); // No records selected, return to list
+		if ($this->isUpdate()) {
+				if ($this->updateRows()) { // Update Records based on key
+					if ($this->getSuccessMessage() == "")
+						$this->setSuccessMessage($Language->phrase("UpdateSuccess")); // Set up update success message
+					$this->terminate($this->getReturnUrl()); // Return to caller
+				} else {
+					$this->restoreFormValues(); // Restore form values
+				}
+		}
+
+		// Render row
+		if ($this->isConfirm()) { // Confirm page
+			$this->RowType = ROWTYPE_VIEW; // Render view
+			$this->Disabled = " disabled";
+		} else {
+			$this->RowType = ROWTYPE_EDIT; // Render edit
+			$this->Disabled = "";
 		}
 		$this->resetAttributes();
 		$this->renderRow();
 	}
 
-	// Set up starting record parameters
-	public function setupStartRec()
+	// Load initial values to form if field values are identical in all selected records
+	protected function loadMultiUpdateValues()
 	{
-		if ($this->DisplayRecs == 0)
-			return;
-		if ($this->isPageRequest()) { // Validate request
-			if (Get(TABLE_START_REC) !== NULL) { // Check for "start" parameter
-				$this->StartRec = Get(TABLE_START_REC);
-				$this->setStartRecordNumber($this->StartRec);
-			} elseif (Get(TABLE_PAGE_NO) !== NULL) {
-				$pageNo = Get(TABLE_PAGE_NO);
-				if (is_numeric($pageNo)) {
-					$this->StartRec = ($pageNo - 1) * $this->DisplayRecs + 1;
-					if ($this->StartRec <= 0) {
-						$this->StartRec = 1;
-					} elseif ($this->StartRec >= (int)(($this->TotalRecs - 1)/$this->DisplayRecs) * $this->DisplayRecs + 1) {
-						$this->StartRec = (int)(($this->TotalRecs - 1)/$this->DisplayRecs) * $this->DisplayRecs + 1;
-					}
-					$this->setStartRecordNumber($this->StartRec);
-				}
-			}
-		}
-		$this->StartRec = $this->getStartRecordNumber();
+		$this->CurrentFilter = $this->getFilterFromRecordKeys();
 
-		// Check if correct start record counter
-		if (!is_numeric($this->StartRec) || $this->StartRec == "") { // Avoid invalid start record counter
-			$this->StartRec = 1; // Reset start record counter
-			$this->setStartRecordNumber($this->StartRec);
-		} elseif ($this->StartRec > $this->TotalRecs) { // Avoid starting record > total records
-			$this->StartRec = (int)(($this->TotalRecs - 1)/$this->DisplayRecs) * $this->DisplayRecs + 1; // Point to last page first record
-			$this->setStartRecordNumber($this->StartRec);
-		} elseif (($this->StartRec - 1) % $this->DisplayRecs <> 0) {
-			$this->StartRec = (int)(($this->StartRec - 1)/$this->DisplayRecs) * $this->DisplayRecs + 1; // Point to page boundary
-			$this->setStartRecordNumber($this->StartRec);
+		// Load recordset
+		if ($this->Recordset = $this->loadRecordset()) {
+			$i = 1;
+			while (!$this->Recordset->EOF) {
+				if ($i == 1) {
+					$this->partno->setDbValue($this->Recordset->fields('partno'));
+					$this->manufacturer->setDbValue($this->Recordset->fields('manufacturer'));
+					$this->tittle->setDbValue($this->Recordset->fields('tittle'));
+					$this->cddissue->setDbValue($this->Recordset->fields('cddissue'));
+					$this->cddno->setDbValue($this->Recordset->fields('cddno'));
+					$this->thirdPartyNo->setDbValue($this->Recordset->fields('thirdPartyNo'));
+					$this->duration->setDbValue($this->Recordset->fields('duration'));
+					$this->expirydt->setDbValue($this->Recordset->fields('expirydt'));
+					$this->highlighted->setDbValue($this->Recordset->fields('highlighted'));
+					$this->coo->setDbValue($this->Recordset->fields('coo'));
+					$this->hssCode->setDbValue($this->Recordset->fields('hssCode'));
+					$this->nativeFiles->setDbValue($this->Recordset->fields('nativeFiles'));
+				} else {
+					if (!CompareValue($this->partno->DbValue, $this->Recordset->fields('partno')))
+						$this->partno->CurrentValue = NULL;
+					if (!CompareValue($this->manufacturer->DbValue, $this->Recordset->fields('manufacturer')))
+						$this->manufacturer->CurrentValue = NULL;
+					if (!CompareValue($this->tittle->DbValue, $this->Recordset->fields('tittle')))
+						$this->tittle->CurrentValue = NULL;
+					if (!CompareValue($this->cddissue->DbValue, $this->Recordset->fields('cddissue')))
+						$this->cddissue->CurrentValue = NULL;
+					if (!CompareValue($this->cddno->DbValue, $this->Recordset->fields('cddno')))
+						$this->cddno->CurrentValue = NULL;
+					if (!CompareValue($this->thirdPartyNo->DbValue, $this->Recordset->fields('thirdPartyNo')))
+						$this->thirdPartyNo->CurrentValue = NULL;
+					if (!CompareValue($this->duration->DbValue, $this->Recordset->fields('duration')))
+						$this->duration->CurrentValue = NULL;
+					if (!CompareValue($this->expirydt->DbValue, $this->Recordset->fields('expirydt')))
+						$this->expirydt->CurrentValue = NULL;
+					if (!CompareValue($this->highlighted->DbValue, $this->Recordset->fields('highlighted')))
+						$this->highlighted->CurrentValue = NULL;
+					if (!CompareValue($this->coo->DbValue, $this->Recordset->fields('coo')))
+						$this->coo->CurrentValue = NULL;
+					if (!CompareValue($this->hssCode->DbValue, $this->Recordset->fields('hssCode')))
+						$this->hssCode->CurrentValue = NULL;
+					if (!CompareValue($this->nativeFiles->DbValue, $this->Recordset->fields('nativeFiles')))
+						$this->nativeFiles->CurrentValue = NULL;
+				}
+				$i++;
+				$this->Recordset->moveNext();
+			}
+			$this->Recordset->close();
 		}
+	}
+
+	// Set up key value
+	protected function setupKeyValues($key)
+	{
+		$keyFld = $key;
+		if (!is_numeric($keyFld))
+			return FALSE;
+		$this->partid->CurrentValue = $keyFld;
+		return TRUE;
+	}
+
+	// Update all selected rows
+	protected function updateRows()
+	{
+		global $Language;
+		$conn = &$this->getConnection();
+		$conn->beginTrans();
+		if ($this->AuditTrailOnEdit)
+			$this->writeAuditTrailDummy($Language->phrase("BatchUpdateBegin")); // Batch update begin
+
+		// Get old recordset
+		$this->CurrentFilter = $this->getFilterFromRecordKeys();
+		$sql = $this->getCurrentSql();
+		$rsold = $conn->execute($sql);
+
+		// Update all rows
+		$key = "";
+		foreach ($this->RecKeys as $reckey) {
+			if ($this->setupKeyValues($reckey)) {
+				$thisKey = $reckey;
+				$this->SendEmail = FALSE; // Do not send email on update success
+				$this->UpdateCount += 1; // Update record count for records being updated
+				$updateRows = $this->editRow(); // Update this row
+			} else {
+				$updateRows = FALSE;
+			}
+			if (!$updateRows)
+				break; // Update failed
+			if ($key <> "")
+				$key .= ", ";
+			$key .= $thisKey;
+		}
+
+		// Check if all rows updated
+		if ($updateRows) {
+			$conn->commitTrans(); // Commit transaction
+
+			// Get new recordset
+			$rsnew = $conn->execute($sql);
+			if ($this->AuditTrailOnEdit)
+				$this->writeAuditTrailDummy($Language->phrase("BatchUpdateSuccess")); // Batch update success
+		} else {
+			$conn->rollbackTrans(); // Rollback transaction
+			if ($this->AuditTrailOnEdit)
+				$this->writeAuditTrailDummy($Language->phrase("BatchUpdateRollback")); // Batch update rollback
+		}
+		return $updateRows;
 	}
 
 	// Get upload files
@@ -818,15 +836,19 @@ class datasheets_edit extends datasheets
 		$this->dataSheetFile->Upload->Index = $CurrentForm->Index;
 		$this->dataSheetFile->Upload->uploadFile();
 		$this->dataSheetFile->CurrentValue = $this->dataSheetFile->Upload->FileName;
+		$this->dataSheetFile->MultiUpdate = $CurrentForm->getValue("u_dataSheetFile");
 		$this->cddFile->Upload->Index = $CurrentForm->Index;
 		$this->cddFile->Upload->uploadFile();
 		$this->cddFile->CurrentValue = $this->cddFile->Upload->FileName;
+		$this->cddFile->MultiUpdate = $CurrentForm->getValue("u_cddFile");
 		$this->thirdPartyFile->Upload->Index = $CurrentForm->Index;
 		$this->thirdPartyFile->Upload->uploadFile();
 		$this->thirdPartyFile->CurrentValue = $this->thirdPartyFile->Upload->FileName;
+		$this->thirdPartyFile->MultiUpdate = $CurrentForm->getValue("u_thirdPartyFile");
 		$this->cover->Upload->Index = $CurrentForm->Index;
 		$this->cover->Upload->uploadFile();
 		$this->cover->CurrentValue = $this->cover->Upload->FileName;
+		$this->cover->MultiUpdate = $CurrentForm->getValue("u_cover");
 	}
 
 	// Load form values
@@ -845,6 +867,7 @@ class datasheets_edit extends datasheets
 			else
 				$this->partno->setFormValue($val);
 		}
+		$this->partno->MultiUpdate = $CurrentForm->getValue("u_partno");
 
 		// Check field name 'manufacturer' first before field var 'x_manufacturer'
 		$val = $CurrentForm->hasValue("manufacturer") ? $CurrentForm->getValue("manufacturer") : $CurrentForm->getValue("x_manufacturer");
@@ -854,6 +877,7 @@ class datasheets_edit extends datasheets
 			else
 				$this->manufacturer->setFormValue($val);
 		}
+		$this->manufacturer->MultiUpdate = $CurrentForm->getValue("u_manufacturer");
 
 		// Check field name 'tittle' first before field var 'x_tittle'
 		$val = $CurrentForm->hasValue("tittle") ? $CurrentForm->getValue("tittle") : $CurrentForm->getValue("x_tittle");
@@ -863,6 +887,7 @@ class datasheets_edit extends datasheets
 			else
 				$this->tittle->setFormValue($val);
 		}
+		$this->tittle->MultiUpdate = $CurrentForm->getValue("u_tittle");
 
 		// Check field name 'cddissue' first before field var 'x_cddissue'
 		$val = $CurrentForm->hasValue("cddissue") ? $CurrentForm->getValue("cddissue") : $CurrentForm->getValue("x_cddissue");
@@ -873,6 +898,7 @@ class datasheets_edit extends datasheets
 				$this->cddissue->setFormValue($val);
 			$this->cddissue->CurrentValue = UnFormatDateTime($this->cddissue->CurrentValue, 5);
 		}
+		$this->cddissue->MultiUpdate = $CurrentForm->getValue("u_cddissue");
 
 		// Check field name 'cddno' first before field var 'x_cddno'
 		$val = $CurrentForm->hasValue("cddno") ? $CurrentForm->getValue("cddno") : $CurrentForm->getValue("x_cddno");
@@ -882,6 +908,7 @@ class datasheets_edit extends datasheets
 			else
 				$this->cddno->setFormValue($val);
 		}
+		$this->cddno->MultiUpdate = $CurrentForm->getValue("u_cddno");
 
 		// Check field name 'thirdPartyNo' first before field var 'x_thirdPartyNo'
 		$val = $CurrentForm->hasValue("thirdPartyNo") ? $CurrentForm->getValue("thirdPartyNo") : $CurrentForm->getValue("x_thirdPartyNo");
@@ -891,6 +918,7 @@ class datasheets_edit extends datasheets
 			else
 				$this->thirdPartyNo->setFormValue($val);
 		}
+		$this->thirdPartyNo->MultiUpdate = $CurrentForm->getValue("u_thirdPartyNo");
 
 		// Check field name 'duration' first before field var 'x_duration'
 		$val = $CurrentForm->hasValue("duration") ? $CurrentForm->getValue("duration") : $CurrentForm->getValue("x_duration");
@@ -900,6 +928,7 @@ class datasheets_edit extends datasheets
 			else
 				$this->duration->setFormValue($val);
 		}
+		$this->duration->MultiUpdate = $CurrentForm->getValue("u_duration");
 
 		// Check field name 'expirydt' first before field var 'x_expirydt'
 		$val = $CurrentForm->hasValue("expirydt") ? $CurrentForm->getValue("expirydt") : $CurrentForm->getValue("x_expirydt");
@@ -910,6 +939,7 @@ class datasheets_edit extends datasheets
 				$this->expirydt->setFormValue($val);
 			$this->expirydt->CurrentValue = UnFormatDateTime($this->expirydt->CurrentValue, 5);
 		}
+		$this->expirydt->MultiUpdate = $CurrentForm->getValue("u_expirydt");
 
 		// Check field name 'highlighted' first before field var 'x_highlighted'
 		$val = $CurrentForm->hasValue("highlighted") ? $CurrentForm->getValue("highlighted") : $CurrentForm->getValue("x_highlighted");
@@ -919,6 +949,7 @@ class datasheets_edit extends datasheets
 			else
 				$this->highlighted->setFormValue($val);
 		}
+		$this->highlighted->MultiUpdate = $CurrentForm->getValue("u_highlighted");
 
 		// Check field name 'coo' first before field var 'x_coo'
 		$val = $CurrentForm->hasValue("coo") ? $CurrentForm->getValue("coo") : $CurrentForm->getValue("x_coo");
@@ -928,6 +959,7 @@ class datasheets_edit extends datasheets
 			else
 				$this->coo->setFormValue($val);
 		}
+		$this->coo->MultiUpdate = $CurrentForm->getValue("u_coo");
 
 		// Check field name 'hssCode' first before field var 'x_hssCode'
 		$val = $CurrentForm->hasValue("hssCode") ? $CurrentForm->getValue("hssCode") : $CurrentForm->getValue("x_hssCode");
@@ -937,24 +969,7 @@ class datasheets_edit extends datasheets
 			else
 				$this->hssCode->setFormValue($val);
 		}
-
-		// Check field name 'systrade' first before field var 'x_systrade'
-		$val = $CurrentForm->hasValue("systrade") ? $CurrentForm->getValue("systrade") : $CurrentForm->getValue("x_systrade");
-		if (!$this->systrade->IsDetailKey) {
-			if (IsApi() && $val == NULL)
-				$this->systrade->Visible = FALSE; // Disable update for API request
-			else
-				$this->systrade->setFormValue($val);
-		}
-
-		// Check field name 'isdatasheet' first before field var 'x_isdatasheet'
-		$val = $CurrentForm->hasValue("isdatasheet") ? $CurrentForm->getValue("isdatasheet") : $CurrentForm->getValue("x_isdatasheet");
-		if (!$this->isdatasheet->IsDetailKey) {
-			if (IsApi() && $val == NULL)
-				$this->isdatasheet->Visible = FALSE; // Disable update for API request
-			else
-				$this->isdatasheet->setFormValue($val);
-		}
+		$this->hssCode->MultiUpdate = $CurrentForm->getValue("u_hssCode");
 
 		// Check field name 'nativeFiles' first before field var 'x_nativeFiles'
 		$val = $CurrentForm->hasValue("nativeFiles") ? $CurrentForm->getValue("nativeFiles") : $CurrentForm->getValue("x_nativeFiles");
@@ -964,6 +979,7 @@ class datasheets_edit extends datasheets
 			else
 				$this->nativeFiles->setFormValue($val);
 		}
+		$this->nativeFiles->MultiUpdate = $CurrentForm->getValue("u_nativeFiles");
 
 		// Check field name 'partid' first before field var 'x_partid'
 		$val = $CurrentForm->hasValue("partid") ? $CurrentForm->getValue("partid") : $CurrentForm->getValue("x_partid");
@@ -989,9 +1005,34 @@ class datasheets_edit extends datasheets
 		$this->highlighted->CurrentValue = $this->highlighted->FormValue;
 		$this->coo->CurrentValue = $this->coo->FormValue;
 		$this->hssCode->CurrentValue = $this->hssCode->FormValue;
-		$this->systrade->CurrentValue = $this->systrade->FormValue;
-		$this->isdatasheet->CurrentValue = $this->isdatasheet->FormValue;
 		$this->nativeFiles->CurrentValue = $this->nativeFiles->FormValue;
+	}
+
+	// Load recordset
+	public function loadRecordset($offset = -1, $rowcnt = -1)
+	{
+
+		// Load List page SQL
+		$sql = $this->getListSql();
+		$conn = &$this->getConnection();
+
+		// Load recordset
+		$dbtype = GetConnectionType($this->Dbid);
+		if ($this->UseSelectLimit) {
+			$conn->raiseErrorFn = $GLOBALS["ERROR_FUNC"];
+			if ($dbtype == "MSSQL") {
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderByList())]);
+			} else {
+				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
+			}
+			$conn->raiseErrorFn = '';
+		} else {
+			$rs = LoadRecordset($sql, $conn);
+		}
+
+		// Call Recordset Selected event
+		$this->Recordset_Selected($rs);
+		return $rs;
 	}
 
 	// Load row based on key values
@@ -1092,29 +1133,6 @@ class datasheets_edit extends datasheets
 		$row['username'] = NULL;
 		$row['nativeFiles'] = NULL;
 		return $row;
-	}
-
-	// Load old record
-	protected function loadOldRecord()
-	{
-
-		// Load key values from Session
-		$validKey = TRUE;
-		if (strval($this->getKey("partid")) <> "")
-			$this->partid->CurrentValue = $this->getKey("partid"); // partid
-		else
-			$validKey = FALSE;
-
-		// Load old record
-		$this->OldRecordset = NULL;
-		if ($validKey) {
-			$this->CurrentFilter = $this->getRecordFilter();
-			$sql = $this->getCurrentSql();
-			$conn = &$this->getConnection();
-			$this->OldRecordset = LoadRecordset($sql, $conn);
-		}
-		$this->loadRowValues($this->OldRecordset); // Load row values
-		return $validKey;
 	}
 
 	// Render row values based on field settings
@@ -1431,16 +1449,6 @@ class datasheets_edit extends datasheets
 			$this->hssCode->HrefValue = "";
 			$this->hssCode->TooltipValue = "";
 
-			// systrade
-			$this->systrade->LinkCustomAttributes = "";
-			$this->systrade->HrefValue = "";
-			$this->systrade->TooltipValue = "";
-
-			// isdatasheet
-			$this->isdatasheet->LinkCustomAttributes = "";
-			$this->isdatasheet->HrefValue = "";
-			$this->isdatasheet->TooltipValue = "";
-
 			// nativeFiles
 			$this->nativeFiles->LinkCustomAttributes = "";
 			$this->nativeFiles->HrefValue = "";
@@ -1465,8 +1473,6 @@ class datasheets_edit extends datasheets
 			}
 			if (!EmptyValue($this->dataSheetFile->CurrentValue))
 					$this->dataSheetFile->Upload->FileName = $this->dataSheetFile->CurrentValue;
-			if ($this->isShow() && !$this->EventCancelled)
-				RenderUploadField($this->dataSheetFile);
 
 			// manufacturer
 			$this->manufacturer->EditAttrs["class"] = "form-control";
@@ -1505,8 +1511,6 @@ class datasheets_edit extends datasheets
 			}
 			if (!EmptyValue($this->cddFile->CurrentValue))
 					$this->cddFile->Upload->FileName = $this->cddFile->CurrentValue;
-			if ($this->isShow() && !$this->EventCancelled)
-				RenderUploadField($this->cddFile);
 
 			// thirdPartyFile
 			$this->thirdPartyFile->EditAttrs["class"] = "form-control";
@@ -1518,12 +1522,12 @@ class datasheets_edit extends datasheets
 			}
 			if (!EmptyValue($this->thirdPartyFile->CurrentValue))
 					$this->thirdPartyFile->Upload->FileName = $this->thirdPartyFile->CurrentValue;
-			if ($this->isShow() && !$this->EventCancelled)
-				RenderUploadField($this->thirdPartyFile);
 
 			// tittle
 			$this->tittle->EditAttrs["class"] = "form-control";
 			$this->tittle->EditCustomAttributes = "";
+			if (REMOVE_XSS)
+				$this->tittle->CurrentValue = HtmlDecode($this->tittle->CurrentValue);
 			$this->tittle->EditValue = HtmlEncode($this->tittle->CurrentValue);
 			$this->tittle->PlaceHolder = RemoveHtml($this->tittle->caption());
 
@@ -1537,8 +1541,6 @@ class datasheets_edit extends datasheets
 			}
 			if (!EmptyValue($this->cover->CurrentValue))
 					$this->cover->Upload->FileName = $this->cover->CurrentValue;
-			if ($this->isShow() && !$this->EventCancelled)
-				RenderUploadField($this->cover);
 
 			// cddissue
 			$this->cddissue->EditAttrs["class"] = "form-control";
@@ -1592,14 +1594,6 @@ class datasheets_edit extends datasheets
 				$this->hssCode->CurrentValue = HtmlDecode($this->hssCode->CurrentValue);
 			$this->hssCode->EditValue = HtmlEncode($this->hssCode->CurrentValue);
 			$this->hssCode->PlaceHolder = RemoveHtml($this->hssCode->caption());
-
-			// systrade
-			$this->systrade->EditCustomAttributes = "";
-			$this->systrade->EditValue = $this->systrade->options(TRUE);
-
-			// isdatasheet
-			$this->isdatasheet->EditCustomAttributes = "";
-			$this->isdatasheet->EditValue = $this->isdatasheet->options(FALSE);
 
 			// nativeFiles
 			$this->nativeFiles->EditAttrs["class"] = "form-control";
@@ -1716,14 +1710,6 @@ class datasheets_edit extends datasheets
 			$this->hssCode->LinkCustomAttributes = "";
 			$this->hssCode->HrefValue = "";
 
-			// systrade
-			$this->systrade->LinkCustomAttributes = "";
-			$this->systrade->HrefValue = "";
-
-			// isdatasheet
-			$this->isdatasheet->LinkCustomAttributes = "";
-			$this->isdatasheet->HrefValue = "";
-
 			// nativeFiles
 			$this->nativeFiles->LinkCustomAttributes = "";
 			$this->nativeFiles->HrefValue = "";
@@ -1743,118 +1729,159 @@ class datasheets_edit extends datasheets
 
 		// Initialize form error message
 		$FormError = "";
+		$updateCnt = 0;
+		if ($this->partno->MultiUpdate == "1")
+			$updateCnt++;
+		if ($this->dataSheetFile->MultiUpdate == "1")
+			$updateCnt++;
+		if ($this->manufacturer->MultiUpdate == "1")
+			$updateCnt++;
+		if ($this->cddFile->MultiUpdate == "1")
+			$updateCnt++;
+		if ($this->thirdPartyFile->MultiUpdate == "1")
+			$updateCnt++;
+		if ($this->tittle->MultiUpdate == "1")
+			$updateCnt++;
+		if ($this->cover->MultiUpdate == "1")
+			$updateCnt++;
+		if ($this->cddissue->MultiUpdate == "1")
+			$updateCnt++;
+		if ($this->cddno->MultiUpdate == "1")
+			$updateCnt++;
+		if ($this->thirdPartyNo->MultiUpdate == "1")
+			$updateCnt++;
+		if ($this->duration->MultiUpdate == "1")
+			$updateCnt++;
+		if ($this->expirydt->MultiUpdate == "1")
+			$updateCnt++;
+		if ($this->highlighted->MultiUpdate == "1")
+			$updateCnt++;
+		if ($this->coo->MultiUpdate == "1")
+			$updateCnt++;
+		if ($this->hssCode->MultiUpdate == "1")
+			$updateCnt++;
+		if ($this->nativeFiles->MultiUpdate == "1")
+			$updateCnt++;
+		if ($updateCnt == 0) {
+			$FormError = $Language->phrase("NoFieldSelected");
+			return FALSE;
+		}
 
 		// Check if validation required
 		if (!SERVER_VALIDATE)
 			return ($FormError == "");
 		if ($this->partid->Required) {
-			if (!$this->partid->IsDetailKey && $this->partid->FormValue != NULL && $this->partid->FormValue == "") {
+			if ($this->partid->MultiUpdate <> "" && !$this->partid->IsDetailKey && $this->partid->FormValue != NULL && $this->partid->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->partid->caption(), $this->partid->RequiredErrorMessage));
 			}
 		}
 		if ($this->partno->Required) {
-			if (!$this->partno->IsDetailKey && $this->partno->FormValue != NULL && $this->partno->FormValue == "") {
+			if ($this->partno->MultiUpdate <> "" && !$this->partno->IsDetailKey && $this->partno->FormValue != NULL && $this->partno->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->partno->caption(), $this->partno->RequiredErrorMessage));
 			}
 		}
 		if ($this->dataSheetFile->Required) {
-			if ($this->dataSheetFile->Upload->FileName == "" && !$this->dataSheetFile->Upload->KeepFile) {
+			if ($this->dataSheetFile->MultiUpdate <> "" && $this->dataSheetFile->Upload->FileName == "" && !$this->dataSheetFile->Upload->KeepFile) {
 				AddMessage($FormError, str_replace("%s", $this->dataSheetFile->caption(), $this->dataSheetFile->RequiredErrorMessage));
 			}
 		}
 		if ($this->manufacturer->Required) {
-			if (!$this->manufacturer->IsDetailKey && $this->manufacturer->FormValue != NULL && $this->manufacturer->FormValue == "") {
+			if ($this->manufacturer->MultiUpdate <> "" && !$this->manufacturer->IsDetailKey && $this->manufacturer->FormValue != NULL && $this->manufacturer->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->manufacturer->caption(), $this->manufacturer->RequiredErrorMessage));
 			}
 		}
 		if ($this->cddFile->Required) {
-			if ($this->cddFile->Upload->FileName == "" && !$this->cddFile->Upload->KeepFile) {
+			if ($this->cddFile->MultiUpdate <> "" && $this->cddFile->Upload->FileName == "" && !$this->cddFile->Upload->KeepFile) {
 				AddMessage($FormError, str_replace("%s", $this->cddFile->caption(), $this->cddFile->RequiredErrorMessage));
 			}
 		}
 		if ($this->thirdPartyFile->Required) {
-			if ($this->thirdPartyFile->Upload->FileName == "" && !$this->thirdPartyFile->Upload->KeepFile) {
+			if ($this->thirdPartyFile->MultiUpdate <> "" && $this->thirdPartyFile->Upload->FileName == "" && !$this->thirdPartyFile->Upload->KeepFile) {
 				AddMessage($FormError, str_replace("%s", $this->thirdPartyFile->caption(), $this->thirdPartyFile->RequiredErrorMessage));
 			}
 		}
 		if ($this->tittle->Required) {
-			if (!$this->tittle->IsDetailKey && $this->tittle->FormValue != NULL && $this->tittle->FormValue == "") {
+			if ($this->tittle->MultiUpdate <> "" && !$this->tittle->IsDetailKey && $this->tittle->FormValue != NULL && $this->tittle->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->tittle->caption(), $this->tittle->RequiredErrorMessage));
 			}
 		}
 		if ($this->cover->Required) {
-			if ($this->cover->Upload->FileName == "" && !$this->cover->Upload->KeepFile) {
+			if ($this->cover->MultiUpdate <> "" && $this->cover->Upload->FileName == "" && !$this->cover->Upload->KeepFile) {
 				AddMessage($FormError, str_replace("%s", $this->cover->caption(), $this->cover->RequiredErrorMessage));
 			}
 		}
 		if ($this->cddissue->Required) {
-			if (!$this->cddissue->IsDetailKey && $this->cddissue->FormValue != NULL && $this->cddissue->FormValue == "") {
+			if ($this->cddissue->MultiUpdate <> "" && !$this->cddissue->IsDetailKey && $this->cddissue->FormValue != NULL && $this->cddissue->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->cddissue->caption(), $this->cddissue->RequiredErrorMessage));
 			}
 		}
-		if (!CheckStdDate($this->cddissue->FormValue)) {
-			AddMessage($FormError, $this->cddissue->errorMessage());
+		if ($this->cddissue->MultiUpdate <> "") {
+			if (!CheckStdDate($this->cddissue->FormValue)) {
+				AddMessage($FormError, $this->cddissue->errorMessage());
+			}
 		}
 		if ($this->cddno->Required) {
-			if (!$this->cddno->IsDetailKey && $this->cddno->FormValue != NULL && $this->cddno->FormValue == "") {
+			if ($this->cddno->MultiUpdate <> "" && !$this->cddno->IsDetailKey && $this->cddno->FormValue != NULL && $this->cddno->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->cddno->caption(), $this->cddno->RequiredErrorMessage));
 			}
 		}
 		if ($this->thirdPartyNo->Required) {
-			if (!$this->thirdPartyNo->IsDetailKey && $this->thirdPartyNo->FormValue != NULL && $this->thirdPartyNo->FormValue == "") {
+			if ($this->thirdPartyNo->MultiUpdate <> "" && !$this->thirdPartyNo->IsDetailKey && $this->thirdPartyNo->FormValue != NULL && $this->thirdPartyNo->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->thirdPartyNo->caption(), $this->thirdPartyNo->RequiredErrorMessage));
 			}
 		}
 		if ($this->duration->Required) {
-			if (!$this->duration->IsDetailKey && $this->duration->FormValue != NULL && $this->duration->FormValue == "") {
+			if ($this->duration->MultiUpdate <> "" && !$this->duration->IsDetailKey && $this->duration->FormValue != NULL && $this->duration->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->duration->caption(), $this->duration->RequiredErrorMessage));
 			}
 		}
 		if ($this->expirydt->Required) {
-			if (!$this->expirydt->IsDetailKey && $this->expirydt->FormValue != NULL && $this->expirydt->FormValue == "") {
+			if ($this->expirydt->MultiUpdate <> "" && !$this->expirydt->IsDetailKey && $this->expirydt->FormValue != NULL && $this->expirydt->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->expirydt->caption(), $this->expirydt->RequiredErrorMessage));
 			}
 		}
-		if (!CheckStdDate($this->expirydt->FormValue)) {
-			AddMessage($FormError, $this->expirydt->errorMessage());
+		if ($this->expirydt->MultiUpdate <> "") {
+			if (!CheckStdDate($this->expirydt->FormValue)) {
+				AddMessage($FormError, $this->expirydt->errorMessage());
+			}
 		}
 		if ($this->highlighted->Required) {
-			if ($this->highlighted->FormValue == "") {
+			if ($this->highlighted->MultiUpdate <> "" && $this->highlighted->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->highlighted->caption(), $this->highlighted->RequiredErrorMessage));
 			}
 		}
 		if ($this->coo->Required) {
-			if (!$this->coo->IsDetailKey && $this->coo->FormValue != NULL && $this->coo->FormValue == "") {
+			if ($this->coo->MultiUpdate <> "" && !$this->coo->IsDetailKey && $this->coo->FormValue != NULL && $this->coo->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->coo->caption(), $this->coo->RequiredErrorMessage));
 			}
 		}
 		if ($this->hssCode->Required) {
-			if (!$this->hssCode->IsDetailKey && $this->hssCode->FormValue != NULL && $this->hssCode->FormValue == "") {
+			if ($this->hssCode->MultiUpdate <> "" && !$this->hssCode->IsDetailKey && $this->hssCode->FormValue != NULL && $this->hssCode->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->hssCode->caption(), $this->hssCode->RequiredErrorMessage));
 			}
 		}
 		if ($this->systrade->Required) {
-			if (!$this->systrade->IsDetailKey && $this->systrade->FormValue != NULL && $this->systrade->FormValue == "") {
+			if ($this->systrade->MultiUpdate <> "" && !$this->systrade->IsDetailKey && $this->systrade->FormValue != NULL && $this->systrade->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->systrade->caption(), $this->systrade->RequiredErrorMessage));
 			}
 		}
 		if ($this->isdatasheet->Required) {
-			if ($this->isdatasheet->FormValue == "") {
+			if ($this->isdatasheet->MultiUpdate <> "" && $this->isdatasheet->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->isdatasheet->caption(), $this->isdatasheet->RequiredErrorMessage));
 			}
 		}
 		if ($this->datasheetdate->Required) {
-			if (!$this->datasheetdate->IsDetailKey && $this->datasheetdate->FormValue != NULL && $this->datasheetdate->FormValue == "") {
+			if ($this->datasheetdate->MultiUpdate <> "" && !$this->datasheetdate->IsDetailKey && $this->datasheetdate->FormValue != NULL && $this->datasheetdate->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->datasheetdate->caption(), $this->datasheetdate->RequiredErrorMessage));
 			}
 		}
 		if ($this->username->Required) {
-			if (!$this->username->IsDetailKey && $this->username->FormValue != NULL && $this->username->FormValue == "") {
+			if ($this->username->MultiUpdate <> "" && !$this->username->IsDetailKey && $this->username->FormValue != NULL && $this->username->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->username->caption(), $this->username->RequiredErrorMessage));
 			}
 		}
 		if ($this->nativeFiles->Required) {
-			if (!$this->nativeFiles->IsDetailKey && $this->nativeFiles->FormValue != NULL && $this->nativeFiles->FormValue == "") {
+			if ($this->nativeFiles->MultiUpdate <> "" && !$this->nativeFiles->IsDetailKey && $this->nativeFiles->FormValue != NULL && $this->nativeFiles->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->nativeFiles->caption(), $this->nativeFiles->RequiredErrorMessage));
 			}
 		}
@@ -1915,7 +1942,7 @@ class datasheets_edit extends datasheets
 			$rsnew = [];
 
 			// dataSheetFile
-			if ($this->dataSheetFile->Visible && !$this->dataSheetFile->ReadOnly && !$this->dataSheetFile->Upload->KeepFile) {
+			if ($this->dataSheetFile->Visible && !$this->dataSheetFile->ReadOnly && strval($this->dataSheetFile->MultiUpdate) == "1" && !$this->dataSheetFile->Upload->KeepFile) {
 				$this->dataSheetFile->Upload->DbValue = $rsold['dataSheetFile']; // Get original value
 				if ($this->dataSheetFile->Upload->FileName == "") {
 					$rsnew['dataSheetFile'] = NULL;
@@ -1925,10 +1952,10 @@ class datasheets_edit extends datasheets
 			}
 
 			// manufacturer
-			$this->manufacturer->setDbValueDef($rsnew, $this->manufacturer->CurrentValue, "", $this->manufacturer->ReadOnly);
+			$this->manufacturer->setDbValueDef($rsnew, $this->manufacturer->CurrentValue, "", $this->manufacturer->ReadOnly || $this->manufacturer->MultiUpdate <> "1");
 
 			// cddFile
-			if ($this->cddFile->Visible && !$this->cddFile->ReadOnly && !$this->cddFile->Upload->KeepFile) {
+			if ($this->cddFile->Visible && !$this->cddFile->ReadOnly && strval($this->cddFile->MultiUpdate) == "1" && !$this->cddFile->Upload->KeepFile) {
 				$this->cddFile->Upload->DbValue = $rsold['cddFile']; // Get original value
 				if ($this->cddFile->Upload->FileName == "") {
 					$rsnew['cddFile'] = NULL;
@@ -1938,7 +1965,7 @@ class datasheets_edit extends datasheets
 			}
 
 			// thirdPartyFile
-			if ($this->thirdPartyFile->Visible && !$this->thirdPartyFile->ReadOnly && !$this->thirdPartyFile->Upload->KeepFile) {
+			if ($this->thirdPartyFile->Visible && !$this->thirdPartyFile->ReadOnly && strval($this->thirdPartyFile->MultiUpdate) == "1" && !$this->thirdPartyFile->Upload->KeepFile) {
 				$this->thirdPartyFile->Upload->DbValue = $rsold['thirdPartyFile']; // Get original value
 				if ($this->thirdPartyFile->Upload->FileName == "") {
 					$rsnew['thirdPartyFile'] = NULL;
@@ -1948,10 +1975,10 @@ class datasheets_edit extends datasheets
 			}
 
 			// tittle
-			$this->tittle->setDbValueDef($rsnew, $this->tittle->CurrentValue, "", $this->tittle->ReadOnly);
+			$this->tittle->setDbValueDef($rsnew, $this->tittle->CurrentValue, "", $this->tittle->ReadOnly || $this->tittle->MultiUpdate <> "1");
 
 			// cover
-			if ($this->cover->Visible && !$this->cover->ReadOnly && !$this->cover->Upload->KeepFile) {
+			if ($this->cover->Visible && !$this->cover->ReadOnly && strval($this->cover->MultiUpdate) == "1" && !$this->cover->Upload->KeepFile) {
 				$this->cover->Upload->DbValue = $rsold['cover']; // Get original value
 				if ($this->cover->Upload->FileName == "") {
 					$rsnew['cover'] = NULL;
@@ -1961,40 +1988,34 @@ class datasheets_edit extends datasheets
 			}
 
 			// cddissue
-			$this->cddissue->setDbValueDef($rsnew, UnFormatDateTime($this->cddissue->CurrentValue, 5), CurrentDate(), $this->cddissue->ReadOnly);
+			$this->cddissue->setDbValueDef($rsnew, UnFormatDateTime($this->cddissue->CurrentValue, 5), CurrentDate(), $this->cddissue->ReadOnly || $this->cddissue->MultiUpdate <> "1");
 
 			// cddno
-			$this->cddno->setDbValueDef($rsnew, $this->cddno->CurrentValue, "", $this->cddno->ReadOnly);
+			$this->cddno->setDbValueDef($rsnew, $this->cddno->CurrentValue, "", $this->cddno->ReadOnly || $this->cddno->MultiUpdate <> "1");
 
 			// thirdPartyNo
-			$this->thirdPartyNo->setDbValueDef($rsnew, $this->thirdPartyNo->CurrentValue, "", $this->thirdPartyNo->ReadOnly);
+			$this->thirdPartyNo->setDbValueDef($rsnew, $this->thirdPartyNo->CurrentValue, "", $this->thirdPartyNo->ReadOnly || $this->thirdPartyNo->MultiUpdate <> "1");
 
 			// duration
-			$this->duration->setDbValueDef($rsnew, $this->duration->CurrentValue, NULL, $this->duration->ReadOnly);
+			$this->duration->setDbValueDef($rsnew, $this->duration->CurrentValue, NULL, $this->duration->ReadOnly || $this->duration->MultiUpdate <> "1");
 
 			// expirydt
-			$this->expirydt->setDbValueDef($rsnew, UnFormatDateTime($this->expirydt->CurrentValue, 5), NULL, $this->expirydt->ReadOnly);
+			$this->expirydt->setDbValueDef($rsnew, UnFormatDateTime($this->expirydt->CurrentValue, 5), NULL, $this->expirydt->ReadOnly || $this->expirydt->MultiUpdate <> "1");
 
 			// highlighted
-			$this->highlighted->setDbValueDef($rsnew, ((strval($this->highlighted->CurrentValue) == "1") ? "1" : "0"), NULL, $this->highlighted->ReadOnly);
+			$this->highlighted->setDbValueDef($rsnew, ((strval($this->highlighted->CurrentValue) == "1") ? "1" : "0"), NULL, $this->highlighted->ReadOnly || $this->highlighted->MultiUpdate <> "1");
 
 			// coo
-			$this->coo->setDbValueDef($rsnew, $this->coo->CurrentValue, NULL, $this->coo->ReadOnly);
+			$this->coo->setDbValueDef($rsnew, $this->coo->CurrentValue, NULL, $this->coo->ReadOnly || $this->coo->MultiUpdate <> "1");
 
 			// hssCode
-			$this->hssCode->setDbValueDef($rsnew, $this->hssCode->CurrentValue, NULL, $this->hssCode->ReadOnly);
-
-			// systrade
-			$this->systrade->setDbValueDef($rsnew, $this->systrade->CurrentValue, "", $this->systrade->ReadOnly);
-
-			// isdatasheet
-			$this->isdatasheet->setDbValueDef($rsnew, ((strval($this->isdatasheet->CurrentValue) == "1") ? "1" : "0"), 0, $this->isdatasheet->ReadOnly);
+			$this->hssCode->setDbValueDef($rsnew, $this->hssCode->CurrentValue, NULL, $this->hssCode->ReadOnly || $this->hssCode->MultiUpdate <> "1");
 
 			// nativeFiles
-			$this->nativeFiles->setDbValueDef($rsnew, $this->nativeFiles->CurrentValue, "", $this->nativeFiles->ReadOnly);
+			$this->nativeFiles->setDbValueDef($rsnew, $this->nativeFiles->CurrentValue, "", $this->nativeFiles->ReadOnly || $this->nativeFiles->MultiUpdate <> "1");
 			if ($this->dataSheetFile->Visible && !$this->dataSheetFile->Upload->KeepFile) {
 				$oldFiles = EmptyValue($this->dataSheetFile->Upload->DbValue) ? array() : array($this->dataSheetFile->Upload->DbValue);
-				if (!EmptyValue($this->dataSheetFile->Upload->FileName)) {
+				if (!EmptyValue($this->dataSheetFile->Upload->FileName) && $this->UpdateCount == 1) {
 					$newFiles = array($this->dataSheetFile->Upload->FileName);
 					$NewFileCount = count($newFiles);
 					for ($i = 0; $i < $NewFileCount; $i++) {
@@ -2027,12 +2048,12 @@ class datasheets_edit extends datasheets
 					}
 					$this->dataSheetFile->Upload->DbValue = empty($oldFiles) ? "" : implode(MULTIPLE_UPLOAD_SEPARATOR, $oldFiles);
 					$this->dataSheetFile->Upload->FileName = implode(MULTIPLE_UPLOAD_SEPARATOR, $newFiles);
-					$this->dataSheetFile->setDbValueDef($rsnew, $this->dataSheetFile->Upload->FileName, "", $this->dataSheetFile->ReadOnly);
+					$this->dataSheetFile->setDbValueDef($rsnew, $this->dataSheetFile->Upload->FileName, "", $this->dataSheetFile->ReadOnly || $this->dataSheetFile->MultiUpdate <> "1");
 				}
 			}
 			if ($this->cddFile->Visible && !$this->cddFile->Upload->KeepFile) {
 				$oldFiles = EmptyValue($this->cddFile->Upload->DbValue) ? array() : array($this->cddFile->Upload->DbValue);
-				if (!EmptyValue($this->cddFile->Upload->FileName)) {
+				if (!EmptyValue($this->cddFile->Upload->FileName) && $this->UpdateCount == 1) {
 					$newFiles = array($this->cddFile->Upload->FileName);
 					$NewFileCount = count($newFiles);
 					for ($i = 0; $i < $NewFileCount; $i++) {
@@ -2065,12 +2086,12 @@ class datasheets_edit extends datasheets
 					}
 					$this->cddFile->Upload->DbValue = empty($oldFiles) ? "" : implode(MULTIPLE_UPLOAD_SEPARATOR, $oldFiles);
 					$this->cddFile->Upload->FileName = implode(MULTIPLE_UPLOAD_SEPARATOR, $newFiles);
-					$this->cddFile->setDbValueDef($rsnew, $this->cddFile->Upload->FileName, NULL, $this->cddFile->ReadOnly);
+					$this->cddFile->setDbValueDef($rsnew, $this->cddFile->Upload->FileName, NULL, $this->cddFile->ReadOnly || $this->cddFile->MultiUpdate <> "1");
 				}
 			}
 			if ($this->thirdPartyFile->Visible && !$this->thirdPartyFile->Upload->KeepFile) {
 				$oldFiles = EmptyValue($this->thirdPartyFile->Upload->DbValue) ? array() : array($this->thirdPartyFile->Upload->DbValue);
-				if (!EmptyValue($this->thirdPartyFile->Upload->FileName)) {
+				if (!EmptyValue($this->thirdPartyFile->Upload->FileName) && $this->UpdateCount == 1) {
 					$newFiles = array($this->thirdPartyFile->Upload->FileName);
 					$NewFileCount = count($newFiles);
 					for ($i = 0; $i < $NewFileCount; $i++) {
@@ -2103,12 +2124,12 @@ class datasheets_edit extends datasheets
 					}
 					$this->thirdPartyFile->Upload->DbValue = empty($oldFiles) ? "" : implode(MULTIPLE_UPLOAD_SEPARATOR, $oldFiles);
 					$this->thirdPartyFile->Upload->FileName = implode(MULTIPLE_UPLOAD_SEPARATOR, $newFiles);
-					$this->thirdPartyFile->setDbValueDef($rsnew, $this->thirdPartyFile->Upload->FileName, "", $this->thirdPartyFile->ReadOnly);
+					$this->thirdPartyFile->setDbValueDef($rsnew, $this->thirdPartyFile->Upload->FileName, "", $this->thirdPartyFile->ReadOnly || $this->thirdPartyFile->MultiUpdate <> "1");
 				}
 			}
 			if ($this->cover->Visible && !$this->cover->Upload->KeepFile) {
 				$oldFiles = EmptyValue($this->cover->Upload->DbValue) ? array() : array($this->cover->Upload->DbValue);
-				if (!EmptyValue($this->cover->Upload->FileName)) {
+				if (!EmptyValue($this->cover->Upload->FileName) && $this->UpdateCount == 1) {
 					$newFiles = array($this->cover->Upload->FileName);
 					$NewFileCount = count($newFiles);
 					for ($i = 0; $i < $NewFileCount; $i++) {
@@ -2141,7 +2162,7 @@ class datasheets_edit extends datasheets
 					}
 					$this->cover->Upload->DbValue = empty($oldFiles) ? "" : implode(MULTIPLE_UPLOAD_SEPARATOR, $oldFiles);
 					$this->cover->Upload->FileName = implode(MULTIPLE_UPLOAD_SEPARATOR, $newFiles);
-					$this->cover->setDbValueDef($rsnew, $this->cover->Upload->FileName, "", $this->cover->ReadOnly);
+					$this->cover->setDbValueDef($rsnew, $this->cover->Upload->FileName, "", $this->cover->ReadOnly || $this->cover->MultiUpdate <> "1");
 				}
 			}
 
@@ -2157,7 +2178,7 @@ class datasheets_edit extends datasheets
 				if ($editRow) {
 					if ($this->dataSheetFile->Visible && !$this->dataSheetFile->Upload->KeepFile) {
 						$oldFiles = EmptyValue($this->dataSheetFile->Upload->DbValue) ? array() : array($this->dataSheetFile->Upload->DbValue);
-						if (!EmptyValue($this->dataSheetFile->Upload->FileName)) {
+						if (!EmptyValue($this->dataSheetFile->Upload->FileName) && $this->UpdateCount == 1) {
 							$newFiles = array($this->dataSheetFile->Upload->FileName);
 							$newFiles2 = array($rsnew['dataSheetFile']);
 							$newFileCount = count($newFiles);
@@ -2186,7 +2207,7 @@ class datasheets_edit extends datasheets
 					}
 					if ($this->cddFile->Visible && !$this->cddFile->Upload->KeepFile) {
 						$oldFiles = EmptyValue($this->cddFile->Upload->DbValue) ? array() : array($this->cddFile->Upload->DbValue);
-						if (!EmptyValue($this->cddFile->Upload->FileName)) {
+						if (!EmptyValue($this->cddFile->Upload->FileName) && $this->UpdateCount == 1) {
 							$newFiles = array($this->cddFile->Upload->FileName);
 							$newFiles2 = array($rsnew['cddFile']);
 							$newFileCount = count($newFiles);
@@ -2215,7 +2236,7 @@ class datasheets_edit extends datasheets
 					}
 					if ($this->thirdPartyFile->Visible && !$this->thirdPartyFile->Upload->KeepFile) {
 						$oldFiles = EmptyValue($this->thirdPartyFile->Upload->DbValue) ? array() : array($this->thirdPartyFile->Upload->DbValue);
-						if (!EmptyValue($this->thirdPartyFile->Upload->FileName)) {
+						if (!EmptyValue($this->thirdPartyFile->Upload->FileName) && $this->UpdateCount == 1) {
 							$newFiles = array($this->thirdPartyFile->Upload->FileName);
 							$newFiles2 = array($rsnew['thirdPartyFile']);
 							$newFileCount = count($newFiles);
@@ -2244,7 +2265,7 @@ class datasheets_edit extends datasheets
 					}
 					if ($this->cover->Visible && !$this->cover->Upload->KeepFile) {
 						$oldFiles = EmptyValue($this->cover->Upload->DbValue) ? array() : array($this->cover->Upload->DbValue);
-						if (!EmptyValue($this->cover->Upload->FileName)) {
+						if (!EmptyValue($this->cover->Upload->FileName) && $this->UpdateCount == 1) {
 							$newFiles = array($this->cover->Upload->FileName);
 							$newFiles2 = array($rsnew['cover']);
 							$newFileCount = count($newFiles);
@@ -2330,19 +2351,8 @@ class datasheets_edit extends datasheets
 		$Breadcrumb = new Breadcrumb();
 		$url = substr(CurrentUrl(), strrpos(CurrentUrl(), "/")+1);
 		$Breadcrumb->add("list", $this->TableVar, $this->addMasterUrl("datasheetslist.php"), "", $this->TableVar, TRUE);
-		$pageId = "edit";
-		$Breadcrumb->add("edit", $pageId, $url);
-	}
-
-	// Set up multi pages
-	protected function setupMultiPages()
-	{
-		$pages = new SubPages();
-		$pages->Style = "tabs";
-		$pages->add(0);
-		$pages->add(1);
-		$pages->add(2);
-		$this->MultiPages = $pages;
+		$pageId = "update";
+		$Breadcrumb->add("update", $pageId, $url);
 	}
 
 	// Setup lookup options
@@ -2393,6 +2403,8 @@ class datasheets_edit extends datasheets
 
 	// Page Load event
 	function Page_Load() {
+
+		//echo "Page Load";
 	}
 
 	// Page Unload event

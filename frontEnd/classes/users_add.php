@@ -1033,7 +1033,7 @@ class users_add extends users
 			$this->uLevel->ViewCustomAttributes = "";
 
 			// uPassword
-			$this->uPassword->ViewValue = $this->uPassword->CurrentValue;
+			$this->uPassword->ViewValue = $Language->phrase("PasswordMask");
 			$this->uPassword->ViewCustomAttributes = "";
 
 			// uProfile
@@ -1150,8 +1150,6 @@ class users_add extends users
 			// uPassword
 			$this->uPassword->EditAttrs["class"] = "form-control";
 			$this->uPassword->EditCustomAttributes = "";
-			if (REMOVE_XSS)
-				$this->uPassword->CurrentValue = HtmlDecode($this->uPassword->CurrentValue);
 			$this->uPassword->EditValue = HtmlEncode($this->uPassword->CurrentValue);
 			$this->uPassword->PlaceHolder = RemoveHtml($this->uPassword->caption());
 

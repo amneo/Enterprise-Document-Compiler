@@ -947,13 +947,19 @@ class datasheets_list extends datasheets
 
 			// Get default search criteria
 			AddFilter($this->DefaultSearchWhere, $this->basicSearchWhere(TRUE));
+			AddFilter($this->DefaultSearchWhere, $this->advancedSearchWhere(TRUE));
 
 			// Get basic search values
 			$this->loadBasicSearchValues();
 
+			// Get and validate search values for advanced search
+			$this->loadSearchValues(); // Get search values
+
 			// Process filter list
 			if ($this->processFilterList())
 				$this->terminate();
+			if (!$this->validateSearch())
+				$this->setFailureMessage($SearchError);
 
 			// Restore search parms from Session if not searching / reset / export
 			if (($this->isExport() || $this->Command <> "search" && $this->Command <> "reset" && $this->Command <> "resetall") && $this->Command <> "json" && $this->checkSearchParms())
@@ -968,6 +974,10 @@ class datasheets_list extends datasheets
 			// Get basic search criteria
 			if ($SearchError == "")
 				$srchBasic = $this->basicSearchWhere();
+
+			// Get search criteria for advanced search
+			if ($SearchError == "")
+				$srchAdvanced = $this->advancedSearchWhere();
 		}
 
 		// Restore display records
@@ -988,6 +998,11 @@ class datasheets_list extends datasheets
 			$this->BasicSearch->loadDefault();
 			if ($this->BasicSearch->Keyword != "")
 				$srchBasic = $this->basicSearchWhere();
+
+			// Load advanced search from default
+			if ($this->loadAdvancedSearchDefault()) {
+				$srchAdvanced = $this->advancedSearchWhere();
+			}
 		}
 
 		// Build search criteria
@@ -1624,6 +1639,91 @@ class datasheets_list extends datasheets
 		$this->BasicSearch->setType(@$filter[TABLE_BASIC_SEARCH_TYPE]);
 	}
 
+	// Advanced search WHERE clause based on QueryString
+	protected function advancedSearchWhere($default = FALSE)
+	{
+		global $Security;
+		$where = "";
+		if (!$Security->canSearch())
+			return "";
+		$this->buildSearchSql($where, $this->partno, $default, FALSE); // partno
+		$this->buildSearchSql($where, $this->manufacturer, $default, FALSE); // manufacturer
+		$this->buildSearchSql($where, $this->tittle, $default, FALSE); // tittle
+		$this->buildSearchSql($where, $this->cddno, $default, FALSE); // cddno
+		$this->buildSearchSql($where, $this->thirdPartyNo, $default, FALSE); // thirdPartyNo
+		$this->buildSearchSql($where, $this->coo, $default, FALSE); // coo
+		$this->buildSearchSql($where, $this->systrade, $default, FALSE); // systrade
+		$this->buildSearchSql($where, $this->nativeFiles, $default, FALSE); // nativeFiles
+
+		// Set up search parm
+		if (!$default && $where <> "" && in_array($this->Command, array("", "reset", "resetall"))) {
+			$this->Command = "search";
+		}
+		if (!$default && $this->Command == "search") {
+			$this->partno->AdvancedSearch->save(); // partno
+			$this->manufacturer->AdvancedSearch->save(); // manufacturer
+			$this->tittle->AdvancedSearch->save(); // tittle
+			$this->cddno->AdvancedSearch->save(); // cddno
+			$this->thirdPartyNo->AdvancedSearch->save(); // thirdPartyNo
+			$this->coo->AdvancedSearch->save(); // coo
+			$this->systrade->AdvancedSearch->save(); // systrade
+			$this->nativeFiles->AdvancedSearch->save(); // nativeFiles
+		}
+		return $where;
+	}
+
+	// Build search SQL
+	protected function buildSearchSql(&$where, &$fld, $default, $multiValue)
+	{
+		$fldParm = $fld->Param;
+		$fldVal = ($default) ? $fld->AdvancedSearch->SearchValueDefault : $fld->AdvancedSearch->SearchValue;
+		$fldOpr = ($default) ? $fld->AdvancedSearch->SearchOperatorDefault : $fld->AdvancedSearch->SearchOperator;
+		$fldCond = ($default) ? $fld->AdvancedSearch->SearchConditionDefault : $fld->AdvancedSearch->SearchCondition;
+		$fldVal2 = ($default) ? $fld->AdvancedSearch->SearchValue2Default : $fld->AdvancedSearch->SearchValue2;
+		$fldOpr2 = ($default) ? $fld->AdvancedSearch->SearchOperator2Default : $fld->AdvancedSearch->SearchOperator2;
+		$wrk = "";
+		if (is_array($fldVal))
+			$fldVal = implode(",", $fldVal);
+		if (is_array($fldVal2))
+			$fldVal2 = implode(",", $fldVal2);
+		$fldOpr = strtoupper(trim($fldOpr));
+		if ($fldOpr == "")
+			$fldOpr = "=";
+		$fldOpr2 = strtoupper(trim($fldOpr2));
+		if ($fldOpr2 == "")
+			$fldOpr2 = "=";
+		if (SEARCH_MULTI_VALUE_OPTION == 1)
+			$multiValue = FALSE;
+		if ($multiValue) {
+			$wrk1 = ($fldVal <> "") ? GetMultiSearchSql($fld, $fldOpr, $fldVal, $this->Dbid) : ""; // Field value 1
+			$wrk2 = ($fldVal2 <> "") ? GetMultiSearchSql($fld, $fldOpr2, $fldVal2, $this->Dbid) : ""; // Field value 2
+			$wrk = $wrk1; // Build final SQL
+			if ($wrk2 <> "")
+				$wrk = ($wrk <> "") ? "($wrk) $fldCond ($wrk2)" : $wrk2;
+		} else {
+			$fldVal = $this->convertSearchValue($fld, $fldVal);
+			$fldVal2 = $this->convertSearchValue($fld, $fldVal2);
+			$wrk = GetSearchSql($fld, $fldVal, $fldOpr, $fldCond, $fldVal2, $fldOpr2, $this->Dbid);
+		}
+		AddFilter($where, $wrk);
+	}
+
+	// Convert search value
+	protected function convertSearchValue(&$fld, $fldVal)
+	{
+		if ($fldVal == NULL_VALUE || $fldVal == NOT_NULL_VALUE)
+			return $fldVal;
+		$value = $fldVal;
+		if ($fld->DataType == DATATYPE_BOOLEAN) {
+			if ($fldVal <> "")
+				$value = (SameText($fldVal, "1") || SameText($fldVal, "y") || SameText($fldVal, "t")) ? $fld->TrueValue : $fld->FalseValue;
+		} elseif ($fld->DataType == DATATYPE_DATE || $fld->DataType == DATATYPE_TIME) {
+			if ($fldVal <> "")
+				$value = UnFormatDateTime($fldVal, $fld->DateTimeFormat);
+		}
+		return $value;
+	}
+
 	// Return basic search SQL
 	protected function basicSearchSql($arKeywords, $type)
 	{
@@ -1751,6 +1851,22 @@ class datasheets_list extends datasheets
 		// Check basic search
 		if ($this->BasicSearch->issetSession())
 			return TRUE;
+		if ($this->partno->AdvancedSearch->issetSession())
+			return TRUE;
+		if ($this->manufacturer->AdvancedSearch->issetSession())
+			return TRUE;
+		if ($this->tittle->AdvancedSearch->issetSession())
+			return TRUE;
+		if ($this->cddno->AdvancedSearch->issetSession())
+			return TRUE;
+		if ($this->thirdPartyNo->AdvancedSearch->issetSession())
+			return TRUE;
+		if ($this->coo->AdvancedSearch->issetSession())
+			return TRUE;
+		if ($this->systrade->AdvancedSearch->issetSession())
+			return TRUE;
+		if ($this->nativeFiles->AdvancedSearch->issetSession())
+			return TRUE;
 		return FALSE;
 	}
 
@@ -1764,6 +1880,9 @@ class datasheets_list extends datasheets
 
 		// Clear basic search parameters
 		$this->resetBasicSearchParms();
+
+		// Clear advanced search parameters
+		$this->resetAdvancedSearchParms();
 	}
 
 	// Load advanced search default values
@@ -1778,6 +1897,19 @@ class datasheets_list extends datasheets
 		$this->BasicSearch->unsetSession();
 	}
 
+	// Clear all advanced search parameters
+	protected function resetAdvancedSearchParms()
+	{
+		$this->partno->AdvancedSearch->unsetSession();
+		$this->manufacturer->AdvancedSearch->unsetSession();
+		$this->tittle->AdvancedSearch->unsetSession();
+		$this->cddno->AdvancedSearch->unsetSession();
+		$this->thirdPartyNo->AdvancedSearch->unsetSession();
+		$this->coo->AdvancedSearch->unsetSession();
+		$this->systrade->AdvancedSearch->unsetSession();
+		$this->nativeFiles->AdvancedSearch->unsetSession();
+	}
+
 	// Restore all search parameters
 	protected function restoreSearchParms()
 	{
@@ -1785,6 +1917,16 @@ class datasheets_list extends datasheets
 
 		// Restore basic search values
 		$this->BasicSearch->load();
+
+		// Restore advanced search values
+		$this->partno->AdvancedSearch->load();
+		$this->manufacturer->AdvancedSearch->load();
+		$this->tittle->AdvancedSearch->load();
+		$this->cddno->AdvancedSearch->load();
+		$this->thirdPartyNo->AdvancedSearch->load();
+		$this->coo->AdvancedSearch->load();
+		$this->systrade->AdvancedSearch->load();
+		$this->nativeFiles->AdvancedSearch->load();
 	}
 
 	// Set up sort parameters
@@ -2259,6 +2401,14 @@ class datasheets_list extends datasheets
 		$item->Body = "<a class=\"btn btn-default ew-show-all\" title=\"" . $Language->phrase("ShowAll") . "\" data-caption=\"" . $Language->phrase("ShowAll") . "\" href=\"" . $this->pageUrl() . "cmd=reset\">" . $Language->phrase("ShowAllBtn") . "</a>";
 		$item->Visible = ($this->SearchWhere <> $this->DefaultSearchWhere && $this->SearchWhere <> "0=101");
 
+		// Advanced search button
+		$item = &$this->SearchOptions->add("advancedsearch");
+		if (IsMobile())
+			$item->Body = "<a class=\"btn btn-default ew-advanced-search\" title=\"" . $Language->phrase("AdvancedSearch") . "\" data-caption=\"" . $Language->phrase("AdvancedSearch") . "\" href=\"datasheetssrch.php\">" . $Language->phrase("AdvancedSearchBtn") . "</a>";
+		else
+			$item->Body = "<button type=\"button\" class=\"btn btn-default ew-advanced-search\" title=\"" . $Language->phrase("AdvancedSearch") . "\" data-table=\"datasheets\" data-caption=\"" . $Language->phrase("AdvancedSearch") . "\" onclick=\"ew.modalDialogShow({lnk:this,btn:'SearchBtn',url:'datasheetssrch.php'});\">" . $Language->phrase("AdvancedSearchBtn") . "</button>";
+		$item->Visible = TRUE;
+
 		// Search highlight button
 		$item = &$this->SearchOptions->add("searchhighlight");
 		$item->Body = "<button type=\"button\" class=\"btn btn-default ew-highlight active\" title=\"" . $Language->phrase("Highlight") . "\" data-caption=\"" . $Language->phrase("Highlight") . "\" data-toggle=\"button\" data-form=\"fdatasheetslistsrch\" data-name=\"" . $this->highlightName() . "\">" . $Language->phrase("HighlightBtn") . "</button>";
@@ -2383,6 +2533,70 @@ class datasheets_list extends datasheets
 		if ($this->BasicSearch->Keyword <> "" && $this->Command == "")
 			$this->Command = "search";
 		$this->BasicSearch->setType(Get(TABLE_BASIC_SEARCH_TYPE, ""), FALSE);
+	}
+
+	// Load search values for validation
+	protected function loadSearchValues()
+	{
+		global $CurrentForm;
+
+		// Load search values
+		// partno
+
+		if (!$this->isAddOrEdit())
+			$this->partno->AdvancedSearch->setSearchValue(Get("x_partno", Get("partno", "")));
+		if ($this->partno->AdvancedSearch->SearchValue <> "" && $this->Command == "")
+			$this->Command = "search";
+		$this->partno->AdvancedSearch->setSearchOperator(Get("z_partno", ""));
+
+		// manufacturer
+		if (!$this->isAddOrEdit())
+			$this->manufacturer->AdvancedSearch->setSearchValue(Get("x_manufacturer", Get("manufacturer", "")));
+		if ($this->manufacturer->AdvancedSearch->SearchValue <> "" && $this->Command == "")
+			$this->Command = "search";
+		$this->manufacturer->AdvancedSearch->setSearchOperator(Get("z_manufacturer", ""));
+
+		// tittle
+		if (!$this->isAddOrEdit())
+			$this->tittle->AdvancedSearch->setSearchValue(Get("x_tittle", Get("tittle", "")));
+		if ($this->tittle->AdvancedSearch->SearchValue <> "" && $this->Command == "")
+			$this->Command = "search";
+		$this->tittle->AdvancedSearch->setSearchOperator(Get("z_tittle", ""));
+
+		// cddno
+		if (!$this->isAddOrEdit())
+			$this->cddno->AdvancedSearch->setSearchValue(Get("x_cddno", Get("cddno", "")));
+		if ($this->cddno->AdvancedSearch->SearchValue <> "" && $this->Command == "")
+			$this->Command = "search";
+		$this->cddno->AdvancedSearch->setSearchOperator(Get("z_cddno", ""));
+
+		// thirdPartyNo
+		if (!$this->isAddOrEdit())
+			$this->thirdPartyNo->AdvancedSearch->setSearchValue(Get("x_thirdPartyNo", Get("thirdPartyNo", "")));
+		if ($this->thirdPartyNo->AdvancedSearch->SearchValue <> "" && $this->Command == "")
+			$this->Command = "search";
+		$this->thirdPartyNo->AdvancedSearch->setSearchOperator(Get("z_thirdPartyNo", ""));
+
+		// coo
+		if (!$this->isAddOrEdit())
+			$this->coo->AdvancedSearch->setSearchValue(Get("x_coo", Get("coo", "")));
+		if ($this->coo->AdvancedSearch->SearchValue <> "" && $this->Command == "")
+			$this->Command = "search";
+		$this->coo->AdvancedSearch->setSearchOperator(Get("z_coo", ""));
+
+		// systrade
+		if (!$this->isAddOrEdit())
+			$this->systrade->AdvancedSearch->setSearchValue(Get("x_systrade", Get("systrade", "")));
+		if ($this->systrade->AdvancedSearch->SearchValue <> "" && $this->Command == "")
+			$this->Command = "search";
+		$this->systrade->AdvancedSearch->setSearchOperator(Get("z_systrade", ""));
+
+		// nativeFiles
+		if (!$this->isAddOrEdit())
+			$this->nativeFiles->AdvancedSearch->setSearchValue(Get("x_nativeFiles", Get("nativeFiles", "")));
+		if ($this->nativeFiles->AdvancedSearch->SearchValue <> "" && $this->Command == "")
+			$this->Command = "search";
+		$this->nativeFiles->AdvancedSearch->setSearchOperator(Get("z_nativeFiles", ""));
 	}
 
 	// Load form values
@@ -2963,6 +3177,8 @@ class datasheets_list extends datasheets
 			$this->nativeFiles->LinkCustomAttributes = "";
 			$this->nativeFiles->HrefValue = "";
 			$this->nativeFiles->TooltipValue = "";
+			if (!$this->isExport())
+				$this->nativeFiles->ViewValue = $this->highlightValue($this->nativeFiles);
 		} elseif ($this->RowType == ROWTYPE_ADD) { // Add row
 
 			// partno
@@ -3003,8 +3219,6 @@ class datasheets_list extends datasheets
 			// tittle
 			$this->tittle->EditAttrs["class"] = "form-control";
 			$this->tittle->EditCustomAttributes = "";
-			if (REMOVE_XSS)
-				$this->tittle->CurrentValue = HtmlDecode($this->tittle->CurrentValue);
 			$this->tittle->EditValue = HtmlEncode($this->tittle->CurrentValue);
 			$this->tittle->PlaceHolder = RemoveHtml($this->tittle->caption());
 
@@ -3173,8 +3387,6 @@ class datasheets_list extends datasheets
 			// tittle
 			$this->tittle->EditAttrs["class"] = "form-control";
 			$this->tittle->EditCustomAttributes = "";
-			if (REMOVE_XSS)
-				$this->tittle->CurrentValue = HtmlDecode($this->tittle->CurrentValue);
 			$this->tittle->EditValue = HtmlEncode($this->tittle->CurrentValue);
 			$this->tittle->PlaceHolder = RemoveHtml($this->tittle->caption());
 
@@ -3304,6 +3516,87 @@ class datasheets_list extends datasheets
 			// nativeFiles
 			$this->nativeFiles->LinkCustomAttributes = "";
 			$this->nativeFiles->HrefValue = "";
+		} elseif ($this->RowType == ROWTYPE_SEARCH) { // Search row
+
+			// partno
+			$this->partno->EditAttrs["class"] = "form-control";
+			$this->partno->EditCustomAttributes = "";
+			if (REMOVE_XSS)
+				$this->partno->AdvancedSearch->SearchValue = HtmlDecode($this->partno->AdvancedSearch->SearchValue);
+			$this->partno->EditValue = HtmlEncode($this->partno->AdvancedSearch->SearchValue);
+			$this->partno->PlaceHolder = RemoveHtml($this->partno->caption());
+
+			// manufacturer
+			$this->manufacturer->EditAttrs["class"] = "form-control";
+			$this->manufacturer->EditCustomAttributes = "";
+			if (REMOVE_XSS)
+				$this->manufacturer->AdvancedSearch->SearchValue = HtmlDecode($this->manufacturer->AdvancedSearch->SearchValue);
+			$this->manufacturer->EditValue = HtmlEncode($this->manufacturer->AdvancedSearch->SearchValue);
+			$this->manufacturer->PlaceHolder = RemoveHtml($this->manufacturer->caption());
+
+			// tittle
+			$this->tittle->EditAttrs["class"] = "form-control";
+			$this->tittle->EditCustomAttributes = "";
+			$this->tittle->EditValue = HtmlEncode($this->tittle->AdvancedSearch->SearchValue);
+			$this->tittle->PlaceHolder = RemoveHtml($this->tittle->caption());
+
+			// cddissue
+			$this->cddissue->EditAttrs["class"] = "form-control";
+			$this->cddissue->EditCustomAttributes = "";
+			$this->cddissue->EditValue = HtmlEncode(FormatDateTime(UnFormatDateTime($this->cddissue->AdvancedSearch->SearchValue, 5), 5));
+			$this->cddissue->PlaceHolder = RemoveHtml($this->cddissue->caption());
+
+			// cddno
+			$this->cddno->EditAttrs["class"] = "form-control";
+			$this->cddno->EditCustomAttributes = "";
+			if (REMOVE_XSS)
+				$this->cddno->AdvancedSearch->SearchValue = HtmlDecode($this->cddno->AdvancedSearch->SearchValue);
+			$this->cddno->EditValue = HtmlEncode($this->cddno->AdvancedSearch->SearchValue);
+			$this->cddno->PlaceHolder = RemoveHtml($this->cddno->caption());
+
+			// thirdPartyNo
+			$this->thirdPartyNo->EditAttrs["class"] = "form-control";
+			$this->thirdPartyNo->EditCustomAttributes = "";
+			if (REMOVE_XSS)
+				$this->thirdPartyNo->AdvancedSearch->SearchValue = HtmlDecode($this->thirdPartyNo->AdvancedSearch->SearchValue);
+			$this->thirdPartyNo->EditValue = HtmlEncode($this->thirdPartyNo->AdvancedSearch->SearchValue);
+			$this->thirdPartyNo->PlaceHolder = RemoveHtml($this->thirdPartyNo->caption());
+
+			// expirydt
+			$this->expirydt->EditAttrs["class"] = "form-control";
+			$this->expirydt->EditCustomAttributes = "";
+			$this->expirydt->EditValue = HtmlEncode(FormatDateTime(UnFormatDateTime($this->expirydt->AdvancedSearch->SearchValue, 5), 5));
+			$this->expirydt->PlaceHolder = RemoveHtml($this->expirydt->caption());
+
+			// coo
+			$this->coo->EditAttrs["class"] = "form-control";
+			$this->coo->EditCustomAttributes = "";
+			if (REMOVE_XSS)
+				$this->coo->AdvancedSearch->SearchValue = HtmlDecode($this->coo->AdvancedSearch->SearchValue);
+			$this->coo->EditValue = HtmlEncode($this->coo->AdvancedSearch->SearchValue);
+			$this->coo->PlaceHolder = RemoveHtml($this->coo->caption());
+
+			// hssCode
+			$this->hssCode->EditAttrs["class"] = "form-control";
+			$this->hssCode->EditCustomAttributes = "";
+			if (REMOVE_XSS)
+				$this->hssCode->AdvancedSearch->SearchValue = HtmlDecode($this->hssCode->AdvancedSearch->SearchValue);
+			$this->hssCode->EditValue = HtmlEncode($this->hssCode->AdvancedSearch->SearchValue);
+			$this->hssCode->PlaceHolder = RemoveHtml($this->hssCode->caption());
+
+			// systrade
+			$this->systrade->EditCustomAttributes = "";
+			$this->systrade->EditValue = $this->systrade->options(TRUE);
+
+			// isdatasheet
+			$this->isdatasheet->EditCustomAttributes = "";
+			$this->isdatasheet->EditValue = $this->isdatasheet->options(FALSE);
+
+			// nativeFiles
+			$this->nativeFiles->EditAttrs["class"] = "form-control";
+			$this->nativeFiles->EditCustomAttributes = "";
+			$this->nativeFiles->EditValue = HtmlEncode($this->nativeFiles->AdvancedSearch->SearchValue);
+			$this->nativeFiles->PlaceHolder = RemoveHtml($this->nativeFiles->caption());
 		}
 		if ($this->RowType == ROWTYPE_ADD || $this->RowType == ROWTYPE_EDIT || $this->RowType == ROWTYPE_SEARCH) // Add/Edit/Search row
 			$this->setupFieldTitles();
@@ -3311,6 +3604,30 @@ class datasheets_list extends datasheets
 		// Call Row Rendered event
 		if ($this->RowType <> ROWTYPE_AGGREGATEINIT)
 			$this->Row_Rendered();
+	}
+
+	// Validate search
+	protected function validateSearch()
+	{
+		global $SearchError;
+
+		// Initialize
+		$SearchError = "";
+
+		// Check if validation required
+		if (!SERVER_VALIDATE)
+			return TRUE;
+
+		// Return validate result
+		$validateSearch = ($SearchError == "");
+
+		// Call Form_CustomValidate event
+		$formCustomError = "";
+		$validateSearch = $validateSearch && $this->Form_CustomValidate($formCustomError);
+		if ($formCustomError <> "") {
+			AddMessage($SearchError, $formCustomError);
+		}
+		return $validateSearch;
 	}
 
 	// Validate form
@@ -3775,6 +4092,19 @@ class datasheets_list extends datasheets
 			WriteJson(["success" => TRUE, $this->TableVar => $row]);
 		}
 		return $addRow;
+	}
+
+	// Load advanced search
+	public function loadAdvancedSearch()
+	{
+		$this->partno->AdvancedSearch->load();
+		$this->manufacturer->AdvancedSearch->load();
+		$this->tittle->AdvancedSearch->load();
+		$this->cddno->AdvancedSearch->load();
+		$this->thirdPartyNo->AdvancedSearch->load();
+		$this->coo->AdvancedSearch->load();
+		$this->systrade->AdvancedSearch->load();
+		$this->nativeFiles->AdvancedSearch->load();
 	}
 
 	// Get export HTML tag

@@ -33,5 +33,4 @@ function PersonalData_Deleted($row) {
 
 	//echo "PersonalData Deleted";
 }
-null
 ?>

@@ -362,7 +362,7 @@ fdatasheetsadd.createAutoSuggest({"id":"x_manufacturer","forceSelect":true});
 		<div class="<?php echo $datasheets_add->RightColumnClass ?>"><div<?php echo $datasheets->tittle->cellAttributes() ?>>
 <?php if (!$datasheets->isConfirm()) { ?>
 <span id="el_datasheets_tittle">
-<input type="text" data-table="datasheets" data-field="x_tittle" data-page="0" name="x_tittle" id="x_tittle" size="30" placeholder="<?php echo HtmlEncode($datasheets->tittle->getPlaceHolder()) ?>" value="<?php echo $datasheets->tittle->EditValue ?>"<?php echo $datasheets->tittle->editAttributes() ?>>
+<textarea data-table="datasheets" data-field="x_tittle" data-page="0" name="x_tittle" id="x_tittle" cols="35" rows="4" placeholder="<?php echo HtmlEncode($datasheets->tittle->getPlaceHolder()) ?>"<?php echo $datasheets->tittle->editAttributes() ?>><?php echo $datasheets->tittle->EditValue ?></textarea>
 </span>
 <?php } else { ?>
 <span id="el_datasheets_tittle">
@@ -379,7 +379,7 @@ fdatasheetsadd.createAutoSuggest({"id":"x_manufacturer","forceSelect":true});
 		<td<?php echo $datasheets->tittle->cellAttributes() ?>>
 <?php if (!$datasheets->isConfirm()) { ?>
 <span id="el_datasheets_tittle">
-<input type="text" data-table="datasheets" data-field="x_tittle" data-page="0" name="x_tittle" id="x_tittle" size="30" placeholder="<?php echo HtmlEncode($datasheets->tittle->getPlaceHolder()) ?>" value="<?php echo $datasheets->tittle->EditValue ?>"<?php echo $datasheets->tittle->editAttributes() ?>>
+<textarea data-table="datasheets" data-field="x_tittle" data-page="0" name="x_tittle" id="x_tittle" cols="35" rows="4" placeholder="<?php echo HtmlEncode($datasheets->tittle->getPlaceHolder()) ?>"<?php echo $datasheets->tittle->editAttributes() ?>><?php echo $datasheets->tittle->EditValue ?></textarea>
 </span>
 <?php } else { ?>
 <span id="el_datasheets_tittle">

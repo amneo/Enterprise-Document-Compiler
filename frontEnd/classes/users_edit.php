@@ -613,7 +613,7 @@ class users_edit extends users
 		// Create form object
 		$CurrentForm = new HttpForm();
 		$this->CurrentAction = Param("action"); // Set up current action
-		$this->seqid->setVisibility();
+		$this->seqid->Visible = FALSE;
 		$this->userName->setVisibility();
 		$this->userLoginId->setVisibility();
 		$this->uEmail->setVisibility();
@@ -795,11 +795,6 @@ class users_edit extends users
 		// Load from form
 		global $CurrentForm;
 
-		// Check field name 'seqid' first before field var 'x_seqid'
-		$val = $CurrentForm->hasValue("seqid") ? $CurrentForm->getValue("seqid") : $CurrentForm->getValue("x_seqid");
-		if (!$this->seqid->IsDetailKey)
-			$this->seqid->setFormValue($val);
-
 		// Check field name 'userName' first before field var 'x_userName'
 		$val = $CurrentForm->hasValue("userName") ? $CurrentForm->getValue("userName") : $CurrentForm->getValue("x_userName");
 		if (!$this->userName->IsDetailKey) {
@@ -871,6 +866,11 @@ class users_edit extends users
 			else
 				$this->uActivated->setFormValue($val);
 		}
+
+		// Check field name 'seqid' first before field var 'x_seqid'
+		$val = $CurrentForm->hasValue("seqid") ? $CurrentForm->getValue("seqid") : $CurrentForm->getValue("x_seqid");
+		if (!$this->seqid->IsDetailKey)
+			$this->seqid->setFormValue($val);
 	}
 
 	// Restore form values
@@ -1048,7 +1048,7 @@ class users_edit extends users
 			$this->uLevel->ViewCustomAttributes = "";
 
 			// uPassword
-			$this->uPassword->ViewValue = $this->uPassword->CurrentValue;
+			$this->uPassword->ViewValue = $Language->phrase("PasswordMask");
 			$this->uPassword->ViewCustomAttributes = "";
 
 			// uProfile
@@ -1066,11 +1066,6 @@ class users_edit extends users
 				$this->uActivated->ViewValue = $this->uActivated->tagCaption(2) <> "" ? $this->uActivated->tagCaption(2) : "No";
 			}
 			$this->uActivated->ViewCustomAttributes = "";
-
-			// seqid
-			$this->seqid->LinkCustomAttributes = "";
-			$this->seqid->HrefValue = "";
-			$this->seqid->TooltipValue = "";
 
 			// userName
 			$this->userName->LinkCustomAttributes = "";
@@ -1112,12 +1107,6 @@ class users_edit extends users
 			$this->uActivated->HrefValue = "";
 			$this->uActivated->TooltipValue = "";
 		} elseif ($this->RowType == ROWTYPE_EDIT) { // Edit row
-
-			// seqid
-			$this->seqid->EditAttrs["class"] = "form-control";
-			$this->seqid->EditCustomAttributes = "";
-			$this->seqid->EditValue = $this->seqid->CurrentValue;
-			$this->seqid->ViewCustomAttributes = "";
 
 			// userName
 			$this->userName->EditAttrs["class"] = "form-control";
@@ -1176,8 +1165,6 @@ class users_edit extends users
 			// uPassword
 			$this->uPassword->EditAttrs["class"] = "form-control";
 			$this->uPassword->EditCustomAttributes = "";
-			if (REMOVE_XSS)
-				$this->uPassword->CurrentValue = HtmlDecode($this->uPassword->CurrentValue);
 			$this->uPassword->EditValue = HtmlEncode($this->uPassword->CurrentValue);
 			$this->uPassword->PlaceHolder = RemoveHtml($this->uPassword->caption());
 
@@ -1210,12 +1197,8 @@ class users_edit extends users
 			$this->uActivated->EditValue = $this->uActivated->options(FALSE);
 
 			// Edit refer script
-			// seqid
-
-			$this->seqid->LinkCustomAttributes = "";
-			$this->seqid->HrefValue = "";
-
 			// userName
+
 			$this->userName->LinkCustomAttributes = "";
 			$this->userName->HrefValue = "";
 

@@ -135,6 +135,11 @@ if (DEBUG_ENABLED)
 // Write your startup script here
 // document.write("page loaded");
 
+$(".content-wrapper").css({ 
+"background-image": "url(background-image.jpg)", 
+"background-attachment": "fixed",
+"background-size": "100%" // This size will be the 100% of the container
+});
 </script>
 <?php include_once "footer.php" ?>
 <?php

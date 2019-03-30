@@ -83,6 +83,8 @@ fuserlevelpermissionsedit.validate = function() {
 fuserlevelpermissionsedit.Form_CustomValidate = function(fobj) { // DO NOT CHANGE THIS LINE!
 
 	// Your custom validation code here, return false if invalid.
+if (!$row["updated"].value() && $row["open_close"].value())
+return this.OnError($row["updated"], "You cannot close this ticket until Time Worked is entered under Ticket Comments. Thank you."); 
 	return true;
 }
 

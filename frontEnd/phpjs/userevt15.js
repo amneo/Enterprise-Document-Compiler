@@ -7,7 +7,9 @@
 			"change": function(e) {
 
 				// Your code
-				$(this).fields("cddno").value("");
+				var noval = "";
+				var $row = $(this).fields();
+				$row("cddno").value(noval);
 		}
 	);
 })(jQuery);

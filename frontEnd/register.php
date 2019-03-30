@@ -244,7 +244,7 @@ $register->showMessage();
 		<div class="<?php echo $register->RightColumnClass ?>"><div<?php echo $users->uPassword->cellAttributes() ?>>
 <?php if (!$users->isConfirm()) { ?>
 <span id="el_users_uPassword">
-<input type="text" data-table="users" data-field="x_uPassword" name="x_uPassword" id="x_uPassword" size="30" placeholder="<?php echo HtmlEncode($users->uPassword->getPlaceHolder()) ?>" value="<?php echo $users->uPassword->EditValue ?>"<?php echo $users->uPassword->editAttributes() ?>>
+<input type="password" data-field="x_uPassword" name="x_uPassword" id="x_uPassword" size="30" placeholder="<?php echo HtmlEncode($users->uPassword->getPlaceHolder()) ?>"<?php echo $users->uPassword->editAttributes() ?>>
 </span>
 <?php } else { ?>
 <span id="el_users_uPassword">
@@ -261,7 +261,7 @@ $register->showMessage();
 		<td<?php echo $users->uPassword->cellAttributes() ?>>
 <?php if (!$users->isConfirm()) { ?>
 <span id="el_users_uPassword">
-<input type="text" data-table="users" data-field="x_uPassword" name="x_uPassword" id="x_uPassword" size="30" placeholder="<?php echo HtmlEncode($users->uPassword->getPlaceHolder()) ?>" value="<?php echo $users->uPassword->EditValue ?>"<?php echo $users->uPassword->editAttributes() ?>>
+<input type="password" data-field="x_uPassword" name="x_uPassword" id="x_uPassword" size="30" placeholder="<?php echo HtmlEncode($users->uPassword->getPlaceHolder()) ?>"<?php echo $users->uPassword->editAttributes() ?>>
 </span>
 <?php } else { ?>
 <span id="el_users_uPassword">
@@ -281,7 +281,7 @@ $register->showMessage();
 		<div class="<?php echo $register->RightColumnClass ?>"><div<?php echo $users->uPassword->cellAttributes() ?>>
 <?php if (!$users->isConfirm()) { ?>
 <span id="el_c_users_uPassword">
-<input type="text" data-table="users" data-field="c_uPassword" name="c_uPassword" id="c_uPassword" size="30" placeholder="<?php echo HtmlEncode($users->uPassword->getPlaceHolder()) ?>" value="<?php echo $users->uPassword->EditValue ?>"<?php echo $users->uPassword->editAttributes() ?>>
+<input type="password" data-field="c_uPassword" name="c_uPassword" id="c_uPassword" size="30" placeholder="<?php echo HtmlEncode($users->uPassword->getPlaceHolder()) ?>"<?php echo $users->uPassword->editAttributes() ?>>
 </span>
 <?php } else { ?>
 <span id="el_c_users_uPassword">
@@ -298,7 +298,7 @@ $register->showMessage();
 		<td<?php echo $users->uPassword->cellAttributes() ?>>
 <?php if (!$users->isConfirm()) { ?>
 <span id="el_c_users_uPassword">
-<input type="text" data-table="users" data-field="c_uPassword" name="c_uPassword" id="c_uPassword" size="30" placeholder="<?php echo HtmlEncode($users->uPassword->getPlaceHolder()) ?>" value="<?php echo $users->uPassword->EditValue ?>"<?php echo $users->uPassword->editAttributes() ?>>
+<input type="password" data-field="c_uPassword" name="c_uPassword" id="c_uPassword" size="30" placeholder="<?php echo HtmlEncode($users->uPassword->getPlaceHolder()) ?>"<?php echo $users->uPassword->editAttributes() ?>>
 </span>
 <?php } else { ?>
 <span id="el_c_users_uPassword">

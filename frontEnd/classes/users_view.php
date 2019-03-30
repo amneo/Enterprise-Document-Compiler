@@ -723,7 +723,7 @@ class users_view extends users
 
 		// Setup export options
 		$this->setupExportOptions();
-		$this->seqid->setVisibility();
+		$this->seqid->Visible = FALSE;
 		$this->userName->setVisibility();
 		$this->userLoginId->setVisibility();
 		$this->uEmail->setVisibility();
@@ -1101,7 +1101,7 @@ class users_view extends users
 			$this->uLevel->ViewCustomAttributes = "";
 
 			// uPassword
-			$this->uPassword->ViewValue = $this->uPassword->CurrentValue;
+			$this->uPassword->ViewValue = $Language->phrase("PasswordMask");
 			$this->uPassword->ViewCustomAttributes = "";
 
 			// uProfile
@@ -1119,11 +1119,6 @@ class users_view extends users
 				$this->uActivated->ViewValue = $this->uActivated->tagCaption(2) <> "" ? $this->uActivated->tagCaption(2) : "No";
 			}
 			$this->uActivated->ViewCustomAttributes = "";
-
-			// seqid
-			$this->seqid->LinkCustomAttributes = "";
-			$this->seqid->HrefValue = "";
-			$this->seqid->TooltipValue = "";
 
 			// userName
 			$this->userName->LinkCustomAttributes = "";

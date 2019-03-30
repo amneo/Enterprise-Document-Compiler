@@ -1538,8 +1538,6 @@ class datasheets_add extends datasheets
 			// tittle
 			$this->tittle->EditAttrs["class"] = "form-control";
 			$this->tittle->EditCustomAttributes = "";
-			if (REMOVE_XSS)
-				$this->tittle->CurrentValue = HtmlDecode($this->tittle->CurrentValue);
 			$this->tittle->EditValue = HtmlEncode($this->tittle->CurrentValue);
 			$this->tittle->PlaceHolder = RemoveHtml($this->tittle->caption());
 

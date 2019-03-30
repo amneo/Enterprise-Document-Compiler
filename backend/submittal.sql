@@ -7,6 +7,9 @@
 
 
 SET search_path = public, pg_catalog;
+DROP TABLE IF EXISTS public.userlevelpermissions;
+DROP TABLE IF EXISTS public.userlevels;
+DROP TABLE IF EXISTS public.users;
 DROP TABLE IF EXISTS public.audittrail;
 DROP TABLE IF EXISTS public.datasheets;
 DROP TABLE IF EXISTS public."countryOfOrigin";
@@ -41,8 +44,8 @@ CREATE TABLE public.datasheets (
     partno varchar NOT NULL,
     "dataSheetFile" varchar NOT NULL,
     manufacturer varchar NOT NULL,
-    cdd varchar DEFAULT 'YTM-CDD'::character varying,
-    "thirdParty" varchar DEFAULT 'YTM-UL'::character varying NOT NULL,
+    "cddFile" varchar DEFAULT 'YTM-CDD'::character varying,
+    "thirdPartyFile" varchar DEFAULT 'YTM-UL'::character varying NOT NULL,
     tittle varchar NOT NULL,
     cover varchar DEFAULT 'TBC-COVER'::character varying NOT NULL,
     cddissue date NOT NULL,
@@ -56,7 +59,8 @@ CREATE TABLE public.datasheets (
     isdatasheet boolean DEFAULT false NOT NULL,
     datasheetdate date DEFAULT '2019-03-20'::date,
     username varchar,
-    "nativeFiles" varchar NOT NULL
+    "nativeFiles" varchar NOT NULL,
+    "thirdPartyNo" varchar NOT NULL
 )
 WITH (oids = false);
 --
@@ -73,6 +77,39 @@ CREATE TABLE public.audittrail (
     keyvalue text,
     oldvalue text,
     newvalue text
+)
+WITH (oids = false);
+--
+-- Structure for table users (OID = 53470) : 
+--
+CREATE TABLE public.users (
+    seqid serial NOT NULL,
+    "userName" varchar NOT NULL,
+    "userLoginId" varchar NOT NULL,
+    "uEmail" varchar NOT NULL,
+    "uLevel" integer DEFAULT '-2'::integer,
+    "uPassword" varchar NOT NULL,
+    "uProfile" varchar,
+    "uReportsTo" varchar(1) DEFAULT 1,
+    "uActivated" boolean DEFAULT true
+)
+WITH (oids = false);
+ALTER TABLE ONLY public.users ALTER COLUMN "userName" SET STATISTICS 0;
+--
+-- Structure for table userlevels (OID = 53495) : 
+--
+CREATE TABLE public.userlevels (
+    userlevelid integer NOT NULL,
+    userlevelname varchar(255) NOT NULL
+)
+WITH (oids = false);
+--
+-- Structure for table userlevelpermissions (OID = 53500) : 
+--
+CREATE TABLE public.userlevelpermissions (
+    userlevelid integer NOT NULL,
+    tablename varchar(255) NOT NULL,
+    permission integer NOT NULL
 )
 WITH (oids = false);
 --
@@ -123,6 +160,36 @@ ALTER TABLE ONLY datasheets
 ALTER TABLE ONLY audittrail
     ADD CONSTRAINT pkaudittrail
     PRIMARY KEY (id);
+--
+-- Definition for index users_pkey (OID = 53479) : 
+--
+ALTER TABLE ONLY users
+    ADD CONSTRAINT users_pkey
+    PRIMARY KEY (seqid);
+--
+-- Definition for index users_userLoginId_key (OID = 53481) : 
+--
+ALTER TABLE ONLY users
+    ADD CONSTRAINT "users_userLoginId_key"
+    UNIQUE ("userLoginId");
+--
+-- Definition for index users_uEmail_key (OID = 53483) : 
+--
+ALTER TABLE ONLY users
+    ADD CONSTRAINT "users_uEmail_key"
+    UNIQUE ("uEmail");
+--
+-- Definition for index pkuserlevels (OID = 53498) : 
+--
+ALTER TABLE ONLY userlevels
+    ADD CONSTRAINT pkuserlevels
+    PRIMARY KEY (userlevelid);
+--
+-- Definition for index pkuserlevelpermissions (OID = 53503) : 
+--
+ALTER TABLE ONLY userlevelpermissions
+    ADD CONSTRAINT pkuserlevelpermissions
+    PRIMARY KEY (userlevelid, tablename);
 --
 -- Comments
 --

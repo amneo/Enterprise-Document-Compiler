@@ -107,7 +107,7 @@ class users extends DbTable
 		$this->fields['uLevel'] = &$this->uLevel;
 
 		// uPassword
-		$this->uPassword = new DbField('users', 'users', 'x_uPassword', 'uPassword', '"uPassword"', '"uPassword"', 200, -1, FALSE, '"uPassword"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->uPassword = new DbField('users', 'users', 'x_uPassword', 'uPassword', '"uPassword"', '"uPassword"', 200, -1, FALSE, '"uPassword"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'PASSWORD');
 		$this->uPassword->Nullable = FALSE; // NOT NULL field
 		$this->uPassword->Required = TRUE; // Required field
 		$this->uPassword->Sortable = TRUE; // Allow sort
@@ -806,7 +806,7 @@ class users extends DbTable
 		$this->uLevel->ViewCustomAttributes = "";
 
 		// uPassword
-		$this->uPassword->ViewValue = $this->uPassword->CurrentValue;
+		$this->uPassword->ViewValue = $Language->phrase("PasswordMask");
 		$this->uPassword->ViewCustomAttributes = "";
 
 		// uProfile
@@ -929,8 +929,6 @@ class users extends DbTable
 		// uPassword
 		$this->uPassword->EditAttrs["class"] = "form-control";
 		$this->uPassword->EditCustomAttributes = "";
-		if (REMOVE_XSS)
-			$this->uPassword->CurrentValue = HtmlDecode($this->uPassword->CurrentValue);
 		$this->uPassword->EditValue = $this->uPassword->CurrentValue;
 		$this->uPassword->PlaceHolder = RemoveHtml($this->uPassword->caption());
 
@@ -991,7 +989,6 @@ class users extends DbTable
 			if ($doc->Horizontal) { // Horizontal format, write header
 				$doc->beginExportRow();
 				if ($exportPageType == "view") {
-					$doc->exportCaption($this->seqid);
 					$doc->exportCaption($this->userName);
 					$doc->exportCaption($this->userLoginId);
 					$doc->exportCaption($this->uEmail);
@@ -1041,7 +1038,6 @@ class users extends DbTable
 				if (!$doc->ExportCustom) {
 					$doc->beginExportRow($rowCnt); // Allow CSS styles if enabled
 					if ($exportPageType == "view") {
-						$doc->exportField($this->seqid);
 						$doc->exportField($this->userName);
 						$doc->exportField($this->userLoginId);
 						$doc->exportField($this->uEmail);

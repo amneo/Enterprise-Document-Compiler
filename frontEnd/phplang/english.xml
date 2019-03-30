@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ew-language date="2019/3/27" version="15.0.0.1" id="en" name="English" desc="English" author="e.World Technology Ltd.">
+<ew-language date="2019/3/30" version="15.0.0.1" id="en" name="English" desc="English" author="e.World Technology Ltd.">
   <!-- 
 	*** Important Notes:
 	1. Language ID should follow: https://developers.google.com/recaptcha/docs/language,
@@ -884,28 +884,28 @@
         <phrase id="fldcaption" value="seqid" />
       </field>
       <field id="username">
-        <phrase id="fldcaption" value="user Name" />
+        <phrase id="fldcaption" value="Name" />
       </field>
       <field id="userloginid">
-        <phrase id="fldcaption" value="user Login Id" />
+        <phrase id="fldcaption" value="Login ID" />
       </field>
       <field id="uemail">
-        <phrase id="fldcaption" value="u Email" />
+        <phrase id="fldcaption" value="User Email" />
       </field>
       <field id="ulevel">
-        <phrase id="fldcaption" value="u Level" />
+        <phrase id="fldcaption" value="User Level" />
       </field>
       <field id="upassword">
-        <phrase id="fldcaption" value="u Password" />
+        <phrase id="fldcaption" value="User password" />
       </field>
       <field id="uprofile">
-        <phrase id="fldcaption" value="u Profile" />
+        <phrase id="fldcaption" value="User profile" />
       </field>
       <field id="ureportsto">
-        <phrase id="fldcaption" value="u Reports To" />
+        <phrase id="fldcaption" value="Reports to" />
       </field>
       <field id="uactivated">
-        <phrase id="fldcaption" value="u Activated" />
+        <phrase id="fldcaption" value="Activated ?" />
         <phrase id="fldtagvalue1" value="1" />
         <phrase id="fldtagcaption1" value="Yes" />
         <phrase id="fldtagvalue2" value="0" />
@@ -918,7 +918,7 @@
         <phrase id="fldcaption" value="userlevelid" />
       </field>
       <field id="userlevelname">
-        <phrase id="fldcaption" value="userlevelname" />
+        <phrase id="fldcaption" value="User Level Name" />
       </field>
     </table>
     <table id="userlevelpermissions">

@@ -136,7 +136,7 @@ class datasheets extends DbTable
 		$this->fields['thirdPartyFile'] = &$this->thirdPartyFile;
 
 		// tittle
-		$this->tittle = new DbField('datasheets', 'datasheets', 'x_tittle', 'tittle', '"tittle"', '"tittle"', 200, -1, FALSE, '"tittle"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->tittle = new DbField('datasheets', 'datasheets', 'x_tittle', 'tittle', '"tittle"', '"tittle"', 200, -1, FALSE, '"tittle"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXTAREA');
 		$this->tittle->Nullable = FALSE; // NOT NULL field
 		$this->tittle->Required = TRUE; // Required field
 		$this->tittle->Sortable = TRUE; // Allow sort
@@ -1439,8 +1439,6 @@ class datasheets extends DbTable
 		// tittle
 		$this->tittle->EditAttrs["class"] = "form-control";
 		$this->tittle->EditCustomAttributes = "";
-		if (REMOVE_XSS)
-			$this->tittle->CurrentValue = HtmlDecode($this->tittle->CurrentValue);
 		$this->tittle->EditValue = $this->tittle->CurrentValue;
 		$this->tittle->PlaceHolder = RemoveHtml($this->tittle->caption());
 
@@ -2087,33 +2085,56 @@ class datasheets extends DbTable
 
 		// Enter your code here
 		// To cancel, set return value to FALSE
+		/// This is temporrary fix this needs to be shifted to the client side to ensure the user does not goes trough the complete form submission and then re do it.
 
 		$suffix_file = rand(99999,10000);
-		if(isset($rsnew["dataSheetFile"]) == TRUE )
+	if(isset($rsnew["dataSheetFile"]) == TRUE )
 	 	{
 		$rsnew["dataSheetFile"] = $rsold["partno"]."-".$suffix_file.".pdf";
 		}
 
 		// formating CDD File
-		if(isset($rsnew["cddFile"]) == TRUE )
+	if((isset($rsnew["cddFile"]) == TRUE) && ($rsold["cddno"] !== $rsnew["cddno"]))
+	{
+			$rsnew["cddFile"] = $rsnew["cddno"]."-CDD-".$suffix_file.".pdf";
+	 	}elseif((isset($rsnew["cddFile"]) == TRUE) && ($rsold["cddno"] == $rsnew["cddno"]))
+			{
+			$this->setFailureMessage("Error !! , <b> Keyin Civil Defence File Name</b> to new number and <br> <b> re-upload the File. </b>");
+			return FALSE;
+		}else
+			{
+				if($rsold["cddno"] !== $rsnew["cddno"])
+					{
+						$this->setFailureMessage("Civil Defence File Number Updated but not <b> CDD Approval File </b>");
+						return FALSE;
+					}
+	}
+
+		//formating third party File and field
+	if((isset($rsnew["thirdPartyFile"]) == TRUE) && ($rsold["thirdPartyNo"] !== $rsnew["thirdPartyNo"]))
 	 	{
 
 	 		//need to check if the third party update happens only after 
-			$rsnew["cddFile"] = $rsnew["cddno"]."-CDD-".$suffix_file.".pdf";
-		}
-
-		//formating third party File and field
-		if(isset($rsnew["thirdPartyFile"]) == TRUE )
-	 	{
-		$rsnew["thirdPartyFile"] = $rsnew["thirdPartyNo"]."-UL-".$suffix_file.".pdf";
-		}
+	 			$rsnew["thirdPartyFile"] = $rsnew["thirdPartyNo"]."-UL-".$suffix_file.".pdf";
+	}elseif((isset($rsnew["thirdPartyFile"]) == TRUE) && ($rsold["thirdPartyNo"] == $rsnew["thirdPartyNo"]))
+		{
+			$this->setFailureMessage("Error !! <b>Keyin Third Party certificate No</b> to new number and <br> <b> re-upload the File. </b>");
+			return FALSE;
+		}else
+			{
+				if($rsold["thirdPartyNo"] !== $rsnew["thirdPartyNo"])
+					{
+						$this->setFailureMessage("Third Party certificate No Updated but not <b> Third Party Certificate File </b>");
+						return FALSE;
+					}
+	}
 
 		//formating cover file
-		if(isset($rsnew["cover"]) == TRUE )
+		if(isset($rsnew["cover"]))
 	 	{
-		$rsnew["cover"] = $rsold["partno"]."-COVER-".$suffix_file.".pdf";
+			$rsnew["cover"] = $rsold["partno"]."-COVER-".$suffix_file.".pdf";
 		}
-		return TRUE;
+	return TRUE;
 	}
 
 	// Row Updated event
