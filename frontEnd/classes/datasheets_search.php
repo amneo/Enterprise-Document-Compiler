@@ -621,24 +621,24 @@ class datasheets_search extends datasheets
 		$this->partid->Visible = FALSE;
 		$this->partno->setVisibility();
 		$this->dataSheetFile->Visible = FALSE;
-		$this->manufacturer->setVisibility();
+		$this->manufacturer->Visible = FALSE;
 		$this->cddFile->Visible = FALSE;
 		$this->thirdPartyFile->Visible = FALSE;
 		$this->tittle->setVisibility();
 		$this->cover->Visible = FALSE;
-		$this->cddissue->Visible = FALSE;
-		$this->cddno->setVisibility();
-		$this->thirdPartyNo->setVisibility();
+		$this->cddissue->setVisibility();
+		$this->cddno->Visible = FALSE;
+		$this->thirdPartyNo->Visible = FALSE;
 		$this->duration->Visible = FALSE;
-		$this->expirydt->Visible = FALSE;
+		$this->expirydt->setVisibility();
 		$this->highlighted->Visible = FALSE;
-		$this->coo->setVisibility();
+		$this->coo->Visible = FALSE;
 		$this->hssCode->Visible = FALSE;
 		$this->systrade->setVisibility();
 		$this->isdatasheet->Visible = FALSE;
 		$this->datasheetdate->Visible = FALSE;
 		$this->username->Visible = FALSE;
-		$this->nativeFiles->setVisibility();
+		$this->nativeFiles->Visible = FALSE;
 		$this->hideFieldsForAddEdit();
 
 		// Do not use lookup cache
@@ -708,13 +708,10 @@ class datasheets_search extends datasheets
 	{
 		$srchUrl = "";
 		$this->buildSearchUrl($srchUrl, $this->partno); // partno
-		$this->buildSearchUrl($srchUrl, $this->manufacturer); // manufacturer
 		$this->buildSearchUrl($srchUrl, $this->tittle); // tittle
-		$this->buildSearchUrl($srchUrl, $this->cddno); // cddno
-		$this->buildSearchUrl($srchUrl, $this->thirdPartyNo); // thirdPartyNo
-		$this->buildSearchUrl($srchUrl, $this->coo); // coo
+		$this->buildSearchUrl($srchUrl, $this->cddissue); // cddissue
+		$this->buildSearchUrl($srchUrl, $this->expirydt); // expirydt
 		$this->buildSearchUrl($srchUrl, $this->systrade); // systrade
-		$this->buildSearchUrl($srchUrl, $this->nativeFiles); // nativeFiles
 		if ($srchUrl <> "")
 			$srchUrl .= "&";
 		$srchUrl .= "cmd=search";
@@ -793,40 +790,28 @@ class datasheets_search extends datasheets
 			$this->partno->AdvancedSearch->setSearchValue($CurrentForm->getValue("x_partno"));
 		$this->partno->AdvancedSearch->setSearchOperator($CurrentForm->getValue("z_partno"));
 
-		// manufacturer
-		if (!$this->isAddOrEdit())
-			$this->manufacturer->AdvancedSearch->setSearchValue($CurrentForm->getValue("x_manufacturer"));
-		$this->manufacturer->AdvancedSearch->setSearchOperator($CurrentForm->getValue("z_manufacturer"));
-
 		// tittle
 		if (!$this->isAddOrEdit())
 			$this->tittle->AdvancedSearch->setSearchValue($CurrentForm->getValue("x_tittle"));
 		$this->tittle->AdvancedSearch->setSearchOperator($CurrentForm->getValue("z_tittle"));
 
-		// cddno
+		// cddissue
 		if (!$this->isAddOrEdit())
-			$this->cddno->AdvancedSearch->setSearchValue($CurrentForm->getValue("x_cddno"));
-		$this->cddno->AdvancedSearch->setSearchOperator($CurrentForm->getValue("z_cddno"));
+			$this->cddissue->AdvancedSearch->setSearchValue($CurrentForm->getValue("x_cddissue"));
+		$this->cddissue->AdvancedSearch->setSearchOperator($CurrentForm->getValue("z_cddissue"));
 
-		// thirdPartyNo
+		// expirydt
 		if (!$this->isAddOrEdit())
-			$this->thirdPartyNo->AdvancedSearch->setSearchValue($CurrentForm->getValue("x_thirdPartyNo"));
-		$this->thirdPartyNo->AdvancedSearch->setSearchOperator($CurrentForm->getValue("z_thirdPartyNo"));
-
-		// coo
-		if (!$this->isAddOrEdit())
-			$this->coo->AdvancedSearch->setSearchValue($CurrentForm->getValue("x_coo"));
-		$this->coo->AdvancedSearch->setSearchOperator($CurrentForm->getValue("z_coo"));
+			$this->expirydt->AdvancedSearch->setSearchValue($CurrentForm->getValue("x_expirydt"));
+		$this->expirydt->AdvancedSearch->setSearchOperator($CurrentForm->getValue("z_expirydt"));
+		$this->expirydt->AdvancedSearch->setSearchCondition($CurrentForm->getValue("v_expirydt"));
+		$this->expirydt->AdvancedSearch->setSearchValue2($CurrentForm->getValue("y_expirydt"));
+		$this->expirydt->AdvancedSearch->setSearchOperator2($CurrentForm->getValue("w_expirydt"));
 
 		// systrade
 		if (!$this->isAddOrEdit())
 			$this->systrade->AdvancedSearch->setSearchValue($CurrentForm->getValue("x_systrade"));
 		$this->systrade->AdvancedSearch->setSearchOperator($CurrentForm->getValue("z_systrade"));
-
-		// nativeFiles
-		if (!$this->isAddOrEdit())
-			$this->nativeFiles->AdvancedSearch->setSearchValue($CurrentForm->getValue("x_nativeFiles"));
-		$this->nativeFiles->AdvancedSearch->setSearchOperator($CurrentForm->getValue("z_nativeFiles"));
 	}
 
 	// Render row values based on field settings
@@ -985,52 +970,25 @@ class datasheets_search extends datasheets
 			}
 			$this->partno->TooltipValue = "";
 
-			// manufacturer
-			$this->manufacturer->LinkCustomAttributes = "";
-			$this->manufacturer->HrefValue = "";
-			$this->manufacturer->TooltipValue = "";
-
 			// tittle
 			$this->tittle->LinkCustomAttributes = "";
 			$this->tittle->HrefValue = "";
 			$this->tittle->TooltipValue = "";
 
-			// cddno
-			$this->cddno->LinkCustomAttributes = "";
-			if (!EmptyValue($this->cddFile->Upload->DbValue)) {
-				$this->cddno->HrefValue = GetFileUploadUrl($this->cddFile, $this->cddFile->Upload->DbValue); // Add prefix/suffix
-				$this->cddno->LinkAttrs["target"] = "_blank"; // Add target
-				if ($this->isExport()) $this->cddno->HrefValue = FullUrl($this->cddno->HrefValue, "href");
-			} else {
-				$this->cddno->HrefValue = "";
-			}
-			$this->cddno->TooltipValue = "";
+			// cddissue
+			$this->cddissue->LinkCustomAttributes = "";
+			$this->cddissue->HrefValue = "";
+			$this->cddissue->TooltipValue = "";
 
-			// thirdPartyNo
-			$this->thirdPartyNo->LinkCustomAttributes = "";
-			if (!EmptyValue($this->thirdPartyFile->Upload->DbValue)) {
-				$this->thirdPartyNo->HrefValue = GetFileUploadUrl($this->thirdPartyFile, $this->thirdPartyFile->Upload->DbValue); // Add prefix/suffix
-				$this->thirdPartyNo->LinkAttrs["target"] = "_blank"; // Add target
-				if ($this->isExport()) $this->thirdPartyNo->HrefValue = FullUrl($this->thirdPartyNo->HrefValue, "href");
-			} else {
-				$this->thirdPartyNo->HrefValue = "";
-			}
-			$this->thirdPartyNo->TooltipValue = "";
-
-			// coo
-			$this->coo->LinkCustomAttributes = "";
-			$this->coo->HrefValue = "";
-			$this->coo->TooltipValue = "";
+			// expirydt
+			$this->expirydt->LinkCustomAttributes = "";
+			$this->expirydt->HrefValue = "";
+			$this->expirydt->TooltipValue = "";
 
 			// systrade
 			$this->systrade->LinkCustomAttributes = "";
 			$this->systrade->HrefValue = "";
 			$this->systrade->TooltipValue = "";
-
-			// nativeFiles
-			$this->nativeFiles->LinkCustomAttributes = "";
-			$this->nativeFiles->HrefValue = "";
-			$this->nativeFiles->TooltipValue = "";
 		} elseif ($this->RowType == ROWTYPE_SEARCH) { // Search row
 
 			// partno
@@ -1041,53 +999,31 @@ class datasheets_search extends datasheets
 			$this->partno->EditValue = HtmlEncode($this->partno->AdvancedSearch->SearchValue);
 			$this->partno->PlaceHolder = RemoveHtml($this->partno->caption());
 
-			// manufacturer
-			$this->manufacturer->EditAttrs["class"] = "form-control";
-			$this->manufacturer->EditCustomAttributes = "";
-			if (REMOVE_XSS)
-				$this->manufacturer->AdvancedSearch->SearchValue = HtmlDecode($this->manufacturer->AdvancedSearch->SearchValue);
-			$this->manufacturer->EditValue = HtmlEncode($this->manufacturer->AdvancedSearch->SearchValue);
-			$this->manufacturer->PlaceHolder = RemoveHtml($this->manufacturer->caption());
-
 			// tittle
 			$this->tittle->EditAttrs["class"] = "form-control";
 			$this->tittle->EditCustomAttributes = "";
 			$this->tittle->EditValue = HtmlEncode($this->tittle->AdvancedSearch->SearchValue);
 			$this->tittle->PlaceHolder = RemoveHtml($this->tittle->caption());
 
-			// cddno
-			$this->cddno->EditAttrs["class"] = "form-control";
-			$this->cddno->EditCustomAttributes = "";
-			if (REMOVE_XSS)
-				$this->cddno->AdvancedSearch->SearchValue = HtmlDecode($this->cddno->AdvancedSearch->SearchValue);
-			$this->cddno->EditValue = HtmlEncode($this->cddno->AdvancedSearch->SearchValue);
-			$this->cddno->PlaceHolder = RemoveHtml($this->cddno->caption());
+			// cddissue
+			$this->cddissue->EditAttrs["class"] = "form-control";
+			$this->cddissue->EditCustomAttributes = "";
+			$this->cddissue->EditValue = HtmlEncode(FormatDateTime(UnFormatDateTime($this->cddissue->AdvancedSearch->SearchValue, 5), 5));
+			$this->cddissue->PlaceHolder = RemoveHtml($this->cddissue->caption());
 
-			// thirdPartyNo
-			$this->thirdPartyNo->EditAttrs["class"] = "form-control";
-			$this->thirdPartyNo->EditCustomAttributes = "";
-			if (REMOVE_XSS)
-				$this->thirdPartyNo->AdvancedSearch->SearchValue = HtmlDecode($this->thirdPartyNo->AdvancedSearch->SearchValue);
-			$this->thirdPartyNo->EditValue = HtmlEncode($this->thirdPartyNo->AdvancedSearch->SearchValue);
-			$this->thirdPartyNo->PlaceHolder = RemoveHtml($this->thirdPartyNo->caption());
-
-			// coo
-			$this->coo->EditAttrs["class"] = "form-control";
-			$this->coo->EditCustomAttributes = "";
-			if (REMOVE_XSS)
-				$this->coo->AdvancedSearch->SearchValue = HtmlDecode($this->coo->AdvancedSearch->SearchValue);
-			$this->coo->EditValue = HtmlEncode($this->coo->AdvancedSearch->SearchValue);
-			$this->coo->PlaceHolder = RemoveHtml($this->coo->caption());
+			// expirydt
+			$this->expirydt->EditAttrs["class"] = "form-control";
+			$this->expirydt->EditCustomAttributes = "";
+			$this->expirydt->EditValue = HtmlEncode(FormatDateTime(UnFormatDateTime($this->expirydt->AdvancedSearch->SearchValue, 5), 5));
+			$this->expirydt->PlaceHolder = RemoveHtml($this->expirydt->caption());
+			$this->expirydt->EditAttrs["class"] = "form-control";
+			$this->expirydt->EditCustomAttributes = "";
+			$this->expirydt->EditValue2 = HtmlEncode(FormatDateTime(UnFormatDateTime($this->expirydt->AdvancedSearch->SearchValue2, 5), 5));
+			$this->expirydt->PlaceHolder = RemoveHtml($this->expirydt->caption());
 
 			// systrade
 			$this->systrade->EditCustomAttributes = "";
 			$this->systrade->EditValue = $this->systrade->options(TRUE);
-
-			// nativeFiles
-			$this->nativeFiles->EditAttrs["class"] = "form-control";
-			$this->nativeFiles->EditCustomAttributes = "";
-			$this->nativeFiles->EditValue = HtmlEncode($this->nativeFiles->AdvancedSearch->SearchValue);
-			$this->nativeFiles->PlaceHolder = RemoveHtml($this->nativeFiles->caption());
 		}
 		if ($this->RowType == ROWTYPE_ADD || $this->RowType == ROWTYPE_EDIT || $this->RowType == ROWTYPE_SEARCH) // Add/Edit/Search row
 			$this->setupFieldTitles();
@@ -1108,6 +1044,15 @@ class datasheets_search extends datasheets
 		// Check if validation required
 		if (!SERVER_VALIDATE)
 			return TRUE;
+		if (!CheckStdDate($this->cddissue->AdvancedSearch->SearchValue)) {
+			AddMessage($SearchError, $this->cddissue->errorMessage());
+		}
+		if (!CheckStdDate($this->expirydt->AdvancedSearch->SearchValue)) {
+			AddMessage($SearchError, $this->expirydt->errorMessage());
+		}
+		if (!CheckStdDate($this->expirydt->AdvancedSearch->SearchValue2)) {
+			AddMessage($SearchError, $this->expirydt->errorMessage());
+		}
 
 		// Return validate result
 		$validateSearch = ($SearchError == "");
@@ -1125,13 +1070,10 @@ class datasheets_search extends datasheets
 	public function loadAdvancedSearch()
 	{
 		$this->partno->AdvancedSearch->load();
-		$this->manufacturer->AdvancedSearch->load();
 		$this->tittle->AdvancedSearch->load();
-		$this->cddno->AdvancedSearch->load();
-		$this->thirdPartyNo->AdvancedSearch->load();
-		$this->coo->AdvancedSearch->load();
+		$this->cddissue->AdvancedSearch->load();
+		$this->expirydt->AdvancedSearch->load();
 		$this->systrade->AdvancedSearch->load();
-		$this->nativeFiles->AdvancedSearch->load();
 	}
 
 	// Set up Breadcrumb

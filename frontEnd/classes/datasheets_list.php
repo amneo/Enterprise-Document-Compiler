@@ -1527,13 +1527,10 @@ class datasheets_list extends datasheets
 		if (SEARCH_FILTER_OPTION == "Server" && isset($UserProfile))
 			$savedFilterList = $UserProfile->getSearchFilters(CurrentUserName(), "fdatasheetslistsrch");
 		$filterList = Concat($filterList, $this->partno->AdvancedSearch->toJson(), ","); // Field partno
-		$filterList = Concat($filterList, $this->manufacturer->AdvancedSearch->toJson(), ","); // Field manufacturer
 		$filterList = Concat($filterList, $this->tittle->AdvancedSearch->toJson(), ","); // Field tittle
-		$filterList = Concat($filterList, $this->cddno->AdvancedSearch->toJson(), ","); // Field cddno
-		$filterList = Concat($filterList, $this->thirdPartyNo->AdvancedSearch->toJson(), ","); // Field thirdPartyNo
-		$filterList = Concat($filterList, $this->coo->AdvancedSearch->toJson(), ","); // Field coo
+		$filterList = Concat($filterList, $this->cddissue->AdvancedSearch->toJson(), ","); // Field cddissue
+		$filterList = Concat($filterList, $this->expirydt->AdvancedSearch->toJson(), ","); // Field expirydt
 		$filterList = Concat($filterList, $this->systrade->AdvancedSearch->toJson(), ","); // Field systrade
-		$filterList = Concat($filterList, $this->nativeFiles->AdvancedSearch->toJson(), ","); // Field nativeFiles
 		if ($this->BasicSearch->Keyword <> "") {
 			$wrk = "\"" . TABLE_BASIC_SEARCH . "\":\"" . JsEncode($this->BasicSearch->Keyword) . "\",\"" . TABLE_BASIC_SEARCH_TYPE . "\":\"" . JsEncode($this->BasicSearch->Type) . "\"";
 			$filterList = Concat($filterList, $wrk, ",");
@@ -1580,14 +1577,6 @@ class datasheets_list extends datasheets
 		$this->partno->AdvancedSearch->SearchOperator2 = @$filter["w_partno"];
 		$this->partno->AdvancedSearch->save();
 
-		// Field manufacturer
-		$this->manufacturer->AdvancedSearch->SearchValue = @$filter["x_manufacturer"];
-		$this->manufacturer->AdvancedSearch->SearchOperator = @$filter["z_manufacturer"];
-		$this->manufacturer->AdvancedSearch->SearchCondition = @$filter["v_manufacturer"];
-		$this->manufacturer->AdvancedSearch->SearchValue2 = @$filter["y_manufacturer"];
-		$this->manufacturer->AdvancedSearch->SearchOperator2 = @$filter["w_manufacturer"];
-		$this->manufacturer->AdvancedSearch->save();
-
 		// Field tittle
 		$this->tittle->AdvancedSearch->SearchValue = @$filter["x_tittle"];
 		$this->tittle->AdvancedSearch->SearchOperator = @$filter["z_tittle"];
@@ -1596,29 +1585,21 @@ class datasheets_list extends datasheets
 		$this->tittle->AdvancedSearch->SearchOperator2 = @$filter["w_tittle"];
 		$this->tittle->AdvancedSearch->save();
 
-		// Field cddno
-		$this->cddno->AdvancedSearch->SearchValue = @$filter["x_cddno"];
-		$this->cddno->AdvancedSearch->SearchOperator = @$filter["z_cddno"];
-		$this->cddno->AdvancedSearch->SearchCondition = @$filter["v_cddno"];
-		$this->cddno->AdvancedSearch->SearchValue2 = @$filter["y_cddno"];
-		$this->cddno->AdvancedSearch->SearchOperator2 = @$filter["w_cddno"];
-		$this->cddno->AdvancedSearch->save();
+		// Field cddissue
+		$this->cddissue->AdvancedSearch->SearchValue = @$filter["x_cddissue"];
+		$this->cddissue->AdvancedSearch->SearchOperator = @$filter["z_cddissue"];
+		$this->cddissue->AdvancedSearch->SearchCondition = @$filter["v_cddissue"];
+		$this->cddissue->AdvancedSearch->SearchValue2 = @$filter["y_cddissue"];
+		$this->cddissue->AdvancedSearch->SearchOperator2 = @$filter["w_cddissue"];
+		$this->cddissue->AdvancedSearch->save();
 
-		// Field thirdPartyNo
-		$this->thirdPartyNo->AdvancedSearch->SearchValue = @$filter["x_thirdPartyNo"];
-		$this->thirdPartyNo->AdvancedSearch->SearchOperator = @$filter["z_thirdPartyNo"];
-		$this->thirdPartyNo->AdvancedSearch->SearchCondition = @$filter["v_thirdPartyNo"];
-		$this->thirdPartyNo->AdvancedSearch->SearchValue2 = @$filter["y_thirdPartyNo"];
-		$this->thirdPartyNo->AdvancedSearch->SearchOperator2 = @$filter["w_thirdPartyNo"];
-		$this->thirdPartyNo->AdvancedSearch->save();
-
-		// Field coo
-		$this->coo->AdvancedSearch->SearchValue = @$filter["x_coo"];
-		$this->coo->AdvancedSearch->SearchOperator = @$filter["z_coo"];
-		$this->coo->AdvancedSearch->SearchCondition = @$filter["v_coo"];
-		$this->coo->AdvancedSearch->SearchValue2 = @$filter["y_coo"];
-		$this->coo->AdvancedSearch->SearchOperator2 = @$filter["w_coo"];
-		$this->coo->AdvancedSearch->save();
+		// Field expirydt
+		$this->expirydt->AdvancedSearch->SearchValue = @$filter["x_expirydt"];
+		$this->expirydt->AdvancedSearch->SearchOperator = @$filter["z_expirydt"];
+		$this->expirydt->AdvancedSearch->SearchCondition = @$filter["v_expirydt"];
+		$this->expirydt->AdvancedSearch->SearchValue2 = @$filter["y_expirydt"];
+		$this->expirydt->AdvancedSearch->SearchOperator2 = @$filter["w_expirydt"];
+		$this->expirydt->AdvancedSearch->save();
 
 		// Field systrade
 		$this->systrade->AdvancedSearch->SearchValue = @$filter["x_systrade"];
@@ -1627,14 +1608,6 @@ class datasheets_list extends datasheets
 		$this->systrade->AdvancedSearch->SearchValue2 = @$filter["y_systrade"];
 		$this->systrade->AdvancedSearch->SearchOperator2 = @$filter["w_systrade"];
 		$this->systrade->AdvancedSearch->save();
-
-		// Field nativeFiles
-		$this->nativeFiles->AdvancedSearch->SearchValue = @$filter["x_nativeFiles"];
-		$this->nativeFiles->AdvancedSearch->SearchOperator = @$filter["z_nativeFiles"];
-		$this->nativeFiles->AdvancedSearch->SearchCondition = @$filter["v_nativeFiles"];
-		$this->nativeFiles->AdvancedSearch->SearchValue2 = @$filter["y_nativeFiles"];
-		$this->nativeFiles->AdvancedSearch->SearchOperator2 = @$filter["w_nativeFiles"];
-		$this->nativeFiles->AdvancedSearch->save();
 		$this->BasicSearch->setKeyword(@$filter[TABLE_BASIC_SEARCH]);
 		$this->BasicSearch->setType(@$filter[TABLE_BASIC_SEARCH_TYPE]);
 	}
@@ -1647,13 +1620,10 @@ class datasheets_list extends datasheets
 		if (!$Security->canSearch())
 			return "";
 		$this->buildSearchSql($where, $this->partno, $default, FALSE); // partno
-		$this->buildSearchSql($where, $this->manufacturer, $default, FALSE); // manufacturer
 		$this->buildSearchSql($where, $this->tittle, $default, FALSE); // tittle
-		$this->buildSearchSql($where, $this->cddno, $default, FALSE); // cddno
-		$this->buildSearchSql($where, $this->thirdPartyNo, $default, FALSE); // thirdPartyNo
-		$this->buildSearchSql($where, $this->coo, $default, FALSE); // coo
+		$this->buildSearchSql($where, $this->cddissue, $default, FALSE); // cddissue
+		$this->buildSearchSql($where, $this->expirydt, $default, FALSE); // expirydt
 		$this->buildSearchSql($where, $this->systrade, $default, FALSE); // systrade
-		$this->buildSearchSql($where, $this->nativeFiles, $default, FALSE); // nativeFiles
 
 		// Set up search parm
 		if (!$default && $where <> "" && in_array($this->Command, array("", "reset", "resetall"))) {
@@ -1661,13 +1631,10 @@ class datasheets_list extends datasheets
 		}
 		if (!$default && $this->Command == "search") {
 			$this->partno->AdvancedSearch->save(); // partno
-			$this->manufacturer->AdvancedSearch->save(); // manufacturer
 			$this->tittle->AdvancedSearch->save(); // tittle
-			$this->cddno->AdvancedSearch->save(); // cddno
-			$this->thirdPartyNo->AdvancedSearch->save(); // thirdPartyNo
-			$this->coo->AdvancedSearch->save(); // coo
+			$this->cddissue->AdvancedSearch->save(); // cddissue
+			$this->expirydt->AdvancedSearch->save(); // expirydt
 			$this->systrade->AdvancedSearch->save(); // systrade
-			$this->nativeFiles->AdvancedSearch->save(); // nativeFiles
 		}
 		return $where;
 	}
@@ -1853,19 +1820,13 @@ class datasheets_list extends datasheets
 			return TRUE;
 		if ($this->partno->AdvancedSearch->issetSession())
 			return TRUE;
-		if ($this->manufacturer->AdvancedSearch->issetSession())
-			return TRUE;
 		if ($this->tittle->AdvancedSearch->issetSession())
 			return TRUE;
-		if ($this->cddno->AdvancedSearch->issetSession())
+		if ($this->cddissue->AdvancedSearch->issetSession())
 			return TRUE;
-		if ($this->thirdPartyNo->AdvancedSearch->issetSession())
-			return TRUE;
-		if ($this->coo->AdvancedSearch->issetSession())
+		if ($this->expirydt->AdvancedSearch->issetSession())
 			return TRUE;
 		if ($this->systrade->AdvancedSearch->issetSession())
-			return TRUE;
-		if ($this->nativeFiles->AdvancedSearch->issetSession())
 			return TRUE;
 		return FALSE;
 	}
@@ -1901,13 +1862,10 @@ class datasheets_list extends datasheets
 	protected function resetAdvancedSearchParms()
 	{
 		$this->partno->AdvancedSearch->unsetSession();
-		$this->manufacturer->AdvancedSearch->unsetSession();
 		$this->tittle->AdvancedSearch->unsetSession();
-		$this->cddno->AdvancedSearch->unsetSession();
-		$this->thirdPartyNo->AdvancedSearch->unsetSession();
-		$this->coo->AdvancedSearch->unsetSession();
+		$this->cddissue->AdvancedSearch->unsetSession();
+		$this->expirydt->AdvancedSearch->unsetSession();
 		$this->systrade->AdvancedSearch->unsetSession();
-		$this->nativeFiles->AdvancedSearch->unsetSession();
 	}
 
 	// Restore all search parameters
@@ -1920,13 +1878,10 @@ class datasheets_list extends datasheets
 
 		// Restore advanced search values
 		$this->partno->AdvancedSearch->load();
-		$this->manufacturer->AdvancedSearch->load();
 		$this->tittle->AdvancedSearch->load();
-		$this->cddno->AdvancedSearch->load();
-		$this->thirdPartyNo->AdvancedSearch->load();
-		$this->coo->AdvancedSearch->load();
+		$this->cddissue->AdvancedSearch->load();
+		$this->expirydt->AdvancedSearch->load();
 		$this->systrade->AdvancedSearch->load();
-		$this->nativeFiles->AdvancedSearch->load();
 	}
 
 	// Set up sort parameters
@@ -2549,13 +2504,6 @@ class datasheets_list extends datasheets
 			$this->Command = "search";
 		$this->partno->AdvancedSearch->setSearchOperator(Get("z_partno", ""));
 
-		// manufacturer
-		if (!$this->isAddOrEdit())
-			$this->manufacturer->AdvancedSearch->setSearchValue(Get("x_manufacturer", Get("manufacturer", "")));
-		if ($this->manufacturer->AdvancedSearch->SearchValue <> "" && $this->Command == "")
-			$this->Command = "search";
-		$this->manufacturer->AdvancedSearch->setSearchOperator(Get("z_manufacturer", ""));
-
 		// tittle
 		if (!$this->isAddOrEdit())
 			$this->tittle->AdvancedSearch->setSearchValue(Get("x_tittle", Get("tittle", "")));
@@ -2563,26 +2511,24 @@ class datasheets_list extends datasheets
 			$this->Command = "search";
 		$this->tittle->AdvancedSearch->setSearchOperator(Get("z_tittle", ""));
 
-		// cddno
+		// cddissue
 		if (!$this->isAddOrEdit())
-			$this->cddno->AdvancedSearch->setSearchValue(Get("x_cddno", Get("cddno", "")));
-		if ($this->cddno->AdvancedSearch->SearchValue <> "" && $this->Command == "")
+			$this->cddissue->AdvancedSearch->setSearchValue(Get("x_cddissue", Get("cddissue", "")));
+		if ($this->cddissue->AdvancedSearch->SearchValue <> "" && $this->Command == "")
 			$this->Command = "search";
-		$this->cddno->AdvancedSearch->setSearchOperator(Get("z_cddno", ""));
+		$this->cddissue->AdvancedSearch->setSearchOperator(Get("z_cddissue", ""));
 
-		// thirdPartyNo
+		// expirydt
 		if (!$this->isAddOrEdit())
-			$this->thirdPartyNo->AdvancedSearch->setSearchValue(Get("x_thirdPartyNo", Get("thirdPartyNo", "")));
-		if ($this->thirdPartyNo->AdvancedSearch->SearchValue <> "" && $this->Command == "")
+			$this->expirydt->AdvancedSearch->setSearchValue(Get("x_expirydt", Get("expirydt", "")));
+		if ($this->expirydt->AdvancedSearch->SearchValue <> "" && $this->Command == "")
 			$this->Command = "search";
-		$this->thirdPartyNo->AdvancedSearch->setSearchOperator(Get("z_thirdPartyNo", ""));
-
-		// coo
-		if (!$this->isAddOrEdit())
-			$this->coo->AdvancedSearch->setSearchValue(Get("x_coo", Get("coo", "")));
-		if ($this->coo->AdvancedSearch->SearchValue <> "" && $this->Command == "")
+		$this->expirydt->AdvancedSearch->setSearchOperator(Get("z_expirydt", ""));
+		$this->expirydt->AdvancedSearch->setSearchCondition(Get("v_expirydt", ""));
+		$this->expirydt->AdvancedSearch->setSearchValue2(Get("y_expirydt", ""));
+		if ($this->expirydt->AdvancedSearch->SearchValue2 <> "" && $this->Command == "")
 			$this->Command = "search";
-		$this->coo->AdvancedSearch->setSearchOperator(Get("z_coo", ""));
+		$this->expirydt->AdvancedSearch->setSearchOperator2(Get("w_expirydt", ""));
 
 		// systrade
 		if (!$this->isAddOrEdit())
@@ -2590,13 +2536,6 @@ class datasheets_list extends datasheets
 		if ($this->systrade->AdvancedSearch->SearchValue <> "" && $this->Command == "")
 			$this->Command = "search";
 		$this->systrade->AdvancedSearch->setSearchOperator(Get("z_systrade", ""));
-
-		// nativeFiles
-		if (!$this->isAddOrEdit())
-			$this->nativeFiles->AdvancedSearch->setSearchValue(Get("x_nativeFiles", Get("nativeFiles", "")));
-		if ($this->nativeFiles->AdvancedSearch->SearchValue <> "" && $this->Command == "")
-			$this->Command = "search";
-		$this->nativeFiles->AdvancedSearch->setSearchOperator(Get("z_nativeFiles", ""));
 	}
 
 	// Load form values
@@ -3177,8 +3116,6 @@ class datasheets_list extends datasheets
 			$this->nativeFiles->LinkCustomAttributes = "";
 			$this->nativeFiles->HrefValue = "";
 			$this->nativeFiles->TooltipValue = "";
-			if (!$this->isExport())
-				$this->nativeFiles->ViewValue = $this->highlightValue($this->nativeFiles);
 		} elseif ($this->RowType == ROWTYPE_ADD) { // Add row
 
 			// partno
@@ -3566,6 +3503,10 @@ class datasheets_list extends datasheets
 			$this->expirydt->EditAttrs["class"] = "form-control";
 			$this->expirydt->EditCustomAttributes = "";
 			$this->expirydt->EditValue = HtmlEncode(FormatDateTime(UnFormatDateTime($this->expirydt->AdvancedSearch->SearchValue, 5), 5));
+			$this->expirydt->PlaceHolder = RemoveHtml($this->expirydt->caption());
+			$this->expirydt->EditAttrs["class"] = "form-control";
+			$this->expirydt->EditCustomAttributes = "";
+			$this->expirydt->EditValue2 = HtmlEncode(FormatDateTime(UnFormatDateTime($this->expirydt->AdvancedSearch->SearchValue2, 5), 5));
 			$this->expirydt->PlaceHolder = RemoveHtml($this->expirydt->caption());
 
 			// coo
@@ -4098,13 +4039,10 @@ class datasheets_list extends datasheets
 	public function loadAdvancedSearch()
 	{
 		$this->partno->AdvancedSearch->load();
-		$this->manufacturer->AdvancedSearch->load();
 		$this->tittle->AdvancedSearch->load();
-		$this->cddno->AdvancedSearch->load();
-		$this->thirdPartyNo->AdvancedSearch->load();
-		$this->coo->AdvancedSearch->load();
+		$this->cddissue->AdvancedSearch->load();
+		$this->expirydt->AdvancedSearch->load();
 		$this->systrade->AdvancedSearch->load();
-		$this->nativeFiles->AdvancedSearch->load();
 	}
 
 	// Get export HTML tag

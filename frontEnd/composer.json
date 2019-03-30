@@ -1,13 +1,13 @@
 {
-	"name": "vishal/submittal",
+	"name": "PHPMaker",
 	"version": "2019",
 	"type": "project",
-	"homepage": "http://vishal.net.in",
+	"homepage": "http://www.hkvstore.com/phpmaker",
 	"license": "Commercial",
 	"authors": [
 		{
-			"name": "vishal",
-			"email": "vishal.k@firelinkqatar.com"
+			"name": "e.World Technology Limited",
+			"email": "sales@hkvstore.com"
 		}
 	],
 	"require": {
