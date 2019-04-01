@@ -30,7 +30,7 @@ WITH (oids = false);
 -- Structure for table countryOfOrigin (OID = 53340) : 
 --
 CREATE TABLE public."countryOfOrigin" (
-    "cooId" smallint NOT NULL,
+    "cooId" serial NOT NULL,
     "countryName" varchar NOT NULL,
     "countryIsoCode" varchar NOT NULL,
     username varchar
@@ -125,12 +125,6 @@ ALTER TABLE ONLY manufacturer
     ADD CONSTRAINT "manufacturer_manufacturerName_key"
     UNIQUE ("manufacturerName");
 --
--- Definition for index countryOfOrigin_pkey (OID = 53347) : 
---
-ALTER TABLE ONLY "countryOfOrigin"
-    ADD CONSTRAINT "countryOfOrigin_pkey"
-    PRIMARY KEY ("cooId");
---
 -- Definition for index countryOfOrigin_countryName_key (OID = 53349) : 
 --
 ALTER TABLE ONLY "countryOfOrigin"
@@ -190,6 +184,12 @@ ALTER TABLE ONLY userlevels
 ALTER TABLE ONLY userlevelpermissions
     ADD CONSTRAINT pkuserlevelpermissions
     PRIMARY KEY (userlevelid, tablename);
+--
+-- Definition for index countryOfOrigin_pkey (OID = 53507) : 
+--
+ALTER TABLE ONLY "countryOfOrigin"
+    ADD CONSTRAINT "countryOfOrigin_pkey"
+    PRIMARY KEY ("cooId");
 --
 -- Comments
 --
