@@ -71,7 +71,7 @@ class countryOfOrigin extends DbTable
 		$this->BasicSearch = new BasicSearch($this->TableVar);
 
 		// cooId
-		$this->cooId = new DbField('countryOfOrigin', 'countryOfOrigin', 'x_cooId', 'cooId', '"cooId"', 'CAST("cooId" AS varchar(255))', 2, -1, FALSE, '"cooId"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'NO');
+		$this->cooId = new DbField('countryOfOrigin', 'countryOfOrigin', 'x_cooId', 'cooId', '"cooId"', 'CAST("cooId" AS varchar(255))', 3, -1, FALSE, '"cooId"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'NO');
 		$this->cooId->IsAutoIncrement = TRUE; // Autoincrement field
 		$this->cooId->IsPrimaryKey = TRUE; // Primary key field
 		$this->cooId->Nullable = FALSE; // NOT NULL field
