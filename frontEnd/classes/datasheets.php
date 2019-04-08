@@ -79,10 +79,10 @@ class datasheets extends DbTable
 		$this->ExportWordPageOrientation = "portrait"; // Page orientation (PHPWord only)
 		$this->ExportWordColumnWidth = NULL; // Cell width (PHPWord only)
 		$this->DetailAdd = FALSE; // Allow detail add
-		$this->DetailEdit = TRUE; // Allow detail edit
-		$this->DetailView = TRUE; // Allow detail view
+		$this->DetailEdit = FALSE; // Allow detail edit
+		$this->DetailView = FALSE; // Allow detail view
 		$this->ShowMultipleDetails = FALSE; // Show multiple details
-		$this->GridAddRowCount = 5;
+		$this->GridAddRowCount = 8;
 		$this->AllowAddDeleteRow = TRUE; // Allow add/delete row
 		$this->UserIDAllowSecurity = 0; // User ID Allow
 		$this->BasicSearch = new BasicSearch($this->TableVar);
@@ -2090,13 +2090,15 @@ class datasheets extends DbTable
 		$suffix_file = rand(99999,10000);
 	if(isset($rsnew["dataSheetFile"]) == TRUE )
 	 	{
-		$rsnew["dataSheetFile"] = $rsold["partno"]."-".$suffix_file.".pdf";
+
+	//	$rsnew["dataSheetFile"] = $rsold["partno"]."-".$suffix_file.".pdf";
 		}
 
 		// formating CDD File
 	if((isset($rsnew["cddFile"]) == TRUE) && ($rsold["cddno"] !== $rsnew["cddno"]))
 	{
-			$rsnew["cddFile"] = $rsnew["cddno"]."-CDD-".$suffix_file.".pdf";
+
+	//		$rsnew["cddFile"] = $rsnew["cddno"]."-CDD-".$suffix_file.".pdf";
 	 	}elseif((isset($rsnew["cddFile"]) == TRUE) && ($rsold["cddno"] == $rsnew["cddno"]))
 			{
 			$this->setFailureMessage("Error !! , <b> Keyin Civil Defence File Name</b> to new number and <br> <b> re-upload the File. </b>");
@@ -2115,14 +2117,15 @@ class datasheets extends DbTable
 	 	{
 
 	 		//need to check if the third party update happens only after 
-	 			$rsnew["thirdPartyFile"] = $rsnew["thirdPartyNo"]."-UL-".$suffix_file.".pdf";
+	// 			$rsnew["thirdPartyFile"] = $rsnew["thirdPartyNo"]."-UL-".$suffix_file.".pdf";
+
 	}elseif((isset($rsnew["thirdPartyFile"]) == TRUE) && ($rsold["thirdPartyNo"] == $rsnew["thirdPartyNo"]))
 		{
 			$this->setFailureMessage("Error !! <b>Keyin Third Party certificate No</b> to new number and <br> <b> re-upload the File. </b>");
 			return FALSE;
 		}else
 			{
-				if($rsold["thirdPartyNo"] !== $rsnew["thirdPartyNo"])
+				if((isset($rsnew["thirdPartyFile"]) == TRUE) && $rsold["thirdPartyNo"] !== $rsnew["thirdPartyNo"])
 					{
 						$this->setFailureMessage("Third Party certificate No Updated but not <b> Third Party Certificate File </b>");
 						return FALSE;
@@ -2132,7 +2135,8 @@ class datasheets extends DbTable
 		//formating cover file
 		if(isset($rsnew["cover"]))
 	 	{
-			$rsnew["cover"] = $rsold["partno"]."-COVER-".$suffix_file.".pdf";
+
+	//		$rsnew["cover"] = $rsold["partno"]."-COVER-".$suffix_file.".pdf";
 		}
 	return TRUE;
 	}

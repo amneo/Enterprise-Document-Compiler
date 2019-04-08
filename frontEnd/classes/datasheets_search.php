@@ -622,7 +622,7 @@ class datasheets_search extends datasheets
 		$this->partno->setVisibility();
 		$this->dataSheetFile->Visible = FALSE;
 		$this->manufacturer->Visible = FALSE;
-		$this->cddFile->Visible = FALSE;
+		$this->cddFile->setVisibility();
 		$this->thirdPartyFile->Visible = FALSE;
 		$this->tittle->setVisibility();
 		$this->cover->Visible = FALSE;
@@ -708,6 +708,7 @@ class datasheets_search extends datasheets
 	{
 		$srchUrl = "";
 		$this->buildSearchUrl($srchUrl, $this->partno); // partno
+		$this->buildSearchUrl($srchUrl, $this->cddFile); // cddFile
 		$this->buildSearchUrl($srchUrl, $this->tittle); // tittle
 		$this->buildSearchUrl($srchUrl, $this->cddissue); // cddissue
 		$this->buildSearchUrl($srchUrl, $this->expirydt); // expirydt
@@ -789,6 +790,11 @@ class datasheets_search extends datasheets
 		if (!$this->isAddOrEdit())
 			$this->partno->AdvancedSearch->setSearchValue($CurrentForm->getValue("x_partno"));
 		$this->partno->AdvancedSearch->setSearchOperator($CurrentForm->getValue("z_partno"));
+
+		// cddFile
+		if (!$this->isAddOrEdit())
+			$this->cddFile->AdvancedSearch->setSearchValue($CurrentForm->getValue("x_cddFile"));
+		$this->cddFile->AdvancedSearch->setSearchOperator($CurrentForm->getValue("z_cddFile"));
 
 		// tittle
 		if (!$this->isAddOrEdit())
@@ -882,6 +888,14 @@ class datasheets_search extends datasheets
 			}
 			$this->manufacturer->ViewCustomAttributes = "";
 
+			// cddFile
+			if (!EmptyValue($this->cddFile->Upload->DbValue)) {
+				$this->cddFile->ViewValue = $this->cddFile->Upload->DbValue;
+			} else {
+				$this->cddFile->ViewValue = "";
+			}
+			$this->cddFile->ViewCustomAttributes = "";
+
 			// tittle
 			$this->tittle->ViewValue = $this->tittle->CurrentValue;
 			$this->tittle->ViewValue = strtoupper($this->tittle->ViewValue);
@@ -970,6 +984,18 @@ class datasheets_search extends datasheets
 			}
 			$this->partno->TooltipValue = "";
 
+			// cddFile
+			$this->cddFile->LinkCustomAttributes = "";
+			if (!EmptyValue($this->cddFile->Upload->DbValue)) {
+				$this->cddFile->HrefValue = GetFileUploadUrl($this->cddFile, $this->cddFile->Upload->DbValue); // Add prefix/suffix
+				$this->cddFile->LinkAttrs["target"] = "_blank"; // Add target
+				if ($this->isExport()) $this->cddFile->HrefValue = FullUrl($this->cddFile->HrefValue, "href");
+			} else {
+				$this->cddFile->HrefValue = "";
+			}
+			$this->cddFile->ExportHrefValue = $this->cddFile->UploadPath . $this->cddFile->Upload->DbValue;
+			$this->cddFile->TooltipValue = "";
+
 			// tittle
 			$this->tittle->LinkCustomAttributes = "";
 			$this->tittle->HrefValue = "";
@@ -998,6 +1024,14 @@ class datasheets_search extends datasheets
 				$this->partno->AdvancedSearch->SearchValue = HtmlDecode($this->partno->AdvancedSearch->SearchValue);
 			$this->partno->EditValue = HtmlEncode($this->partno->AdvancedSearch->SearchValue);
 			$this->partno->PlaceHolder = RemoveHtml($this->partno->caption());
+
+			// cddFile
+			$this->cddFile->EditAttrs["class"] = "form-control";
+			$this->cddFile->EditCustomAttributes = "";
+			if (REMOVE_XSS)
+				$this->cddFile->AdvancedSearch->SearchValue = HtmlDecode($this->cddFile->AdvancedSearch->SearchValue);
+			$this->cddFile->EditValue = HtmlEncode($this->cddFile->AdvancedSearch->SearchValue);
+			$this->cddFile->PlaceHolder = RemoveHtml($this->cddFile->caption());
 
 			// tittle
 			$this->tittle->EditAttrs["class"] = "form-control";
@@ -1070,6 +1104,7 @@ class datasheets_search extends datasheets
 	public function loadAdvancedSearch()
 	{
 		$this->partno->AdvancedSearch->load();
+		$this->cddFile->AdvancedSearch->load();
 		$this->tittle->AdvancedSearch->load();
 		$this->cddissue->AdvancedSearch->load();
 		$this->expirydt->AdvancedSearch->load();

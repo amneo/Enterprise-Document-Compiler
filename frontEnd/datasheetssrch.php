@@ -127,6 +127,32 @@ $datasheets_search->showMessage();
 	</tr>
 <?php } ?>
 <?php } ?>
+<?php if ($datasheets->cddFile->Visible) { // cddFile ?>
+<?php if ($datasheets_search->IsMobileOrModal) { ?>
+	<div id="r_cddFile" class="form-group row">
+		<label class="<?php echo $datasheets_search->LeftColumnClass ?>"><span id="elh_datasheets_cddFile"><?php echo $datasheets->cddFile->caption() ?></span>
+		<span class="ew-search-operator"><?php echo $Language->phrase("LIKE") ?><input type="hidden" name="z_cddFile" id="z_cddFile" value="LIKE"></span>
+		</label>
+		<div class="<?php echo $datasheets_search->RightColumnClass ?>"><div<?php echo $datasheets->cddFile->cellAttributes() ?>>
+			<span id="el_datasheets_cddFile">
+<input type="text" data-table="datasheets" data-field="x_cddFile" name="x_cddFile" id="x_cddFile" size="30" placeholder="<?php echo HtmlEncode($datasheets->cddFile->getPlaceHolder()) ?>" value="<?php echo $datasheets->cddFile->EditValue ?>"<?php echo $datasheets->cddFile->editAttributes() ?>>
+</span>
+		</div></div>
+	</div>
+<?php } else { ?>
+	<tr id="r_cddFile">
+		<td class="<?php echo $datasheets_search->TableLeftColumnClass ?>"><span id="elh_datasheets_cddFile"><?php echo $datasheets->cddFile->caption() ?></span></td>
+		<td class="w-col-1"><span class="ew-search-operator"><?php echo $Language->phrase("LIKE") ?><input type="hidden" name="z_cddFile" id="z_cddFile" value="LIKE"></span></td>
+		<td<?php echo $datasheets->cddFile->cellAttributes() ?>>
+			<div class="text-nowrap">
+				<span id="el_datasheets_cddFile">
+<input type="text" data-table="datasheets" data-field="x_cddFile" name="x_cddFile" id="x_cddFile" size="30" placeholder="<?php echo HtmlEncode($datasheets->cddFile->getPlaceHolder()) ?>" value="<?php echo $datasheets->cddFile->EditValue ?>"<?php echo $datasheets->cddFile->editAttributes() ?>>
+</span>
+			</div>
+		</td>
+	</tr>
+<?php } ?>
+<?php } ?>
 <?php if ($datasheets->tittle->Visible) { // tittle ?>
 <?php if ($datasheets_search->IsMobileOrModal) { ?>
 	<div id="r_tittle" class="form-group row">

@@ -630,7 +630,7 @@ class manufacturer_list extends manufacturer
 	public $ListActions; // List actions
 	public $SelectedCount = 0;
 	public $SelectedIndex = 0;
-	public $DisplayRecs = 10;
+	public $DisplayRecs = 20;
 	public $StartRec;
 	public $StopRec;
 	public $TotalRecs = 0;
@@ -880,7 +880,7 @@ class manufacturer_list extends manufacturer
 		if ($this->Command <> "json" && $this->getRecordsPerPage() <> "") {
 			$this->DisplayRecs = $this->getRecordsPerPage(); // Restore from Session
 		} else {
-			$this->DisplayRecs = 10; // Load default
+			$this->DisplayRecs = 20; // Load default
 		}
 
 		// Load Sorting Order

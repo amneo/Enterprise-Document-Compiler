@@ -56,9 +56,6 @@ fdatasheetslist.validate = function() {
 	for (var i = startcnt; i <= rowcnt; i++) {
 		var infix = ($k[0]) ? String(i) : "";
 		$fobj.data("rowindex", infix);
-		var checkrow = (gridinsert) ? !this.emptyRow(infix) : true;
-		if (checkrow) {
-			addcnt++;
 		<?php if ($datasheets_list->partno->Required) { ?>
 			elm = this.getElements("x" + infix + "_partno");
 			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -129,30 +126,7 @@ fdatasheetslist.validate = function() {
 			// Fire Form_CustomValidate event
 			if (!this.Form_CustomValidate(fobj))
 				return false;
-		} // End Grid Add checking
 	}
-	if (gridinsert && addcnt == 0) { // No row added
-		ew.alert(ew.language.phrase("NoAddRecord"));
-		return false;
-	}
-	return true;
-}
-
-// Check empty row
-fdatasheetslist.emptyRow = function(infix) {
-	var fobj = this._form;
-	if (ew.valueChanged(fobj, infix, "partno", false)) return false;
-	if (ew.valueChanged(fobj, infix, "manufacturer", false)) return false;
-	if (ew.valueChanged(fobj, infix, "tittle", false)) return false;
-	if (ew.valueChanged(fobj, infix, "cddissue", false)) return false;
-	if (ew.valueChanged(fobj, infix, "cddno", false)) return false;
-	if (ew.valueChanged(fobj, infix, "thirdPartyNo", false)) return false;
-	if (ew.valueChanged(fobj, infix, "expirydt", false)) return false;
-	if (ew.valueChanged(fobj, infix, "coo", false)) return false;
-	if (ew.valueChanged(fobj, infix, "hssCode", false)) return false;
-	if (ew.valueChanged(fobj, infix, "systrade", false)) return false;
-	if (ew.valueChanged(fobj, infix, "isdatasheet", true)) return false;
-	if (ew.valueChanged(fobj, infix, "nativeFiles", false)) return false;
 	return true;
 }
 
@@ -187,6 +161,9 @@ fdatasheetslistsrch.validate = function(fobj) {
 		return true; // Ignore validation
 	fobj = fobj || this._form;
 	var infix = "";
+	elm = this.getElements("x" + infix + "_expirydt");
+	if (elm && !ew.checkDate(elm.value))
+		return this.onError(elm, "<?php echo JsEncode($datasheets->expirydt->errorMessage()) ?>");
 
 	// Fire Form_CustomValidate event
 	if (!this.Form_CustomValidate(fobj))
@@ -276,6 +253,32 @@ $datasheets_list->renderRow();
 <?php } ?>
 </div>
 <div id="xsr_3" class="ew-row d-sm-flex">
+<?php if ($datasheets->expirydt->Visible) { // expirydt ?>
+	<div id="xsc_expirydt" class="ew-cell form-group">
+		<label for="x_expirydt" class="ew-search-caption ew-label"><?php echo $datasheets->expirydt->caption() ?></label>
+		<span class="ew-search-operator"><?php echo $Language->phrase(">=") ?><input type="hidden" name="z_expirydt" id="z_expirydt" value=">="></span>
+		<span class="ew-search-field">
+<input type="text" data-table="datasheets" data-field="x_expirydt" data-format="5" name="x_expirydt" id="x_expirydt" placeholder="<?php echo HtmlEncode($datasheets->expirydt->getPlaceHolder()) ?>" value="<?php echo $datasheets->expirydt->EditValue ?>"<?php echo $datasheets->expirydt->editAttributes() ?>>
+<?php if (!$datasheets->expirydt->ReadOnly && !$datasheets->expirydt->Disabled && !isset($datasheets->expirydt->EditAttrs["readonly"]) && !isset($datasheets->expirydt->EditAttrs["disabled"])) { ?>
+<script>
+ew.createDateTimePicker("fdatasheetslistsrch", "x_expirydt", {"ignoreReadonly":true,"useCurrent":false,"format":5});
+</script>
+<?php } ?>
+</span>
+		<span class="ew-search-cond btw0_expirydt"><div class="form-check form-check-inline"><input class="form-check-input" type="radio" id="v_expirydt_1" name="v_expirydt" value="AND"<?php if ($datasheets->expirydt->AdvancedSearch->SearchCondition <> "OR") echo " checked" ?>><label class="form-check-label" for="v_expirydt_1"><?php echo $Language->phrase("AND") ?></label></div><div class="form-check form-check-inline"><input class="form-check-input" type="radio" id="v_expirydt_2" name="v_expirydt" value="OR"<?php if ($datasheets->expirydt->AdvancedSearch->SearchCondition == "OR") echo " checked" ?>><label class="form-check-label" for="v_expirydt_2"><?php echo $Language->phrase("OR") ?></label></div></span>
+		<span class="ew-search-operator btw0_expirydt"><?php echo $Language->phrase("<=") ?><input type="hidden" name="w_expirydt" id="w_expirydt" value="<="></span>
+		<span class="ew-search-field">
+<input type="text" data-table="datasheets" data-field="x_expirydt" data-format="5" name="y_expirydt" id="y_expirydt" placeholder="<?php echo HtmlEncode($datasheets->expirydt->getPlaceHolder()) ?>" value="<?php echo $datasheets->expirydt->EditValue2 ?>"<?php echo $datasheets->expirydt->editAttributes() ?>>
+<?php if (!$datasheets->expirydt->ReadOnly && !$datasheets->expirydt->Disabled && !isset($datasheets->expirydt->EditAttrs["readonly"]) && !isset($datasheets->expirydt->EditAttrs["disabled"])) { ?>
+<script>
+ew.createDateTimePicker("fdatasheetslistsrch", "y_expirydt", {"ignoreReadonly":true,"useCurrent":false,"format":5});
+</script>
+<?php } ?>
+</span>
+	</div>
+<?php } ?>
+</div>
+<div id="xsr_4" class="ew-row d-sm-flex">
 	<div class="ew-quick-search input-group">
 		<input type="text" name="<?php echo TABLE_BASIC_SEARCH ?>" id="<?php echo TABLE_BASIC_SEARCH ?>" class="form-control" value="<?php echo HtmlEncode($datasheets_list->BasicSearch->getKeyword()) ?>" placeholder="<?php echo HtmlEncode($Language->phrase("Search")) ?>">
 		<input type="hidden" name="<?php echo TABLE_BASIC_SEARCH_TYPE ?>" id="<?php echo TABLE_BASIC_SEARCH_TYPE ?>" value="<?php echo HtmlEncode($datasheets_list->BasicSearch->getType()) ?>">
@@ -714,24 +717,10 @@ if ($datasheets_list->Recordset && !$datasheets_list->Recordset->EOF) {
 $datasheets->RowType = ROWTYPE_AGGREGATEINIT;
 $datasheets->resetAttributes();
 $datasheets_list->renderRow();
-if ($datasheets->isGridAdd())
-	$datasheets_list->RowIndex = 0;
-if ($datasheets->isGridEdit())
-	$datasheets_list->RowIndex = 0;
 while ($datasheets_list->RecCnt < $datasheets_list->StopRec) {
 	$datasheets_list->RecCnt++;
 	if ($datasheets_list->RecCnt >= $datasheets_list->StartRec) {
 		$datasheets_list->RowCnt++;
-		if ($datasheets->isGridAdd() || $datasheets->isGridEdit() || $datasheets->isConfirm()) {
-			$datasheets_list->RowIndex++;
-			$CurrentForm->Index = $datasheets_list->RowIndex;
-			if ($CurrentForm->hasValue($datasheets_list->FormActionName) && $datasheets_list->EventCancelled)
-				$datasheets_list->RowAction = strval($CurrentForm->getValue($datasheets_list->FormActionName));
-			elseif ($datasheets->isGridAdd())
-				$datasheets_list->RowAction = "insert";
-			else
-				$datasheets_list->RowAction = "";
-		}
 
 		// Set up key count
 		$datasheets_list->KeyCount = $datasheets_list->RowIndex;
@@ -745,22 +734,6 @@ while ($datasheets_list->RecCnt < $datasheets_list->StopRec) {
 			$datasheets_list->loadRowValues($datasheets_list->Recordset); // Load row values
 		}
 		$datasheets->RowType = ROWTYPE_VIEW; // Render view
-		if ($datasheets->isGridAdd()) // Grid add
-			$datasheets->RowType = ROWTYPE_ADD; // Render add
-		if ($datasheets->isGridAdd() && $datasheets->EventCancelled && !$CurrentForm->hasValue("k_blankrow")) // Insert failed
-			$datasheets_list->restoreCurrentRowFormValues($datasheets_list->RowIndex); // Restore form values
-		if ($datasheets->isGridEdit()) { // Grid edit
-			if ($datasheets->EventCancelled)
-				$datasheets_list->restoreCurrentRowFormValues($datasheets_list->RowIndex); // Restore form values
-			if ($datasheets_list->RowAction == "insert")
-				$datasheets->RowType = ROWTYPE_ADD; // Render add
-			else
-				$datasheets->RowType = ROWTYPE_EDIT; // Render edit
-		}
-		if ($datasheets->isGridEdit() && ($datasheets->RowType == ROWTYPE_EDIT || $datasheets->RowType == ROWTYPE_ADD) && $datasheets->EventCancelled) // Update failed
-			$datasheets_list->restoreCurrentRowFormValues($datasheets_list->RowIndex); // Restore form values
-		if ($datasheets->RowType == ROWTYPE_EDIT) // Edit row
-			$datasheets_list->EditRowCnt++;
 
 		// Set up row id / data-rowindex
 		$datasheets->RowAttrs = array_merge($datasheets->RowAttrs, array('data-rowindex'=>$datasheets_list->RowCnt, 'id'=>'r' . $datasheets_list->RowCnt . '_datasheets', 'data-rowtype'=>$datasheets->RowType));
@@ -770,9 +743,6 @@ while ($datasheets_list->RecCnt < $datasheets_list->StopRec) {
 
 		// Render list options
 		$datasheets_list->renderListOptions();
-
-		// Skip delete row / empty row for confirm page
-		if ($datasheets_list->RowAction <> "delete" && $datasheets_list->RowAction <> "insertdelete" && !($datasheets_list->RowAction == "insert" && $datasheets->isConfirm() && $datasheets_list->emptyRow())) {
 ?>
 	<tr<?php echo $datasheets->rowAttributes() ?>>
 <?php
@@ -782,25 +752,6 @@ $datasheets_list->ListOptions->render("body", "left", $datasheets_list->RowCnt);
 ?>
 	<?php if ($datasheets->partno->Visible) { // partno ?>
 		<td data-name="partno"<?php echo $datasheets->partno->cellAttributes() ?>>
-<?php if ($datasheets->RowType == ROWTYPE_ADD) { // Add record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_partno" class="form-group datasheets_partno">
-<input type="text" data-table="datasheets" data-field="x_partno" name="x<?php echo $datasheets_list->RowIndex ?>_partno" id="x<?php echo $datasheets_list->RowIndex ?>_partno" size="30" placeholder="<?php echo HtmlEncode($datasheets->partno->getPlaceHolder()) ?>" value="<?php echo $datasheets->partno->EditValue ?>"<?php echo $datasheets->partno->editAttributes() ?>>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_partno" name="o<?php echo $datasheets_list->RowIndex ?>_partno" id="o<?php echo $datasheets_list->RowIndex ?>_partno" value="<?php echo HtmlEncode($datasheets->partno->OldValue) ?>">
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_EDIT) { // Edit record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_partno" class="form-group datasheets_partno">
-<span<?php echo $datasheets->partno->viewAttributes() ?>>
-<?php if ((!EmptyString($datasheets->partno->EditValue)) && $datasheets->partno->linkAttributes() <> "") { ?>
-<a<?php echo $datasheets->partno->linkAttributes() ?>><input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->partno->EditValue) ?>"></a>
-<?php } else { ?>
-<input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->partno->EditValue) ?>">
-<?php } ?>
-</span>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_partno" name="x<?php echo $datasheets_list->RowIndex ?>_partno" id="x<?php echo $datasheets_list->RowIndex ?>_partno" value="<?php echo HtmlEncode($datasheets->partno->CurrentValue) ?>">
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_VIEW) { // View record ?>
 <span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_partno" class="datasheets_partno">
 <span<?php echo $datasheets->partno->viewAttributes() ?>>
 <?php if ((!EmptyString($datasheets->partno->getViewValue())) && $datasheets->partno->linkAttributes() <> "") { ?>
@@ -810,143 +761,34 @@ $datasheets_list->ListOptions->render("body", "left", $datasheets_list->RowCnt);
 <?php } ?>
 </span>
 </span>
-<?php } ?>
 </td>
 	<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_ADD) { // Add record ?>
-<input type="hidden" data-table="datasheets" data-field="x_partid" name="x<?php echo $datasheets_list->RowIndex ?>_partid" id="x<?php echo $datasheets_list->RowIndex ?>_partid" value="<?php echo HtmlEncode($datasheets->partid->CurrentValue) ?>">
-<input type="hidden" data-table="datasheets" data-field="x_partid" name="o<?php echo $datasheets_list->RowIndex ?>_partid" id="o<?php echo $datasheets_list->RowIndex ?>_partid" value="<?php echo HtmlEncode($datasheets->partid->OldValue) ?>">
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_EDIT || $datasheets->CurrentMode == "edit") { ?>
-<input type="hidden" data-table="datasheets" data-field="x_partid" name="x<?php echo $datasheets_list->RowIndex ?>_partid" id="x<?php echo $datasheets_list->RowIndex ?>_partid" value="<?php echo HtmlEncode($datasheets->partid->CurrentValue) ?>">
-<?php } ?>
 	<?php if ($datasheets->manufacturer->Visible) { // manufacturer ?>
 		<td data-name="manufacturer"<?php echo $datasheets->manufacturer->cellAttributes() ?>>
-<?php if ($datasheets->RowType == ROWTYPE_ADD) { // Add record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_manufacturer" class="form-group datasheets_manufacturer">
-<?php
-$wrkonchange = "" . trim(@$datasheets->manufacturer->EditAttrs["onchange"]);
-if (trim($wrkonchange) <> "") $wrkonchange = " onchange=\"" . JsEncode($wrkonchange) . "\"";
-$datasheets->manufacturer->EditAttrs["onchange"] = "";
-?>
-<span id="as_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" class="text-nowrap" style="z-index: <?php echo (9000 - $datasheets_list->RowCnt * 10) ?>">
-	<div class="input-group mb-3">
-		<input type="text" class="form-control" name="sv_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" id="sv_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" value="<?php echo RemoveHtml($datasheets->manufacturer->EditValue) ?>" size="30" placeholder="<?php echo HtmlEncode($datasheets->manufacturer->getPlaceHolder()) ?>" data-placeholder="<?php echo HtmlEncode($datasheets->manufacturer->getPlaceHolder()) ?>"<?php echo $datasheets->manufacturer->editAttributes() ?>>
-		<div class="input-group-append">
-			<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($datasheets->manufacturer->caption()), $Language->phrase("LookupLink", TRUE))) ?>" onclick="ew.modalLookupShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_manufacturer',m:0,n:10,srch:false});" class="ew-lookup-btn btn btn-default"<?php echo (($datasheets->manufacturer->ReadOnly || $datasheets->manufacturer->Disabled) ? " disabled" : "")?>><i class="fa fa-search ew-icon"></i></button>
-<?php if (AllowAdd(CurrentProjectID() . "manufacturer") && !$datasheets->manufacturer->ReadOnly) { ?>
-<button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $datasheets->manufacturer->caption() ?>" data-title="<?php echo $datasheets->manufacturer->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_manufacturer',url:'manufactureraddopt.php'});"><i class="fa fa-plus ew-icon"></i></button>
-<?php } ?>
-		</div>
-	</div>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_manufacturer" data-multiple="0" data-lookup="1" data-value-separator="<?php echo $datasheets->manufacturer->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_manufacturer" id="x<?php echo $datasheets_list->RowIndex ?>_manufacturer" value="<?php echo HtmlEncode($datasheets->manufacturer->CurrentValue) ?>"<?php echo $wrkonchange ?>>
-<script>
-fdatasheetslist.createAutoSuggest({"id":"x<?php echo $datasheets_list->RowIndex ?>_manufacturer","forceSelect":true});
-</script>
-<?php echo $datasheets->manufacturer->Lookup->getParamTag("p_x" . $datasheets_list->RowIndex . "_manufacturer") ?>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_manufacturer" name="o<?php echo $datasheets_list->RowIndex ?>_manufacturer" id="o<?php echo $datasheets_list->RowIndex ?>_manufacturer" value="<?php echo HtmlEncode($datasheets->manufacturer->OldValue) ?>">
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_EDIT) { // Edit record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_manufacturer" class="form-group datasheets_manufacturer">
-<?php
-$wrkonchange = "" . trim(@$datasheets->manufacturer->EditAttrs["onchange"]);
-if (trim($wrkonchange) <> "") $wrkonchange = " onchange=\"" . JsEncode($wrkonchange) . "\"";
-$datasheets->manufacturer->EditAttrs["onchange"] = "";
-?>
-<span id="as_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" class="text-nowrap" style="z-index: <?php echo (9000 - $datasheets_list->RowCnt * 10) ?>">
-	<div class="input-group mb-3">
-		<input type="text" class="form-control" name="sv_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" id="sv_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" value="<?php echo RemoveHtml($datasheets->manufacturer->EditValue) ?>" size="30" placeholder="<?php echo HtmlEncode($datasheets->manufacturer->getPlaceHolder()) ?>" data-placeholder="<?php echo HtmlEncode($datasheets->manufacturer->getPlaceHolder()) ?>"<?php echo $datasheets->manufacturer->editAttributes() ?>>
-		<div class="input-group-append">
-			<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($datasheets->manufacturer->caption()), $Language->phrase("LookupLink", TRUE))) ?>" onclick="ew.modalLookupShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_manufacturer',m:0,n:10,srch:false});" class="ew-lookup-btn btn btn-default"<?php echo (($datasheets->manufacturer->ReadOnly || $datasheets->manufacturer->Disabled) ? " disabled" : "")?>><i class="fa fa-search ew-icon"></i></button>
-<?php if (AllowAdd(CurrentProjectID() . "manufacturer") && !$datasheets->manufacturer->ReadOnly) { ?>
-<button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $datasheets->manufacturer->caption() ?>" data-title="<?php echo $datasheets->manufacturer->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_manufacturer',url:'manufactureraddopt.php'});"><i class="fa fa-plus ew-icon"></i></button>
-<?php } ?>
-		</div>
-	</div>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_manufacturer" data-multiple="0" data-lookup="1" data-value-separator="<?php echo $datasheets->manufacturer->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_manufacturer" id="x<?php echo $datasheets_list->RowIndex ?>_manufacturer" value="<?php echo HtmlEncode($datasheets->manufacturer->CurrentValue) ?>"<?php echo $wrkonchange ?>>
-<script>
-fdatasheetslist.createAutoSuggest({"id":"x<?php echo $datasheets_list->RowIndex ?>_manufacturer","forceSelect":true});
-</script>
-<?php echo $datasheets->manufacturer->Lookup->getParamTag("p_x" . $datasheets_list->RowIndex . "_manufacturer") ?>
-</span>
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_VIEW) { // View record ?>
 <span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_manufacturer" class="datasheets_manufacturer">
 <span<?php echo $datasheets->manufacturer->viewAttributes() ?>>
 <?php echo $datasheets->manufacturer->getViewValue() ?></span>
 </span>
-<?php } ?>
 </td>
 	<?php } ?>
 	<?php if ($datasheets->tittle->Visible) { // tittle ?>
 		<td data-name="tittle"<?php echo $datasheets->tittle->cellAttributes() ?>>
-<?php if ($datasheets->RowType == ROWTYPE_ADD) { // Add record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_tittle" class="form-group datasheets_tittle">
-<textarea data-table="datasheets" data-field="x_tittle" name="x<?php echo $datasheets_list->RowIndex ?>_tittle" id="x<?php echo $datasheets_list->RowIndex ?>_tittle" cols="35" rows="4" placeholder="<?php echo HtmlEncode($datasheets->tittle->getPlaceHolder()) ?>"<?php echo $datasheets->tittle->editAttributes() ?>><?php echo $datasheets->tittle->EditValue ?></textarea>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_tittle" name="o<?php echo $datasheets_list->RowIndex ?>_tittle" id="o<?php echo $datasheets_list->RowIndex ?>_tittle" value="<?php echo HtmlEncode($datasheets->tittle->OldValue) ?>">
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_EDIT) { // Edit record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_tittle" class="form-group datasheets_tittle">
-<textarea data-table="datasheets" data-field="x_tittle" name="x<?php echo $datasheets_list->RowIndex ?>_tittle" id="x<?php echo $datasheets_list->RowIndex ?>_tittle" cols="35" rows="4" placeholder="<?php echo HtmlEncode($datasheets->tittle->getPlaceHolder()) ?>"<?php echo $datasheets->tittle->editAttributes() ?>><?php echo $datasheets->tittle->EditValue ?></textarea>
-</span>
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_VIEW) { // View record ?>
 <span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_tittle" class="datasheets_tittle">
 <span<?php echo $datasheets->tittle->viewAttributes() ?>>
 <?php echo $datasheets->tittle->getViewValue() ?></span>
 </span>
-<?php } ?>
 </td>
 	<?php } ?>
 	<?php if ($datasheets->cddissue->Visible) { // cddissue ?>
 		<td data-name="cddissue"<?php echo $datasheets->cddissue->cellAttributes() ?>>
-<?php if ($datasheets->RowType == ROWTYPE_ADD) { // Add record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_cddissue" class="form-group datasheets_cddissue">
-<input type="text" data-table="datasheets" data-field="x_cddissue" data-format="5" name="x<?php echo $datasheets_list->RowIndex ?>_cddissue" id="x<?php echo $datasheets_list->RowIndex ?>_cddissue" placeholder="<?php echo HtmlEncode($datasheets->cddissue->getPlaceHolder()) ?>" value="<?php echo $datasheets->cddissue->EditValue ?>"<?php echo $datasheets->cddissue->editAttributes() ?>>
-<?php if (!$datasheets->cddissue->ReadOnly && !$datasheets->cddissue->Disabled && !isset($datasheets->cddissue->EditAttrs["readonly"]) && !isset($datasheets->cddissue->EditAttrs["disabled"])) { ?>
-<script>
-ew.createDateTimePicker("fdatasheetslist", "x<?php echo $datasheets_list->RowIndex ?>_cddissue", {"ignoreReadonly":true,"useCurrent":false,"format":5});
-</script>
-<?php } ?>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_cddissue" name="o<?php echo $datasheets_list->RowIndex ?>_cddissue" id="o<?php echo $datasheets_list->RowIndex ?>_cddissue" value="<?php echo HtmlEncode($datasheets->cddissue->OldValue) ?>">
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_EDIT) { // Edit record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_cddissue" class="form-group datasheets_cddissue">
-<input type="text" data-table="datasheets" data-field="x_cddissue" data-format="5" name="x<?php echo $datasheets_list->RowIndex ?>_cddissue" id="x<?php echo $datasheets_list->RowIndex ?>_cddissue" placeholder="<?php echo HtmlEncode($datasheets->cddissue->getPlaceHolder()) ?>" value="<?php echo $datasheets->cddissue->EditValue ?>"<?php echo $datasheets->cddissue->editAttributes() ?>>
-<?php if (!$datasheets->cddissue->ReadOnly && !$datasheets->cddissue->Disabled && !isset($datasheets->cddissue->EditAttrs["readonly"]) && !isset($datasheets->cddissue->EditAttrs["disabled"])) { ?>
-<script>
-ew.createDateTimePicker("fdatasheetslist", "x<?php echo $datasheets_list->RowIndex ?>_cddissue", {"ignoreReadonly":true,"useCurrent":false,"format":5});
-</script>
-<?php } ?>
-</span>
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_VIEW) { // View record ?>
 <span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_cddissue" class="datasheets_cddissue">
 <span<?php echo $datasheets->cddissue->viewAttributes() ?>>
 <?php echo $datasheets->cddissue->getViewValue() ?></span>
 </span>
-<?php } ?>
 </td>
 	<?php } ?>
 	<?php if ($datasheets->cddno->Visible) { // cddno ?>
 		<td data-name="cddno"<?php echo $datasheets->cddno->cellAttributes() ?>>
-<?php if ($datasheets->RowType == ROWTYPE_ADD) { // Add record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_cddno" class="form-group datasheets_cddno">
-<input type="text" data-table="datasheets" data-field="x_cddno" name="x<?php echo $datasheets_list->RowIndex ?>_cddno" id="x<?php echo $datasheets_list->RowIndex ?>_cddno" size="30" placeholder="<?php echo HtmlEncode($datasheets->cddno->getPlaceHolder()) ?>" value="<?php echo $datasheets->cddno->EditValue ?>"<?php echo $datasheets->cddno->editAttributes() ?>>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_cddno" name="o<?php echo $datasheets_list->RowIndex ?>_cddno" id="o<?php echo $datasheets_list->RowIndex ?>_cddno" value="<?php echo HtmlEncode($datasheets->cddno->OldValue) ?>">
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_EDIT) { // Edit record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_cddno" class="form-group datasheets_cddno">
-<input type="text" data-table="datasheets" data-field="x_cddno" name="x<?php echo $datasheets_list->RowIndex ?>_cddno" id="x<?php echo $datasheets_list->RowIndex ?>_cddno" size="30" placeholder="<?php echo HtmlEncode($datasheets->cddno->getPlaceHolder()) ?>" value="<?php echo $datasheets->cddno->EditValue ?>"<?php echo $datasheets->cddno->editAttributes() ?>>
-</span>
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_VIEW) { // View record ?>
 <span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_cddno" class="datasheets_cddno">
 <span<?php echo $datasheets->cddno->viewAttributes() ?>>
 <?php if ((!EmptyString($datasheets->cddno->getViewValue())) && $datasheets->cddno->linkAttributes() <> "") { ?>
@@ -956,23 +798,10 @@ ew.createDateTimePicker("fdatasheetslist", "x<?php echo $datasheets_list->RowInd
 <?php } ?>
 </span>
 </span>
-<?php } ?>
 </td>
 	<?php } ?>
 	<?php if ($datasheets->thirdPartyNo->Visible) { // thirdPartyNo ?>
 		<td data-name="thirdPartyNo"<?php echo $datasheets->thirdPartyNo->cellAttributes() ?>>
-<?php if ($datasheets->RowType == ROWTYPE_ADD) { // Add record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_thirdPartyNo" class="form-group datasheets_thirdPartyNo">
-<input type="text" data-table="datasheets" data-field="x_thirdPartyNo" name="x<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" id="x<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" size="30" placeholder="<?php echo HtmlEncode($datasheets->thirdPartyNo->getPlaceHolder()) ?>" value="<?php echo $datasheets->thirdPartyNo->EditValue ?>"<?php echo $datasheets->thirdPartyNo->editAttributes() ?>>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_thirdPartyNo" name="o<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" id="o<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" value="<?php echo HtmlEncode($datasheets->thirdPartyNo->OldValue) ?>">
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_EDIT) { // Edit record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_thirdPartyNo" class="form-group datasheets_thirdPartyNo">
-<input type="text" data-table="datasheets" data-field="x_thirdPartyNo" name="x<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" id="x<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" size="30" placeholder="<?php echo HtmlEncode($datasheets->thirdPartyNo->getPlaceHolder()) ?>" value="<?php echo $datasheets->thirdPartyNo->EditValue ?>"<?php echo $datasheets->thirdPartyNo->editAttributes() ?>>
-</span>
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_VIEW) { // View record ?>
 <span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_thirdPartyNo" class="datasheets_thirdPartyNo">
 <span<?php echo $datasheets->thirdPartyNo->viewAttributes() ?>>
 <?php if ((!EmptyString($datasheets->thirdPartyNo->getViewValue())) && $datasheets->thirdPartyNo->linkAttributes() <> "") { ?>
@@ -982,213 +811,54 @@ ew.createDateTimePicker("fdatasheetslist", "x<?php echo $datasheets_list->RowInd
 <?php } ?>
 </span>
 </span>
-<?php } ?>
 </td>
 	<?php } ?>
 	<?php if ($datasheets->expirydt->Visible) { // expirydt ?>
 		<td data-name="expirydt"<?php echo $datasheets->expirydt->cellAttributes() ?>>
-<?php if ($datasheets->RowType == ROWTYPE_ADD) { // Add record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_expirydt" class="form-group datasheets_expirydt">
-<input type="text" data-table="datasheets" data-field="x_expirydt" data-format="5" name="x<?php echo $datasheets_list->RowIndex ?>_expirydt" id="x<?php echo $datasheets_list->RowIndex ?>_expirydt" placeholder="<?php echo HtmlEncode($datasheets->expirydt->getPlaceHolder()) ?>" value="<?php echo $datasheets->expirydt->EditValue ?>"<?php echo $datasheets->expirydt->editAttributes() ?>>
-<?php if (!$datasheets->expirydt->ReadOnly && !$datasheets->expirydt->Disabled && !isset($datasheets->expirydt->EditAttrs["readonly"]) && !isset($datasheets->expirydt->EditAttrs["disabled"])) { ?>
-<script>
-ew.createDateTimePicker("fdatasheetslist", "x<?php echo $datasheets_list->RowIndex ?>_expirydt", {"ignoreReadonly":true,"useCurrent":false,"format":5});
-</script>
-<?php } ?>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_expirydt" name="o<?php echo $datasheets_list->RowIndex ?>_expirydt" id="o<?php echo $datasheets_list->RowIndex ?>_expirydt" value="<?php echo HtmlEncode($datasheets->expirydt->OldValue) ?>">
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_EDIT) { // Edit record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_expirydt" class="form-group datasheets_expirydt">
-<input type="text" data-table="datasheets" data-field="x_expirydt" data-format="5" name="x<?php echo $datasheets_list->RowIndex ?>_expirydt" id="x<?php echo $datasheets_list->RowIndex ?>_expirydt" placeholder="<?php echo HtmlEncode($datasheets->expirydt->getPlaceHolder()) ?>" value="<?php echo $datasheets->expirydt->EditValue ?>"<?php echo $datasheets->expirydt->editAttributes() ?>>
-<?php if (!$datasheets->expirydt->ReadOnly && !$datasheets->expirydt->Disabled && !isset($datasheets->expirydt->EditAttrs["readonly"]) && !isset($datasheets->expirydt->EditAttrs["disabled"])) { ?>
-<script>
-ew.createDateTimePicker("fdatasheetslist", "x<?php echo $datasheets_list->RowIndex ?>_expirydt", {"ignoreReadonly":true,"useCurrent":false,"format":5});
-</script>
-<?php } ?>
-</span>
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_VIEW) { // View record ?>
 <span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_expirydt" class="datasheets_expirydt">
 <span<?php echo $datasheets->expirydt->viewAttributes() ?>>
 <?php echo $datasheets->expirydt->getViewValue() ?></span>
 </span>
-<?php } ?>
 </td>
 	<?php } ?>
 	<?php if ($datasheets->coo->Visible) { // coo ?>
 		<td data-name="coo"<?php echo $datasheets->coo->cellAttributes() ?>>
-<?php if ($datasheets->RowType == ROWTYPE_ADD) { // Add record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_coo" class="form-group datasheets_coo">
-<?php
-$wrkonchange = "" . trim(@$datasheets->coo->EditAttrs["onchange"]);
-if (trim($wrkonchange) <> "") $wrkonchange = " onchange=\"" . JsEncode($wrkonchange) . "\"";
-$datasheets->coo->EditAttrs["onchange"] = "";
-?>
-<span id="as_x<?php echo $datasheets_list->RowIndex ?>_coo" class="text-nowrap" style="z-index: <?php echo (9000 - $datasheets_list->RowCnt * 10) ?>">
-	<div class="input-group">
-		<input type="text" class="form-control" name="sv_x<?php echo $datasheets_list->RowIndex ?>_coo" id="sv_x<?php echo $datasheets_list->RowIndex ?>_coo" value="<?php echo RemoveHtml($datasheets->coo->EditValue) ?>" size="30" placeholder="<?php echo HtmlEncode($datasheets->coo->getPlaceHolder()) ?>" data-placeholder="<?php echo HtmlEncode($datasheets->coo->getPlaceHolder()) ?>"<?php echo $datasheets->coo->editAttributes() ?>>
-<?php if (AllowAdd(CurrentProjectID() . "countryOfOrigin") && !$datasheets->coo->ReadOnly) { ?>
-<div class="input-group-append"><button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x<?php echo $datasheets_list->RowIndex ?>_coo" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $datasheets->coo->caption() ?>" data-title="<?php echo $datasheets->coo->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_coo',url:'countryOfOriginaddopt.php'});"><i class="fa fa-plus ew-icon"></i></button></div>
-<?php } ?>
-	</div>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_coo" data-value-separator="<?php echo $datasheets->coo->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_coo" id="x<?php echo $datasheets_list->RowIndex ?>_coo" value="<?php echo HtmlEncode($datasheets->coo->CurrentValue) ?>"<?php echo $wrkonchange ?>>
-<script>
-fdatasheetslist.createAutoSuggest({"id":"x<?php echo $datasheets_list->RowIndex ?>_coo","forceSelect":false});
-</script>
-<?php echo $datasheets->coo->Lookup->getParamTag("p_x" . $datasheets_list->RowIndex . "_coo") ?>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_coo" name="o<?php echo $datasheets_list->RowIndex ?>_coo" id="o<?php echo $datasheets_list->RowIndex ?>_coo" value="<?php echo HtmlEncode($datasheets->coo->OldValue) ?>">
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_EDIT) { // Edit record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_coo" class="form-group datasheets_coo">
-<?php
-$wrkonchange = "" . trim(@$datasheets->coo->EditAttrs["onchange"]);
-if (trim($wrkonchange) <> "") $wrkonchange = " onchange=\"" . JsEncode($wrkonchange) . "\"";
-$datasheets->coo->EditAttrs["onchange"] = "";
-?>
-<span id="as_x<?php echo $datasheets_list->RowIndex ?>_coo" class="text-nowrap" style="z-index: <?php echo (9000 - $datasheets_list->RowCnt * 10) ?>">
-	<div class="input-group">
-		<input type="text" class="form-control" name="sv_x<?php echo $datasheets_list->RowIndex ?>_coo" id="sv_x<?php echo $datasheets_list->RowIndex ?>_coo" value="<?php echo RemoveHtml($datasheets->coo->EditValue) ?>" size="30" placeholder="<?php echo HtmlEncode($datasheets->coo->getPlaceHolder()) ?>" data-placeholder="<?php echo HtmlEncode($datasheets->coo->getPlaceHolder()) ?>"<?php echo $datasheets->coo->editAttributes() ?>>
-<?php if (AllowAdd(CurrentProjectID() . "countryOfOrigin") && !$datasheets->coo->ReadOnly) { ?>
-<div class="input-group-append"><button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x<?php echo $datasheets_list->RowIndex ?>_coo" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $datasheets->coo->caption() ?>" data-title="<?php echo $datasheets->coo->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_coo',url:'countryOfOriginaddopt.php'});"><i class="fa fa-plus ew-icon"></i></button></div>
-<?php } ?>
-	</div>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_coo" data-value-separator="<?php echo $datasheets->coo->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_coo" id="x<?php echo $datasheets_list->RowIndex ?>_coo" value="<?php echo HtmlEncode($datasheets->coo->CurrentValue) ?>"<?php echo $wrkonchange ?>>
-<script>
-fdatasheetslist.createAutoSuggest({"id":"x<?php echo $datasheets_list->RowIndex ?>_coo","forceSelect":false});
-</script>
-<?php echo $datasheets->coo->Lookup->getParamTag("p_x" . $datasheets_list->RowIndex . "_coo") ?>
-</span>
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_VIEW) { // View record ?>
 <span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_coo" class="datasheets_coo">
 <span<?php echo $datasheets->coo->viewAttributes() ?>>
 <?php echo $datasheets->coo->getViewValue() ?></span>
 </span>
-<?php } ?>
 </td>
 	<?php } ?>
 	<?php if ($datasheets->hssCode->Visible) { // hssCode ?>
 		<td data-name="hssCode"<?php echo $datasheets->hssCode->cellAttributes() ?>>
-<?php if ($datasheets->RowType == ROWTYPE_ADD) { // Add record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_hssCode" class="form-group datasheets_hssCode">
-<input type="text" data-table="datasheets" data-field="x_hssCode" name="x<?php echo $datasheets_list->RowIndex ?>_hssCode" id="x<?php echo $datasheets_list->RowIndex ?>_hssCode" size="30" placeholder="<?php echo HtmlEncode($datasheets->hssCode->getPlaceHolder()) ?>" value="<?php echo $datasheets->hssCode->EditValue ?>"<?php echo $datasheets->hssCode->editAttributes() ?>>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_hssCode" name="o<?php echo $datasheets_list->RowIndex ?>_hssCode" id="o<?php echo $datasheets_list->RowIndex ?>_hssCode" value="<?php echo HtmlEncode($datasheets->hssCode->OldValue) ?>">
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_EDIT) { // Edit record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_hssCode" class="form-group datasheets_hssCode">
-<input type="text" data-table="datasheets" data-field="x_hssCode" name="x<?php echo $datasheets_list->RowIndex ?>_hssCode" id="x<?php echo $datasheets_list->RowIndex ?>_hssCode" size="30" placeholder="<?php echo HtmlEncode($datasheets->hssCode->getPlaceHolder()) ?>" value="<?php echo $datasheets->hssCode->EditValue ?>"<?php echo $datasheets->hssCode->editAttributes() ?>>
-</span>
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_VIEW) { // View record ?>
 <span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_hssCode" class="datasheets_hssCode">
 <span<?php echo $datasheets->hssCode->viewAttributes() ?>>
 <?php echo $datasheets->hssCode->getViewValue() ?></span>
 </span>
-<?php } ?>
 </td>
 	<?php } ?>
 	<?php if ($datasheets->systrade->Visible) { // systrade ?>
 		<td data-name="systrade"<?php echo $datasheets->systrade->cellAttributes() ?>>
-<?php if ($datasheets->RowType == ROWTYPE_ADD) { // Add record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_systrade" class="form-group datasheets_systrade">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($datasheets->systrade->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $datasheets->systrade->ViewValue ?></button>
-		<div id="dsl_x<?php echo $datasheets_list->RowIndex ?>_systrade" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $datasheets->systrade->radioButtonListHtml(TRUE, "x{$datasheets_list->RowIndex}_systrade") ?>
-			</div><!-- /.ew-items ##-->
-		</div><!-- /.dropdown-menu ##-->
-		<div id="tp_x<?php echo $datasheets_list->RowIndex ?>_systrade" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_systrade" data-value-separator="<?php echo $datasheets->systrade->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_systrade" id="x<?php echo $datasheets_list->RowIndex ?>_systrade" value="{value}"<?php echo $datasheets->systrade->editAttributes() ?>></div>
-	</div><!-- /.btn-group ##-->
-	<?php if (!$datasheets->systrade->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fa fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list ##-->
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_systrade" name="o<?php echo $datasheets_list->RowIndex ?>_systrade" id="o<?php echo $datasheets_list->RowIndex ?>_systrade" value="<?php echo HtmlEncode($datasheets->systrade->OldValue) ?>">
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_EDIT) { // Edit record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_systrade" class="form-group datasheets_systrade">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($datasheets->systrade->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $datasheets->systrade->ViewValue ?></button>
-		<div id="dsl_x<?php echo $datasheets_list->RowIndex ?>_systrade" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $datasheets->systrade->radioButtonListHtml(TRUE, "x{$datasheets_list->RowIndex}_systrade") ?>
-			</div><!-- /.ew-items ##-->
-		</div><!-- /.dropdown-menu ##-->
-		<div id="tp_x<?php echo $datasheets_list->RowIndex ?>_systrade" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_systrade" data-value-separator="<?php echo $datasheets->systrade->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_systrade" id="x<?php echo $datasheets_list->RowIndex ?>_systrade" value="{value}"<?php echo $datasheets->systrade->editAttributes() ?>></div>
-	</div><!-- /.btn-group ##-->
-	<?php if (!$datasheets->systrade->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fa fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list ##-->
-</span>
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_VIEW) { // View record ?>
 <span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_systrade" class="datasheets_systrade">
 <span<?php echo $datasheets->systrade->viewAttributes() ?>>
 <?php echo $datasheets->systrade->getViewValue() ?></span>
 </span>
-<?php } ?>
 </td>
 	<?php } ?>
 	<?php if ($datasheets->isdatasheet->Visible) { // isdatasheet ?>
 		<td data-name="isdatasheet"<?php echo $datasheets->isdatasheet->cellAttributes() ?>>
-<?php if ($datasheets->RowType == ROWTYPE_ADD) { // Add record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_isdatasheet" class="form-group datasheets_isdatasheet">
-<div id="tp_x<?php echo $datasheets_list->RowIndex ?>_isdatasheet" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_isdatasheet" data-value-separator="<?php echo $datasheets->isdatasheet->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_isdatasheet" id="x<?php echo $datasheets_list->RowIndex ?>_isdatasheet" value="{value}"<?php echo $datasheets->isdatasheet->editAttributes() ?>></div>
-<div id="dsl_x<?php echo $datasheets_list->RowIndex ?>_isdatasheet" data-repeatcolumn="5" class="ew-item-list d-none"><div>
-<?php echo $datasheets->isdatasheet->radioButtonListHtml(FALSE, "x{$datasheets_list->RowIndex}_isdatasheet") ?>
-</div></div>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_isdatasheet" name="o<?php echo $datasheets_list->RowIndex ?>_isdatasheet" id="o<?php echo $datasheets_list->RowIndex ?>_isdatasheet" value="<?php echo HtmlEncode($datasheets->isdatasheet->OldValue) ?>">
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_EDIT) { // Edit record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_isdatasheet" class="form-group datasheets_isdatasheet">
-<div id="tp_x<?php echo $datasheets_list->RowIndex ?>_isdatasheet" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_isdatasheet" data-value-separator="<?php echo $datasheets->isdatasheet->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_isdatasheet" id="x<?php echo $datasheets_list->RowIndex ?>_isdatasheet" value="{value}"<?php echo $datasheets->isdatasheet->editAttributes() ?>></div>
-<div id="dsl_x<?php echo $datasheets_list->RowIndex ?>_isdatasheet" data-repeatcolumn="5" class="ew-item-list d-none"><div>
-<?php echo $datasheets->isdatasheet->radioButtonListHtml(FALSE, "x{$datasheets_list->RowIndex}_isdatasheet") ?>
-</div></div>
-</span>
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_VIEW) { // View record ?>
 <span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_isdatasheet" class="datasheets_isdatasheet">
 <span<?php echo $datasheets->isdatasheet->viewAttributes() ?>>
 <?php echo $datasheets->isdatasheet->getViewValue() ?></span>
 </span>
-<?php } ?>
 </td>
 	<?php } ?>
 	<?php if ($datasheets->nativeFiles->Visible) { // nativeFiles ?>
 		<td data-name="nativeFiles"<?php echo $datasheets->nativeFiles->cellAttributes() ?>>
-<?php if ($datasheets->RowType == ROWTYPE_ADD) { // Add record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_nativeFiles" class="form-group datasheets_nativeFiles">
-<textarea data-table="datasheets" data-field="x_nativeFiles" name="x<?php echo $datasheets_list->RowIndex ?>_nativeFiles" id="x<?php echo $datasheets_list->RowIndex ?>_nativeFiles" cols="35" rows="4" placeholder="<?php echo HtmlEncode($datasheets->nativeFiles->getPlaceHolder()) ?>"<?php echo $datasheets->nativeFiles->editAttributes() ?>><?php echo $datasheets->nativeFiles->EditValue ?></textarea>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_nativeFiles" name="o<?php echo $datasheets_list->RowIndex ?>_nativeFiles" id="o<?php echo $datasheets_list->RowIndex ?>_nativeFiles" value="<?php echo HtmlEncode($datasheets->nativeFiles->OldValue) ?>">
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_EDIT) { // Edit record ?>
-<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_nativeFiles" class="form-group datasheets_nativeFiles">
-<textarea data-table="datasheets" data-field="x_nativeFiles" name="x<?php echo $datasheets_list->RowIndex ?>_nativeFiles" id="x<?php echo $datasheets_list->RowIndex ?>_nativeFiles" cols="35" rows="4" placeholder="<?php echo HtmlEncode($datasheets->nativeFiles->getPlaceHolder()) ?>"<?php echo $datasheets->nativeFiles->editAttributes() ?>><?php echo $datasheets->nativeFiles->EditValue ?></textarea>
-</span>
-<?php } ?>
-<?php if ($datasheets->RowType == ROWTYPE_VIEW) { // View record ?>
 <span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_nativeFiles" class="datasheets_nativeFiles">
 <span<?php echo $datasheets->nativeFiles->viewAttributes() ?>>
 <?php echo $datasheets->nativeFiles->getViewValue() ?></span>
 </span>
-<?php } ?>
 </td>
 	<?php } ?>
 <?php
@@ -1197,214 +867,10 @@ fdatasheetslist.createAutoSuggest({"id":"x<?php echo $datasheets_list->RowIndex 
 $datasheets_list->ListOptions->render("body", "right", $datasheets_list->RowCnt);
 ?>
 	</tr>
-<?php if ($datasheets->RowType == ROWTYPE_ADD || $datasheets->RowType == ROWTYPE_EDIT) { ?>
-<script>
-fdatasheetslist.updateLists(<?php echo $datasheets_list->RowIndex ?>);
-</script>
-<?php } ?>
 <?php
 	}
-	} // End delete row checking
 	if (!$datasheets->isGridAdd())
-		if (!$datasheets_list->Recordset->EOF)
-			$datasheets_list->Recordset->moveNext();
-}
-?>
-<?php
-	if ($datasheets->isGridAdd() || $datasheets->isGridEdit()) {
-		$datasheets_list->RowIndex = '$rowindex$';
-		$datasheets_list->loadRowValues();
-
-		// Set row properties
-		$datasheets->resetAttributes();
-		$datasheets->RowAttrs = array_merge($datasheets->RowAttrs, array('data-rowindex'=>$datasheets_list->RowIndex, 'id'=>'r0_datasheets', 'data-rowtype'=>ROWTYPE_ADD));
-		AppendClass($datasheets->RowAttrs["class"], "ew-template");
-		$datasheets->RowType = ROWTYPE_ADD;
-
-		// Render row
-		$datasheets_list->renderRow();
-
-		// Render list options
-		$datasheets_list->renderListOptions();
-		$datasheets_list->StartRowCnt = 0;
-?>
-	<tr<?php echo $datasheets->rowAttributes() ?>>
-<?php
-
-// Render list options (body, left)
-$datasheets_list->ListOptions->render("body", "left", $datasheets_list->RowIndex);
-?>
-	<?php if ($datasheets->partno->Visible) { // partno ?>
-		<td data-name="partno">
-<span id="el$rowindex$_datasheets_partno" class="form-group datasheets_partno">
-<input type="text" data-table="datasheets" data-field="x_partno" name="x<?php echo $datasheets_list->RowIndex ?>_partno" id="x<?php echo $datasheets_list->RowIndex ?>_partno" size="30" placeholder="<?php echo HtmlEncode($datasheets->partno->getPlaceHolder()) ?>" value="<?php echo $datasheets->partno->EditValue ?>"<?php echo $datasheets->partno->editAttributes() ?>>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_partno" name="o<?php echo $datasheets_list->RowIndex ?>_partno" id="o<?php echo $datasheets_list->RowIndex ?>_partno" value="<?php echo HtmlEncode($datasheets->partno->OldValue) ?>">
-</td>
-	<?php } ?>
-	<?php if ($datasheets->manufacturer->Visible) { // manufacturer ?>
-		<td data-name="manufacturer">
-<span id="el$rowindex$_datasheets_manufacturer" class="form-group datasheets_manufacturer">
-<?php
-$wrkonchange = "" . trim(@$datasheets->manufacturer->EditAttrs["onchange"]);
-if (trim($wrkonchange) <> "") $wrkonchange = " onchange=\"" . JsEncode($wrkonchange) . "\"";
-$datasheets->manufacturer->EditAttrs["onchange"] = "";
-?>
-<span id="as_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" class="text-nowrap" style="z-index: <?php echo (9000 - $datasheets_list->RowCnt * 10) ?>">
-	<div class="input-group mb-3">
-		<input type="text" class="form-control" name="sv_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" id="sv_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" value="<?php echo RemoveHtml($datasheets->manufacturer->EditValue) ?>" size="30" placeholder="<?php echo HtmlEncode($datasheets->manufacturer->getPlaceHolder()) ?>" data-placeholder="<?php echo HtmlEncode($datasheets->manufacturer->getPlaceHolder()) ?>"<?php echo $datasheets->manufacturer->editAttributes() ?>>
-		<div class="input-group-append">
-			<button type="button" title="<?php echo HtmlEncode(str_replace("%s", RemoveHtml($datasheets->manufacturer->caption()), $Language->phrase("LookupLink", TRUE))) ?>" onclick="ew.modalLookupShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_manufacturer',m:0,n:10,srch:false});" class="ew-lookup-btn btn btn-default"<?php echo (($datasheets->manufacturer->ReadOnly || $datasheets->manufacturer->Disabled) ? " disabled" : "")?>><i class="fa fa-search ew-icon"></i></button>
-<?php if (AllowAdd(CurrentProjectID() . "manufacturer") && !$datasheets->manufacturer->ReadOnly) { ?>
-<button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x<?php echo $datasheets_list->RowIndex ?>_manufacturer" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $datasheets->manufacturer->caption() ?>" data-title="<?php echo $datasheets->manufacturer->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_manufacturer',url:'manufactureraddopt.php'});"><i class="fa fa-plus ew-icon"></i></button>
-<?php } ?>
-		</div>
-	</div>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_manufacturer" data-multiple="0" data-lookup="1" data-value-separator="<?php echo $datasheets->manufacturer->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_manufacturer" id="x<?php echo $datasheets_list->RowIndex ?>_manufacturer" value="<?php echo HtmlEncode($datasheets->manufacturer->CurrentValue) ?>"<?php echo $wrkonchange ?>>
-<script>
-fdatasheetslist.createAutoSuggest({"id":"x<?php echo $datasheets_list->RowIndex ?>_manufacturer","forceSelect":true});
-</script>
-<?php echo $datasheets->manufacturer->Lookup->getParamTag("p_x" . $datasheets_list->RowIndex . "_manufacturer") ?>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_manufacturer" name="o<?php echo $datasheets_list->RowIndex ?>_manufacturer" id="o<?php echo $datasheets_list->RowIndex ?>_manufacturer" value="<?php echo HtmlEncode($datasheets->manufacturer->OldValue) ?>">
-</td>
-	<?php } ?>
-	<?php if ($datasheets->tittle->Visible) { // tittle ?>
-		<td data-name="tittle">
-<span id="el$rowindex$_datasheets_tittle" class="form-group datasheets_tittle">
-<textarea data-table="datasheets" data-field="x_tittle" name="x<?php echo $datasheets_list->RowIndex ?>_tittle" id="x<?php echo $datasheets_list->RowIndex ?>_tittle" cols="35" rows="4" placeholder="<?php echo HtmlEncode($datasheets->tittle->getPlaceHolder()) ?>"<?php echo $datasheets->tittle->editAttributes() ?>><?php echo $datasheets->tittle->EditValue ?></textarea>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_tittle" name="o<?php echo $datasheets_list->RowIndex ?>_tittle" id="o<?php echo $datasheets_list->RowIndex ?>_tittle" value="<?php echo HtmlEncode($datasheets->tittle->OldValue) ?>">
-</td>
-	<?php } ?>
-	<?php if ($datasheets->cddissue->Visible) { // cddissue ?>
-		<td data-name="cddissue">
-<span id="el$rowindex$_datasheets_cddissue" class="form-group datasheets_cddissue">
-<input type="text" data-table="datasheets" data-field="x_cddissue" data-format="5" name="x<?php echo $datasheets_list->RowIndex ?>_cddissue" id="x<?php echo $datasheets_list->RowIndex ?>_cddissue" placeholder="<?php echo HtmlEncode($datasheets->cddissue->getPlaceHolder()) ?>" value="<?php echo $datasheets->cddissue->EditValue ?>"<?php echo $datasheets->cddissue->editAttributes() ?>>
-<?php if (!$datasheets->cddissue->ReadOnly && !$datasheets->cddissue->Disabled && !isset($datasheets->cddissue->EditAttrs["readonly"]) && !isset($datasheets->cddissue->EditAttrs["disabled"])) { ?>
-<script>
-ew.createDateTimePicker("fdatasheetslist", "x<?php echo $datasheets_list->RowIndex ?>_cddissue", {"ignoreReadonly":true,"useCurrent":false,"format":5});
-</script>
-<?php } ?>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_cddissue" name="o<?php echo $datasheets_list->RowIndex ?>_cddissue" id="o<?php echo $datasheets_list->RowIndex ?>_cddissue" value="<?php echo HtmlEncode($datasheets->cddissue->OldValue) ?>">
-</td>
-	<?php } ?>
-	<?php if ($datasheets->cddno->Visible) { // cddno ?>
-		<td data-name="cddno">
-<span id="el$rowindex$_datasheets_cddno" class="form-group datasheets_cddno">
-<input type="text" data-table="datasheets" data-field="x_cddno" name="x<?php echo $datasheets_list->RowIndex ?>_cddno" id="x<?php echo $datasheets_list->RowIndex ?>_cddno" size="30" placeholder="<?php echo HtmlEncode($datasheets->cddno->getPlaceHolder()) ?>" value="<?php echo $datasheets->cddno->EditValue ?>"<?php echo $datasheets->cddno->editAttributes() ?>>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_cddno" name="o<?php echo $datasheets_list->RowIndex ?>_cddno" id="o<?php echo $datasheets_list->RowIndex ?>_cddno" value="<?php echo HtmlEncode($datasheets->cddno->OldValue) ?>">
-</td>
-	<?php } ?>
-	<?php if ($datasheets->thirdPartyNo->Visible) { // thirdPartyNo ?>
-		<td data-name="thirdPartyNo">
-<span id="el$rowindex$_datasheets_thirdPartyNo" class="form-group datasheets_thirdPartyNo">
-<input type="text" data-table="datasheets" data-field="x_thirdPartyNo" name="x<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" id="x<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" size="30" placeholder="<?php echo HtmlEncode($datasheets->thirdPartyNo->getPlaceHolder()) ?>" value="<?php echo $datasheets->thirdPartyNo->EditValue ?>"<?php echo $datasheets->thirdPartyNo->editAttributes() ?>>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_thirdPartyNo" name="o<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" id="o<?php echo $datasheets_list->RowIndex ?>_thirdPartyNo" value="<?php echo HtmlEncode($datasheets->thirdPartyNo->OldValue) ?>">
-</td>
-	<?php } ?>
-	<?php if ($datasheets->expirydt->Visible) { // expirydt ?>
-		<td data-name="expirydt">
-<span id="el$rowindex$_datasheets_expirydt" class="form-group datasheets_expirydt">
-<input type="text" data-table="datasheets" data-field="x_expirydt" data-format="5" name="x<?php echo $datasheets_list->RowIndex ?>_expirydt" id="x<?php echo $datasheets_list->RowIndex ?>_expirydt" placeholder="<?php echo HtmlEncode($datasheets->expirydt->getPlaceHolder()) ?>" value="<?php echo $datasheets->expirydt->EditValue ?>"<?php echo $datasheets->expirydt->editAttributes() ?>>
-<?php if (!$datasheets->expirydt->ReadOnly && !$datasheets->expirydt->Disabled && !isset($datasheets->expirydt->EditAttrs["readonly"]) && !isset($datasheets->expirydt->EditAttrs["disabled"])) { ?>
-<script>
-ew.createDateTimePicker("fdatasheetslist", "x<?php echo $datasheets_list->RowIndex ?>_expirydt", {"ignoreReadonly":true,"useCurrent":false,"format":5});
-</script>
-<?php } ?>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_expirydt" name="o<?php echo $datasheets_list->RowIndex ?>_expirydt" id="o<?php echo $datasheets_list->RowIndex ?>_expirydt" value="<?php echo HtmlEncode($datasheets->expirydt->OldValue) ?>">
-</td>
-	<?php } ?>
-	<?php if ($datasheets->coo->Visible) { // coo ?>
-		<td data-name="coo">
-<span id="el$rowindex$_datasheets_coo" class="form-group datasheets_coo">
-<?php
-$wrkonchange = "" . trim(@$datasheets->coo->EditAttrs["onchange"]);
-if (trim($wrkonchange) <> "") $wrkonchange = " onchange=\"" . JsEncode($wrkonchange) . "\"";
-$datasheets->coo->EditAttrs["onchange"] = "";
-?>
-<span id="as_x<?php echo $datasheets_list->RowIndex ?>_coo" class="text-nowrap" style="z-index: <?php echo (9000 - $datasheets_list->RowCnt * 10) ?>">
-	<div class="input-group">
-		<input type="text" class="form-control" name="sv_x<?php echo $datasheets_list->RowIndex ?>_coo" id="sv_x<?php echo $datasheets_list->RowIndex ?>_coo" value="<?php echo RemoveHtml($datasheets->coo->EditValue) ?>" size="30" placeholder="<?php echo HtmlEncode($datasheets->coo->getPlaceHolder()) ?>" data-placeholder="<?php echo HtmlEncode($datasheets->coo->getPlaceHolder()) ?>"<?php echo $datasheets->coo->editAttributes() ?>>
-<?php if (AllowAdd(CurrentProjectID() . "countryOfOrigin") && !$datasheets->coo->ReadOnly) { ?>
-<div class="input-group-append"><button type="button" class="btn btn-default ew-add-opt-btn" id="aol_x<?php echo $datasheets_list->RowIndex ?>_coo" title="<?php echo HtmlTitle($Language->phrase("AddLink")) . "&nbsp;" . $datasheets->coo->caption() ?>" data-title="<?php echo $datasheets->coo->caption() ?>" onclick="ew.addOptionDialogShow({lnk:this,el:'x<?php echo $datasheets_list->RowIndex ?>_coo',url:'countryOfOriginaddopt.php'});"><i class="fa fa-plus ew-icon"></i></button></div>
-<?php } ?>
-	</div>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_coo" data-value-separator="<?php echo $datasheets->coo->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_coo" id="x<?php echo $datasheets_list->RowIndex ?>_coo" value="<?php echo HtmlEncode($datasheets->coo->CurrentValue) ?>"<?php echo $wrkonchange ?>>
-<script>
-fdatasheetslist.createAutoSuggest({"id":"x<?php echo $datasheets_list->RowIndex ?>_coo","forceSelect":false});
-</script>
-<?php echo $datasheets->coo->Lookup->getParamTag("p_x" . $datasheets_list->RowIndex . "_coo") ?>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_coo" name="o<?php echo $datasheets_list->RowIndex ?>_coo" id="o<?php echo $datasheets_list->RowIndex ?>_coo" value="<?php echo HtmlEncode($datasheets->coo->OldValue) ?>">
-</td>
-	<?php } ?>
-	<?php if ($datasheets->hssCode->Visible) { // hssCode ?>
-		<td data-name="hssCode">
-<span id="el$rowindex$_datasheets_hssCode" class="form-group datasheets_hssCode">
-<input type="text" data-table="datasheets" data-field="x_hssCode" name="x<?php echo $datasheets_list->RowIndex ?>_hssCode" id="x<?php echo $datasheets_list->RowIndex ?>_hssCode" size="30" placeholder="<?php echo HtmlEncode($datasheets->hssCode->getPlaceHolder()) ?>" value="<?php echo $datasheets->hssCode->EditValue ?>"<?php echo $datasheets->hssCode->editAttributes() ?>>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_hssCode" name="o<?php echo $datasheets_list->RowIndex ?>_hssCode" id="o<?php echo $datasheets_list->RowIndex ?>_hssCode" value="<?php echo HtmlEncode($datasheets->hssCode->OldValue) ?>">
-</td>
-	<?php } ?>
-	<?php if ($datasheets->systrade->Visible) { // systrade ?>
-		<td data-name="systrade">
-<span id="el$rowindex$_datasheets_systrade" class="form-group datasheets_systrade">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($datasheets->systrade->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $datasheets->systrade->ViewValue ?></button>
-		<div id="dsl_x<?php echo $datasheets_list->RowIndex ?>_systrade" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $datasheets->systrade->radioButtonListHtml(TRUE, "x{$datasheets_list->RowIndex}_systrade") ?>
-			</div><!-- /.ew-items ##-->
-		</div><!-- /.dropdown-menu ##-->
-		<div id="tp_x<?php echo $datasheets_list->RowIndex ?>_systrade" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_systrade" data-value-separator="<?php echo $datasheets->systrade->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_systrade" id="x<?php echo $datasheets_list->RowIndex ?>_systrade" value="{value}"<?php echo $datasheets->systrade->editAttributes() ?>></div>
-	</div><!-- /.btn-group ##-->
-	<?php if (!$datasheets->systrade->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fa fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list ##-->
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_systrade" name="o<?php echo $datasheets_list->RowIndex ?>_systrade" id="o<?php echo $datasheets_list->RowIndex ?>_systrade" value="<?php echo HtmlEncode($datasheets->systrade->OldValue) ?>">
-</td>
-	<?php } ?>
-	<?php if ($datasheets->isdatasheet->Visible) { // isdatasheet ?>
-		<td data-name="isdatasheet">
-<span id="el$rowindex$_datasheets_isdatasheet" class="form-group datasheets_isdatasheet">
-<div id="tp_x<?php echo $datasheets_list->RowIndex ?>_isdatasheet" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_isdatasheet" data-value-separator="<?php echo $datasheets->isdatasheet->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_isdatasheet" id="x<?php echo $datasheets_list->RowIndex ?>_isdatasheet" value="{value}"<?php echo $datasheets->isdatasheet->editAttributes() ?>></div>
-<div id="dsl_x<?php echo $datasheets_list->RowIndex ?>_isdatasheet" data-repeatcolumn="5" class="ew-item-list d-none"><div>
-<?php echo $datasheets->isdatasheet->radioButtonListHtml(FALSE, "x{$datasheets_list->RowIndex}_isdatasheet") ?>
-</div></div>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_isdatasheet" name="o<?php echo $datasheets_list->RowIndex ?>_isdatasheet" id="o<?php echo $datasheets_list->RowIndex ?>_isdatasheet" value="<?php echo HtmlEncode($datasheets->isdatasheet->OldValue) ?>">
-</td>
-	<?php } ?>
-	<?php if ($datasheets->nativeFiles->Visible) { // nativeFiles ?>
-		<td data-name="nativeFiles">
-<span id="el$rowindex$_datasheets_nativeFiles" class="form-group datasheets_nativeFiles">
-<textarea data-table="datasheets" data-field="x_nativeFiles" name="x<?php echo $datasheets_list->RowIndex ?>_nativeFiles" id="x<?php echo $datasheets_list->RowIndex ?>_nativeFiles" cols="35" rows="4" placeholder="<?php echo HtmlEncode($datasheets->nativeFiles->getPlaceHolder()) ?>"<?php echo $datasheets->nativeFiles->editAttributes() ?>><?php echo $datasheets->nativeFiles->EditValue ?></textarea>
-</span>
-<input type="hidden" data-table="datasheets" data-field="x_nativeFiles" name="o<?php echo $datasheets_list->RowIndex ?>_nativeFiles" id="o<?php echo $datasheets_list->RowIndex ?>_nativeFiles" value="<?php echo HtmlEncode($datasheets->nativeFiles->OldValue) ?>">
-</td>
-	<?php } ?>
-<?php
-
-// Render list options (body, right)
-$datasheets_list->ListOptions->render("body", "right", $datasheets_list->RowIndex);
-?>
-<script>
-fdatasheetslist.updateLists(<?php echo $datasheets_list->RowIndex ?>);
-</script>
-	</tr>
-<?php
+		$datasheets_list->Recordset->moveNext();
 }
 ?>
 </tbody>
@@ -1412,16 +878,6 @@ fdatasheetslist.updateLists(<?php echo $datasheets_list->RowIndex ?>);
 <?php } ?>
 <?php if ($datasheets->isAdd() || $datasheets->isCopy()) { ?>
 <input type="hidden" name="<?php echo $datasheets_list->FormKeyCountName ?>" id="<?php echo $datasheets_list->FormKeyCountName ?>" value="<?php echo $datasheets_list->KeyCount ?>">
-<?php } ?>
-<?php if ($datasheets->isGridAdd()) { ?>
-<input type="hidden" name="action" id="action" value="gridinsert">
-<input type="hidden" name="<?php echo $datasheets_list->FormKeyCountName ?>" id="<?php echo $datasheets_list->FormKeyCountName ?>" value="<?php echo $datasheets_list->KeyCount ?>">
-<?php echo $datasheets_list->MultiSelectKey ?>
-<?php } ?>
-<?php if ($datasheets->isGridEdit()) { ?>
-<input type="hidden" name="action" id="action" value="gridupdate">
-<input type="hidden" name="<?php echo $datasheets_list->FormKeyCountName ?>" id="<?php echo $datasheets_list->FormKeyCountName ?>" value="<?php echo $datasheets_list->KeyCount ?>">
-<?php echo $datasheets_list->MultiSelectKey ?>
 <?php } ?>
 <?php if (!$datasheets->CurrentAction) { ?>
 <input type="hidden" name="action" id="action" value="">
