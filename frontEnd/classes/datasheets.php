@@ -2135,8 +2135,7 @@ class datasheets extends DbTable
 		//formating cover file
 		if(isset($rsnew["cover"]))
 	 	{
-
-	//		$rsnew["cover"] = $rsold["partno"]."-COVER-".$suffix_file.".pdf";
+			$rsnew["cover"] = $rsold["partno"]."-COVER-".$suffix_file.".pdf";
 		}
 	return TRUE;
 	}

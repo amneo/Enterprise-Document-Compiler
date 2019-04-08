@@ -89,6 +89,9 @@ class UploadHandler extends \UploadHandler
 				}
 			}
 		}
+
+		// Create upload folder if necessary
+		CreateFolder($this->get_upload_path(), $this->options["mkdir_mode"]);
 		return parent::handle_file_upload($uploaded_file, $name, $size, $type, $error, $index, $content_range);
 	}
 
@@ -186,7 +189,7 @@ class UploadHandler extends \UploadHandler
 	// Override readfile()
 	protected function readfile($file_path) {
 		global $Response;
-		if (is_object($Response)) {
+		if (!IsRemote($file_path) && is_object($Response)) {
 			if ($fd = fopen($file_path, "r")) {
 				$stream = new \Slim\Http\Stream($fd);
 				$Response = $Response->withBody($stream);

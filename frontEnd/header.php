@@ -126,7 +126,7 @@ ew.vars = <?php echo JsonEncode($CLIENT_VAR) ?>;
 // Write your client script here, no need to add script tags.
 </script>
 <?php } ?>
-<meta name="generator" content="PHPMaker v2019.0.8">
+<meta name="generator" content="PHPMaker v2019.0.9">
 </head>
 <body class="<?php echo $BODY_CLASS ?>" dir="<?php echo ($CSS_FLIP) ? "rtl" : "ltr" ?>">
 <?php if (@!$SkipHeaderFooter) { ?>

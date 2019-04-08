@@ -3591,19 +3591,20 @@ class Lookup
 	public $ModalLookupSearchType = "";
 	public $KeepCrLf = FALSE;
 	public $LookupFilter = "";
-	protected $Name = "";
-	protected $LinkTable = "";
-	protected $Distinct = FALSE;
-	protected $LinkField = "";
-	protected $DisplayFields = [];
-	protected $ParentFields = [];
-	protected $ChildFields = [];
-	protected $FilterFields = [];
-	protected $FilterFieldVars = [];
-	protected $AutoFillSourceFields = [];
-	protected $AutoFillTargetFields = [];
-	protected $Table = NULL;
-	protected $FormatAutoFill = FALSE;
+	public $UseHtmlDecode = TRUE;
+	public $Name = "";
+	public $LinkTable = "";
+	public $Distinct = FALSE;
+	public $LinkField = "";
+	public $DisplayFields = [];
+	public $ParentFields = [];
+	public $ChildFields = [];
+	public $FilterFields = [];
+	public $FilterFieldVars = [];
+	public $AutoFillSourceFields = [];
+	public $AutoFillTargetFields = [];
+	public $Table = NULL;
+	public $FormatAutoFill = FALSE;
 	private $UseParentFilter = FALSE;
 
 	/**
@@ -3814,13 +3815,17 @@ class Lookup
 							$displayField = @$tbl->fields[$displayField];
 							if ($displayField) {
 								$sfx = $i > 1 ? $i : "";
-								if ($displayField->Lookup)
+								if ($displayField->Lookup || $displayField->HtmlTag == "FILE")
 									$row[$i] = $displayField->CurrentValue;
 								else
 									$row[$i] = $displayField->ViewValue;
 								$row["df" . $sfx] = $row[$i];
 							}
 						}
+					}
+					if (REMOVE_XSS && $this->UseHtmlDecode) {
+						foreach ($row as $key => &$value)
+							$row[$key] = HtmlDecode($value);
 					}
 				}
 			}
@@ -7143,7 +7148,7 @@ class AdvancedSecurity
 			$sql = "UPDATE " . USER_LEVEL_PRIV_TABLE . " SET " .
 				USER_LEVEL_PRIV_TABLE_NAME_FIELD . " = " . $conn->concat("'" . AdjustSql($projectID, USER_LEVEL_PRIV_DBID) . "'", USER_LEVEL_PRIV_TABLE_NAME_FIELD) . " WHERE " .
 				USER_LEVEL_PRIV_TABLE_NAME_FIELD . " IN (" . implode(",", $ar) . ")";
-			if ($conn->execute($Sql))
+			if ($conn->execute($sql))
 				$reloadUserPriv += $conn->Affected_Rows();
 		}
 
@@ -9481,6 +9486,13 @@ function CleanUploadTempPaths($sessionid = "") {
 				}
 			}
 		}
+
+		// Temp images
+		foreach (glob($folder . "*.tmp.png") as $filename) {
+			$lastmdtime = filemtime($tempfolder);
+			if ((time() - $lastmdtime) / 60 > UPLOAD_TEMP_FOLDER_TIME_LIMIT)
+				@unlink($filename);
+		}
 	}
 }
 
@@ -9914,7 +9926,10 @@ function TempFolder() {
 
 // Create folder
 function CreateFolder($dir, $mode = 0777) {
-	return (is_dir($dir) || @mkdir($dir, $mode, TRUE));
+	if (IsRemote($dir)) // Support S3 only
+		return (is_dir($dir) || @mkdir($dir, $mode, STREAM_MKDIR_RECURSIVE));
+	else
+		return (is_dir($dir) || @mkdir($dir, $mode, TRUE));
 }
 
 // Save file
@@ -9923,7 +9938,10 @@ function SaveFile($folder, $fn, $filedata) {
 	$res = FALSE;
 	if (CreateFolder($folder)) {
 		$file = IncludeTrailingDelimiter($folder, TRUE) . $fn;
-		$res = file_put_contents($file, $filedata, LOCK_EX);
+		if (IsRemote($file)) // Support S3 only
+			$res = file_put_contents($file, $filedata);
+		else
+			$res = file_put_contents($file, $filedata, LOCK_EX);
 		if ($res !== FALSE)
 			@chmod($file, UPLOADED_FILE_MODE);
 	}
