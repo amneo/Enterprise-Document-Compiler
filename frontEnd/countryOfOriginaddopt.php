@@ -104,7 +104,7 @@ $countryOfOrigin_addopt->showMessage();
 		<label class="col-sm-2 col-form-label ew-label" for="x_countryName"><?php echo $countryOfOrigin->countryName->caption() ?><?php echo ($countryOfOrigin->countryName->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="col-sm-10">
 <input type="text" data-table="countryOfOrigin" data-field="x_countryName" name="x_countryName" id="x_countryName" size="30" placeholder="<?php echo HtmlEncode($countryOfOrigin->countryName->getPlaceHolder()) ?>" value="<?php echo $countryOfOrigin->countryName->EditValue ?>"<?php echo $countryOfOrigin->countryName->editAttributes() ?>>
-</div>
+<?php echo $countryOfOrigin->countryName->CustomMsg ?></div>
 	</div>
 <?php } ?>
 <?php if ($countryOfOrigin->countryIsoCode->Visible) { // countryIsoCode ?>
@@ -112,7 +112,7 @@ $countryOfOrigin_addopt->showMessage();
 		<label class="col-sm-2 col-form-label ew-label" for="x_countryIsoCode"><?php echo $countryOfOrigin->countryIsoCode->caption() ?><?php echo ($countryOfOrigin->countryIsoCode->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="col-sm-10">
 <input type="text" data-table="countryOfOrigin" data-field="x_countryIsoCode" name="x_countryIsoCode" id="x_countryIsoCode" size="30" placeholder="<?php echo HtmlEncode($countryOfOrigin->countryIsoCode->getPlaceHolder()) ?>" value="<?php echo $countryOfOrigin->countryIsoCode->EditValue ?>"<?php echo $countryOfOrigin->countryIsoCode->editAttributes() ?>>
-</div>
+<?php echo $countryOfOrigin->countryIsoCode->CustomMsg ?></div>
 	</div>
 <?php } ?>
 </form>

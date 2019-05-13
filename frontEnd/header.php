@@ -26,7 +26,7 @@ namespace PHPMaker2019\SUBMITTAL;
 <?php if (@$CustomExportType == "pdf" && PDF_STYLESHEET_FILENAME <> "") { ?>
 <link rel="stylesheet" type="text/css" href="<?php echo $RELATIVE_PATH ?><?php echo PDF_STYLESHEET_FILENAME ?>">
 <?php } ?>
-<script src="<?php echo $RELATIVE_PATH ?>jquery/jquery-3.3.1.min.js"></script>
+<script src="<?php echo $RELATIVE_PATH ?>jquery/jquery-3.4.1.min.js"></script>
 <script src="<?php echo $RELATIVE_PATH ?>jquery/jquery.ui.widget.js"></script>
 <script src="<?php echo $RELATIVE_PATH ?>jquery/jquery.storageapi.min.js"></script>
 <?php } ?>
@@ -126,7 +126,7 @@ ew.vars = <?php echo JsonEncode($CLIENT_VAR) ?>;
 // Write your client script here, no need to add script tags.
 </script>
 <?php } ?>
-<meta name="generator" content="PHPMaker v2019.0.9">
+<meta name="generator" content="PHPMaker v2019.0.10">
 </head>
 <body class="<?php echo $BODY_CLASS ?>" dir="<?php echo ($CSS_FLIP) ? "rtl" : "ltr" ?>">
 <?php if (@!$SkipHeaderFooter) { ?>

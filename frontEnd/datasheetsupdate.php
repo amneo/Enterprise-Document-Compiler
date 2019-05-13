@@ -760,7 +760,7 @@ ew.createDateTimePicker("fdatasheetsupdate", "x_expirydt", {"ignoreReadonly":tru
 <?php } else { ?>
 <span id="el_datasheets_nativeFiles">
 <span<?php echo $datasheets->nativeFiles->viewAttributes() ?>>
-<input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->nativeFiles->ViewValue) ?>"></span>
+<?php echo $datasheets->nativeFiles->ViewValue ?></span>
 </span>
 <input type="hidden" data-table="datasheets" data-field="x_nativeFiles" name="x_nativeFiles" id="x_nativeFiles" value="<?php echo HtmlEncode($datasheets->nativeFiles->FormValue) ?>">
 <?php } ?>
@@ -784,7 +784,7 @@ ew.createDateTimePicker("fdatasheetsupdate", "x_expirydt", {"ignoreReadonly":tru
 <?php } else { ?>
 <span id="el_datasheets_nativeFiles">
 <span<?php echo $datasheets->nativeFiles->viewAttributes() ?>>
-<input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->nativeFiles->ViewValue) ?>"></span>
+<?php echo $datasheets->nativeFiles->ViewValue ?></span>
 </span>
 <input type="hidden" data-table="datasheets" data-field="x_nativeFiles" name="x_nativeFiles" id="x_nativeFiles" value="<?php echo HtmlEncode($datasheets->nativeFiles->FormValue) ?>">
 <?php } ?>

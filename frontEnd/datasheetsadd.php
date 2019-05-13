@@ -367,7 +367,7 @@ fdatasheetsadd.createAutoSuggest({"id":"x_manufacturer","forceSelect":true});
 <?php } else { ?>
 <span id="el_datasheets_tittle">
 <span<?php echo $datasheets->tittle->viewAttributes() ?>>
-<input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->tittle->ViewValue) ?>"></span>
+<?php echo $datasheets->tittle->ViewValue ?></span>
 </span>
 <input type="hidden" data-table="datasheets" data-field="x_tittle" data-page="0" name="x_tittle" id="x_tittle" value="<?php echo HtmlEncode($datasheets->tittle->FormValue) ?>">
 <?php } ?>
@@ -384,7 +384,7 @@ fdatasheetsadd.createAutoSuggest({"id":"x_manufacturer","forceSelect":true});
 <?php } else { ?>
 <span id="el_datasheets_tittle">
 <span<?php echo $datasheets->tittle->viewAttributes() ?>>
-<input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->tittle->ViewValue) ?>"></span>
+<?php echo $datasheets->tittle->ViewValue ?></span>
 </span>
 <input type="hidden" data-table="datasheets" data-field="x_tittle" data-page="0" name="x_tittle" id="x_tittle" value="<?php echo HtmlEncode($datasheets->tittle->FormValue) ?>">
 <?php } ?>
@@ -1101,7 +1101,7 @@ fdatasheetsadd.createAutoSuggest({"id":"x_coo","forceSelect":false});
 <?php } else { ?>
 <span id="el_datasheets_nativeFiles">
 <span<?php echo $datasheets->nativeFiles->viewAttributes() ?>>
-<input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->nativeFiles->ViewValue) ?>"></span>
+<?php echo $datasheets->nativeFiles->ViewValue ?></span>
 </span>
 <input type="hidden" data-table="datasheets" data-field="x_nativeFiles" data-page="2" name="x_nativeFiles" id="x_nativeFiles" value="<?php echo HtmlEncode($datasheets->nativeFiles->FormValue) ?>">
 <?php } ?>
@@ -1118,7 +1118,7 @@ fdatasheetsadd.createAutoSuggest({"id":"x_coo","forceSelect":false});
 <?php } else { ?>
 <span id="el_datasheets_nativeFiles">
 <span<?php echo $datasheets->nativeFiles->viewAttributes() ?>>
-<input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->nativeFiles->ViewValue) ?>"></span>
+<?php echo $datasheets->nativeFiles->ViewValue ?></span>
 </span>
 <input type="hidden" data-table="datasheets" data-field="x_nativeFiles" data-page="2" name="x_nativeFiles" id="x_nativeFiles" value="<?php echo HtmlEncode($datasheets->nativeFiles->FormValue) ?>">
 <?php } ?>

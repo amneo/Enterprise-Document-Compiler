@@ -174,7 +174,6 @@ class datasheets extends DbTable
 
 		// duration
 		$this->duration = new DbField('datasheets', 'datasheets', 'x_duration', 'duration', '"duration"', '"duration"', 200, -1, FALSE, '"duration"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'SELECT');
-		$this->duration->Required = TRUE; // Required field
 		$this->duration->Sortable = FALSE; // Allow sort
 		$this->duration->UsePleaseSelect = TRUE; // Use PleaseSelect by default
 		$this->duration->PleaseSelectText = $Language->phrase("PleaseSelect"); // PleaseSelect text

@@ -109,7 +109,7 @@ $manufacturer_addopt->showMessage();
 		<label class="col-sm-2 col-form-label ew-label" for="x_manufacturerName"><?php echo $manufacturer->manufacturerName->caption() ?><?php echo ($manufacturer->manufacturerName->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="col-sm-10">
 <input type="text" data-table="manufacturer" data-field="x_manufacturerName" name="x_manufacturerName" id="x_manufacturerName" size="30" placeholder="<?php echo HtmlEncode($manufacturer->manufacturerName->getPlaceHolder()) ?>" value="<?php echo $manufacturer->manufacturerName->EditValue ?>"<?php echo $manufacturer->manufacturerName->editAttributes() ?>>
-</div>
+<?php echo $manufacturer->manufacturerName->CustomMsg ?></div>
 	</div>
 <?php } ?>
 <?php if ($manufacturer->manufacturerAddress->Visible) { // manufacturerAddress ?>
@@ -117,7 +117,7 @@ $manufacturer_addopt->showMessage();
 		<label class="col-sm-2 col-form-label ew-label" for="x_manufacturerAddress"><?php echo $manufacturer->manufacturerAddress->caption() ?><?php echo ($manufacturer->manufacturerAddress->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="col-sm-10">
 <textarea data-table="manufacturer" data-field="x_manufacturerAddress" name="x_manufacturerAddress" id="x_manufacturerAddress" cols="35" rows="4" placeholder="<?php echo HtmlEncode($manufacturer->manufacturerAddress->getPlaceHolder()) ?>"<?php echo $manufacturer->manufacturerAddress->editAttributes() ?>><?php echo $manufacturer->manufacturerAddress->EditValue ?></textarea>
-</div>
+<?php echo $manufacturer->manufacturerAddress->CustomMsg ?></div>
 	</div>
 <?php } ?>
 <?php if ($manufacturer->manufacturerFactory->Visible) { // manufacturerFactory ?>
@@ -125,7 +125,7 @@ $manufacturer_addopt->showMessage();
 		<label class="col-sm-2 col-form-label ew-label" for="x_manufacturerFactory"><?php echo $manufacturer->manufacturerFactory->caption() ?><?php echo ($manufacturer->manufacturerFactory->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
 		<div class="col-sm-10">
 <textarea data-table="manufacturer" data-field="x_manufacturerFactory" name="x_manufacturerFactory" id="x_manufacturerFactory" cols="35" rows="4" placeholder="<?php echo HtmlEncode($manufacturer->manufacturerFactory->getPlaceHolder()) ?>"<?php echo $manufacturer->manufacturerFactory->editAttributes() ?>><?php echo $manufacturer->manufacturerFactory->EditValue ?></textarea>
-</div>
+<?php echo $manufacturer->manufacturerFactory->CustomMsg ?></div>
 	</div>
 <?php } ?>
 </form>
