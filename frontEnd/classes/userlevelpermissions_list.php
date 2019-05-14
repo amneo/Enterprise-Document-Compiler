@@ -11,7 +11,7 @@ class userlevelpermissions_list extends userlevelpermissions
 	public $PageID = "list";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'userlevelpermissions';
@@ -1020,7 +1020,6 @@ class userlevelpermissions_list extends userlevelpermissions
 		// Load server side filters
 		if (SEARCH_FILTER_OPTION == "Server" && isset($UserProfile))
 			$savedFilterList = $UserProfile->getSearchFilters(CurrentUserName(), "fuserlevelpermissionslistsrch");
-		$filterList = Concat($filterList, $this->userlevelid->AdvancedSearch->toJson(), ","); // Field userlevelid
 		$filterList = Concat($filterList, $this->_tablename->AdvancedSearch->toJson(), ","); // Field tablename
 		$filterList = Concat($filterList, $this->permission->AdvancedSearch->toJson(), ","); // Field permission
 		if ($this->BasicSearch->Keyword <> "") {
@@ -1060,14 +1059,6 @@ class userlevelpermissions_list extends userlevelpermissions
 			return FALSE;
 		$filter = json_decode(Post("filter"), TRUE);
 		$this->Command = "search";
-
-		// Field userlevelid
-		$this->userlevelid->AdvancedSearch->SearchValue = @$filter["x_userlevelid"];
-		$this->userlevelid->AdvancedSearch->SearchOperator = @$filter["z_userlevelid"];
-		$this->userlevelid->AdvancedSearch->SearchCondition = @$filter["v_userlevelid"];
-		$this->userlevelid->AdvancedSearch->SearchValue2 = @$filter["y_userlevelid"];
-		$this->userlevelid->AdvancedSearch->SearchOperator2 = @$filter["w_userlevelid"];
-		$this->userlevelid->AdvancedSearch->save();
 
 		// Field tablename
 		$this->_tablename->AdvancedSearch->SearchValue = @$filter["x__tablename"];

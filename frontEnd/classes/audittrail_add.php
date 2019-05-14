@@ -11,7 +11,7 @@ class audittrail_add extends audittrail
 	public $PageID = "add";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'audittrail';

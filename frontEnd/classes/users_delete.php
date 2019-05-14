@@ -11,7 +11,7 @@ class users_delete extends users
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'users';

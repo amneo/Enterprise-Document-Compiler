@@ -11,7 +11,7 @@ class userlevels_edit extends userlevels
 	public $PageID = "edit";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'userlevels';

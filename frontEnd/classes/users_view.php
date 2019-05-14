@@ -11,7 +11,7 @@ class users_view extends users
 	public $PageID = "view";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'users';

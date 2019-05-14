@@ -11,7 +11,7 @@ class forgotpwd extends users
 	public $PageID = "forgotpwd";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Page object name
 	public $PageObjName = "forgotpwd";

@@ -1,0 +1,4 @@
+Version:01.01-Release Date: 15-05-2019
+
++ Added column to capture requirement of CDD renewal. This is to filter out datasheets that would not be renewed again. Required Database reupload.
++ PHP bug fixed for trim error [1B2-243EDEDA-0010]. Would need to regenerate the User level matrix in database.

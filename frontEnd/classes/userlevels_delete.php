@@ -11,7 +11,7 @@ class userlevels_delete extends userlevels
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'userlevels';

@@ -11,7 +11,7 @@ class userlevelpermissions_edit extends userlevelpermissions
 	public $PageID = "edit";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'userlevelpermissions';
@@ -612,7 +612,7 @@ class userlevelpermissions_edit extends userlevelpermissions
 		$CurrentForm = new HttpForm();
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->userlevelid->Visible = FALSE;
-		$this->_tablename->Visible = FALSE;
+		$this->_tablename->setVisibility();
 		$this->permission->setVisibility();
 		$this->hideFieldsForAddEdit();
 
@@ -796,6 +796,15 @@ class userlevelpermissions_edit extends userlevelpermissions
 		// Load from form
 		global $CurrentForm;
 
+		// Check field name 'tablename' first before field var 'x__tablename'
+		$val = $CurrentForm->hasValue("tablename") ? $CurrentForm->getValue("tablename") : $CurrentForm->getValue("x__tablename");
+		if (!$this->_tablename->IsDetailKey) {
+			if (IsApi() && $val == NULL)
+				$this->_tablename->Visible = FALSE; // Disable update for API request
+			else
+				$this->_tablename->setFormValue($val);
+		}
+
 		// Check field name 'permission' first before field var 'x_permission'
 		$val = $CurrentForm->hasValue("permission") ? $CurrentForm->getValue("permission") : $CurrentForm->getValue("x_permission");
 		if (!$this->permission->IsDetailKey) {
@@ -809,11 +818,6 @@ class userlevelpermissions_edit extends userlevelpermissions
 		$val = $CurrentForm->hasValue("userlevelid") ? $CurrentForm->getValue("userlevelid") : $CurrentForm->getValue("x_userlevelid");
 		if (!$this->userlevelid->IsDetailKey)
 			$this->userlevelid->setFormValue($val);
-
-		// Check field name 'tablename' first before field var 'x__tablename'
-		$val = $CurrentForm->hasValue("tablename") ? $CurrentForm->getValue("tablename") : $CurrentForm->getValue("x__tablename");
-		if (!$this->_tablename->IsDetailKey)
-			$this->_tablename->setFormValue($val);
 	}
 
 	// Restore form values
@@ -940,11 +944,29 @@ class userlevelpermissions_edit extends userlevelpermissions
 			$this->permission->ViewValue = FormatNumber($this->permission->ViewValue, 0, -2, -2, -2);
 			$this->permission->ViewCustomAttributes = "";
 
+			// tablename
+			$this->_tablename->LinkCustomAttributes = "";
+			$this->_tablename->HrefValue = "";
+			$this->_tablename->TooltipValue = "";
+
 			// permission
 			$this->permission->LinkCustomAttributes = "";
 			$this->permission->HrefValue = "";
 			$this->permission->TooltipValue = "";
 		} elseif ($this->RowType == ROWTYPE_EDIT) { // Edit row
+
+			// tablename
+			$this->_tablename->EditAttrs["class"] = "form-control";
+			$this->_tablename->EditCustomAttributes = "";
+			if ($this->_tablename->VirtualValue <> "") {
+				$this->_tablename->EditValue = $this->_tablename->VirtualValue;
+			} else {
+				$this->_tablename->EditValue = $this->_tablename->CurrentValue;
+			$arwrk = array();
+			$arwrk[1] = $this->_tablename->CurrentValue;
+			$this->_tablename->EditValue = $this->_tablename->displayValue($arwrk);
+			}
+			$this->_tablename->ViewCustomAttributes = "";
 
 			// permission
 			$this->permission->EditAttrs["class"] = "form-control";
@@ -953,8 +975,12 @@ class userlevelpermissions_edit extends userlevelpermissions
 			$this->permission->PlaceHolder = RemoveHtml($this->permission->caption());
 
 			// Edit refer script
-			// permission
+			// tablename
 
+			$this->_tablename->LinkCustomAttributes = "";
+			$this->_tablename->HrefValue = "";
+
+			// permission
 			$this->permission->LinkCustomAttributes = "";
 			$this->permission->HrefValue = "";
 		}
@@ -1032,7 +1058,9 @@ class userlevelpermissions_edit extends userlevelpermissions
 			$this->loadDbValues($rsold);
 			$rsnew = [];
 
+			// tablename
 			// permission
+
 			$this->permission->setDbValueDef($rsnew, $this->permission->CurrentValue, 0, $this->permission->ReadOnly);
 
 			// Call Row Updating event

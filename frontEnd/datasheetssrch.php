@@ -105,7 +105,7 @@ $datasheets_search->showMessage();
 <?php if ($datasheets_search->IsMobileOrModal) { ?>
 	<div id="r_partno" class="form-group row">
 		<label for="x_partno" class="<?php echo $datasheets_search->LeftColumnClass ?>"><span id="elh_datasheets_partno"><?php echo $datasheets->partno->caption() ?></span>
-		<span class="ew-search-operator"><?php echo $Language->phrase("LIKE") ?><input type="hidden" name="z_partno" id="z_partno" value="LIKE"></span>
+		<span class="ew-search-operator"><?php echo $Language->phrase("=") ?><input type="hidden" name="z_partno" id="z_partno" value="="></span>
 		</label>
 		<div class="<?php echo $datasheets_search->RightColumnClass ?>"><div<?php echo $datasheets->partno->cellAttributes() ?>>
 			<span id="el_datasheets_partno">
@@ -116,7 +116,7 @@ $datasheets_search->showMessage();
 <?php } else { ?>
 	<tr id="r_partno">
 		<td class="<?php echo $datasheets_search->TableLeftColumnClass ?>"><span id="elh_datasheets_partno"><?php echo $datasheets->partno->caption() ?></span></td>
-		<td class="w-col-1"><span class="ew-search-operator"><?php echo $Language->phrase("LIKE") ?><input type="hidden" name="z_partno" id="z_partno" value="LIKE"></span></td>
+		<td class="w-col-1"><span class="ew-search-operator"><?php echo $Language->phrase("=") ?><input type="hidden" name="z_partno" id="z_partno" value="="></span></td>
 		<td<?php echo $datasheets->partno->cellAttributes() ?>>
 			<div class="text-nowrap">
 				<span id="el_datasheets_partno">

@@ -11,7 +11,7 @@ class datasheets_search extends datasheets
 	public $PageID = "search";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'datasheets';
@@ -636,6 +636,7 @@ class datasheets_search extends datasheets
 		$this->hssCode->Visible = FALSE;
 		$this->systrade->setVisibility();
 		$this->isdatasheet->Visible = FALSE;
+		$this->cddrenewal_required->Visible = FALSE;
 		$this->datasheetdate->Visible = FALSE;
 		$this->username->Visible = FALSE;
 		$this->nativeFiles->Visible = FALSE;
@@ -849,6 +850,7 @@ class datasheets_search extends datasheets
 		// hssCode
 		// systrade
 		// isdatasheet
+		// cddrenewal_required
 		// datasheetdate
 		// username
 		// nativeFiles
@@ -968,6 +970,14 @@ class datasheets_search extends datasheets
 				$this->isdatasheet->ViewValue = $this->isdatasheet->tagCaption(2) <> "" ? $this->isdatasheet->tagCaption(2) : "No";
 			}
 			$this->isdatasheet->ViewCustomAttributes = "";
+
+			// cddrenewal_required
+			if (ConvertToBool($this->cddrenewal_required->CurrentValue)) {
+				$this->cddrenewal_required->ViewValue = $this->cddrenewal_required->tagCaption(1) <> "" ? $this->cddrenewal_required->tagCaption(1) : "Y";
+			} else {
+				$this->cddrenewal_required->ViewValue = $this->cddrenewal_required->tagCaption(2) <> "" ? $this->cddrenewal_required->tagCaption(2) : "N";
+			}
+			$this->cddrenewal_required->ViewCustomAttributes = "";
 
 			// nativeFiles
 			$this->nativeFiles->ViewValue = $this->nativeFiles->CurrentValue;

@@ -54,6 +54,11 @@ fuserlevelpermissionsedit.validate = function() {
 	for (var i = startcnt; i <= rowcnt; i++) {
 		var infix = ($k[0]) ? String(i) : "";
 		$fobj.data("rowindex", infix);
+		<?php if ($userlevelpermissions_edit->_tablename->Required) { ?>
+			elm = this.getElements("x" + infix + "__tablename");
+			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
+				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $userlevelpermissions->_tablename->caption(), $userlevelpermissions->_tablename->RequiredErrorMessage)) ?>");
+		<?php } ?>
 		<?php if ($userlevelpermissions_edit->permission->Required) { ?>
 			elm = this.getElements("x" + infix + "_permission");
 			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -92,8 +97,11 @@ return this.OnError($row["updated"], "You cannot close this ticket until Time Wo
 fuserlevelpermissionsedit.validateRequired = <?php echo json_encode(CLIENT_VALIDATE) ?>;
 
 // Dynamic selection lists
-// Form object for search
+fuserlevelpermissionsedit.lists["x__tablename"] = <?php echo $userlevelpermissions_edit->_tablename->Lookup->toClientList() ?>;
+fuserlevelpermissionsedit.lists["x__tablename"].options = <?php echo JsonEncode($userlevelpermissions_edit->_tablename->lookupOptions()) ?>;
+fuserlevelpermissionsedit.autoSuggests["x__tablename"] = <?php echo json_encode(["data" => "ajax=autosuggest"]) ?>;
 
+// Form object for search
 </script>
 <script>
 
@@ -117,6 +125,31 @@ $userlevelpermissions_edit->showMessage();
 <div class="ew-edit-div"><!-- page* -->
 <?php } else { ?>
 <table id="tbl_userlevelpermissionsedit" class="table table-striped table-sm ew-desktop-table"><!-- table* -->
+<?php } ?>
+<?php if ($userlevelpermissions->_tablename->Visible) { // tablename ?>
+<?php if ($userlevelpermissions_edit->IsMobileOrModal) { ?>
+	<div id="r__tablename" class="form-group row">
+		<label id="elh_userlevelpermissions__tablename" class="<?php echo $userlevelpermissions_edit->LeftColumnClass ?>"><?php echo $userlevelpermissions->_tablename->caption() ?><?php echo ($userlevelpermissions->_tablename->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<div class="<?php echo $userlevelpermissions_edit->RightColumnClass ?>"><div<?php echo $userlevelpermissions->_tablename->cellAttributes() ?>>
+<span id="el_userlevelpermissions__tablename">
+<span<?php echo $userlevelpermissions->_tablename->viewAttributes() ?>>
+<input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($userlevelpermissions->_tablename->EditValue) ?>"></span>
+</span>
+<input type="hidden" data-table="userlevelpermissions" data-field="x__tablename" name="x__tablename" id="x__tablename" value="<?php echo HtmlEncode($userlevelpermissions->_tablename->CurrentValue) ?>">
+<?php echo $userlevelpermissions->_tablename->CustomMsg ?></div></div>
+	</div>
+<?php } else { ?>
+	<tr id="r__tablename">
+		<td class="<?php echo $userlevelpermissions_edit->TableLeftColumnClass ?>"><span id="elh_userlevelpermissions__tablename"><?php echo $userlevelpermissions->_tablename->caption() ?><?php echo ($userlevelpermissions->_tablename->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></span></td>
+		<td<?php echo $userlevelpermissions->_tablename->cellAttributes() ?>>
+<span id="el_userlevelpermissions__tablename">
+<span<?php echo $userlevelpermissions->_tablename->viewAttributes() ?>>
+<input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($userlevelpermissions->_tablename->EditValue) ?>"></span>
+</span>
+<input type="hidden" data-table="userlevelpermissions" data-field="x__tablename" name="x__tablename" id="x__tablename" value="<?php echo HtmlEncode($userlevelpermissions->_tablename->CurrentValue) ?>">
+<?php echo $userlevelpermissions->_tablename->CustomMsg ?></td>
+	</tr>
+<?php } ?>
 <?php } ?>
 <?php if ($userlevelpermissions->permission->Visible) { // permission ?>
 <?php if ($userlevelpermissions_edit->IsMobileOrModal) { ?>
@@ -145,7 +178,6 @@ $userlevelpermissions_edit->showMessage();
 </table><!-- /table* -->
 <?php } ?>
 	<input type="hidden" data-table="userlevelpermissions" data-field="x_userlevelid" name="x_userlevelid" id="x_userlevelid" value="<?php echo HtmlEncode($userlevelpermissions->userlevelid->CurrentValue) ?>">
-	<input type="hidden" data-table="userlevelpermissions" data-field="x__tablename" name="x__tablename" id="x__tablename" value="<?php echo HtmlEncode($userlevelpermissions->_tablename->CurrentValue) ?>">
 <?php if (!$userlevelpermissions_edit->IsModal) { ?>
 <div class="form-group row"><!-- buttons .form-group -->
 	<div class="<?php echo $userlevelpermissions_edit->OffsetColumnClass ?>"><!-- buttons offset -->

@@ -11,7 +11,7 @@ class datasheets_edit extends datasheets
 	public $PageID = "edit";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'datasheets';
@@ -639,6 +639,7 @@ class datasheets_edit extends datasheets
 		$this->hssCode->setVisibility();
 		$this->systrade->setVisibility();
 		$this->isdatasheet->setVisibility();
+		$this->cddrenewal_required->setVisibility();
 		$this->datasheetdate->Visible = FALSE;
 		$this->username->Visible = FALSE;
 		$this->nativeFiles->setVisibility();
@@ -956,6 +957,15 @@ class datasheets_edit extends datasheets
 				$this->isdatasheet->setFormValue($val);
 		}
 
+		// Check field name 'cddrenewal_required' first before field var 'x_cddrenewal_required'
+		$val = $CurrentForm->hasValue("cddrenewal_required") ? $CurrentForm->getValue("cddrenewal_required") : $CurrentForm->getValue("x_cddrenewal_required");
+		if (!$this->cddrenewal_required->IsDetailKey) {
+			if (IsApi() && $val == NULL)
+				$this->cddrenewal_required->Visible = FALSE; // Disable update for API request
+			else
+				$this->cddrenewal_required->setFormValue($val);
+		}
+
 		// Check field name 'nativeFiles' first before field var 'x_nativeFiles'
 		$val = $CurrentForm->hasValue("nativeFiles") ? $CurrentForm->getValue("nativeFiles") : $CurrentForm->getValue("x_nativeFiles");
 		if (!$this->nativeFiles->IsDetailKey) {
@@ -991,6 +1001,7 @@ class datasheets_edit extends datasheets
 		$this->hssCode->CurrentValue = $this->hssCode->FormValue;
 		$this->systrade->CurrentValue = $this->systrade->FormValue;
 		$this->isdatasheet->CurrentValue = $this->isdatasheet->FormValue;
+		$this->cddrenewal_required->CurrentValue = $this->cddrenewal_required->FormValue;
 		$this->nativeFiles->CurrentValue = $this->nativeFiles->FormValue;
 	}
 
@@ -1061,6 +1072,7 @@ class datasheets_edit extends datasheets
 		$this->hssCode->setDbValue($row['hssCode']);
 		$this->systrade->setDbValue($row['systrade']);
 		$this->isdatasheet->setDbValue((ConvertToBool($row['isdatasheet']) ? "1" : "0"));
+		$this->cddrenewal_required->setDbValue((ConvertToBool($row['cddrenewal_required']) ? "1" : "0"));
 		$this->datasheetdate->setDbValue($row['datasheetdate']);
 		$this->username->setDbValue($row['username']);
 		$this->nativeFiles->setDbValue($row['nativeFiles']);
@@ -1088,6 +1100,7 @@ class datasheets_edit extends datasheets
 		$row['hssCode'] = NULL;
 		$row['systrade'] = NULL;
 		$row['isdatasheet'] = NULL;
+		$row['cddrenewal_required'] = NULL;
 		$row['datasheetdate'] = NULL;
 		$row['username'] = NULL;
 		$row['nativeFiles'] = NULL;
@@ -1146,6 +1159,7 @@ class datasheets_edit extends datasheets
 		// hssCode
 		// systrade
 		// isdatasheet
+		// cddrenewal_required
 		// datasheetdate
 		// username
 		// nativeFiles
@@ -1306,6 +1320,14 @@ class datasheets_edit extends datasheets
 			}
 			$this->isdatasheet->ViewCustomAttributes = "";
 
+			// cddrenewal_required
+			if (ConvertToBool($this->cddrenewal_required->CurrentValue)) {
+				$this->cddrenewal_required->ViewValue = $this->cddrenewal_required->tagCaption(1) <> "" ? $this->cddrenewal_required->tagCaption(1) : "Y";
+			} else {
+				$this->cddrenewal_required->ViewValue = $this->cddrenewal_required->tagCaption(2) <> "" ? $this->cddrenewal_required->tagCaption(2) : "N";
+			}
+			$this->cddrenewal_required->ViewCustomAttributes = "";
+
 			// nativeFiles
 			$this->nativeFiles->ViewValue = $this->nativeFiles->CurrentValue;
 			$this->nativeFiles->ViewCustomAttributes = "";
@@ -1440,6 +1462,11 @@ class datasheets_edit extends datasheets
 			$this->isdatasheet->LinkCustomAttributes = "";
 			$this->isdatasheet->HrefValue = "";
 			$this->isdatasheet->TooltipValue = "";
+
+			// cddrenewal_required
+			$this->cddrenewal_required->LinkCustomAttributes = "";
+			$this->cddrenewal_required->HrefValue = "";
+			$this->cddrenewal_required->TooltipValue = "";
 
 			// nativeFiles
 			$this->nativeFiles->LinkCustomAttributes = "";
@@ -1601,6 +1628,10 @@ class datasheets_edit extends datasheets
 			$this->isdatasheet->EditCustomAttributes = "";
 			$this->isdatasheet->EditValue = $this->isdatasheet->options(FALSE);
 
+			// cddrenewal_required
+			$this->cddrenewal_required->EditCustomAttributes = "";
+			$this->cddrenewal_required->EditValue = $this->cddrenewal_required->options(FALSE);
+
 			// nativeFiles
 			$this->nativeFiles->EditAttrs["class"] = "form-control";
 			$this->nativeFiles->EditCustomAttributes = "";
@@ -1724,6 +1755,10 @@ class datasheets_edit extends datasheets
 			$this->isdatasheet->LinkCustomAttributes = "";
 			$this->isdatasheet->HrefValue = "";
 
+			// cddrenewal_required
+			$this->cddrenewal_required->LinkCustomAttributes = "";
+			$this->cddrenewal_required->HrefValue = "";
+
 			// nativeFiles
 			$this->nativeFiles->LinkCustomAttributes = "";
 			$this->nativeFiles->HrefValue = "";
@@ -1841,6 +1876,11 @@ class datasheets_edit extends datasheets
 		if ($this->isdatasheet->Required) {
 			if ($this->isdatasheet->FormValue == "") {
 				AddMessage($FormError, str_replace("%s", $this->isdatasheet->caption(), $this->isdatasheet->RequiredErrorMessage));
+			}
+		}
+		if ($this->cddrenewal_required->Required) {
+			if ($this->cddrenewal_required->FormValue == "") {
+				AddMessage($FormError, str_replace("%s", $this->cddrenewal_required->caption(), $this->cddrenewal_required->RequiredErrorMessage));
 			}
 		}
 		if ($this->datasheetdate->Required) {
@@ -1989,6 +2029,9 @@ class datasheets_edit extends datasheets
 
 			// isdatasheet
 			$this->isdatasheet->setDbValueDef($rsnew, ((strval($this->isdatasheet->CurrentValue) == "1") ? "1" : "0"), 0, $this->isdatasheet->ReadOnly);
+
+			// cddrenewal_required
+			$this->cddrenewal_required->setDbValueDef($rsnew, ((strval($this->cddrenewal_required->CurrentValue) == "1") ? "1" : "0"), NULL, $this->cddrenewal_required->ReadOnly);
 
 			// nativeFiles
 			$this->nativeFiles->setDbValueDef($rsnew, $this->nativeFiles->CurrentValue, "", $this->nativeFiles->ReadOnly);

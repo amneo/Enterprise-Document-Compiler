@@ -11,7 +11,7 @@ class login extends users
 	public $PageID = "login";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Page object name
 	public $PageObjName = "login";

@@ -333,7 +333,7 @@ function CurrentLanguageID() {
 function CurrentProjectID() {
 	if (isset($GLOBALS["Page"]))
 		return $GLOBALS["Page"]->ProjectID;
-	return "vishal-sub";
+	return "{vishal-sub}";
 }
 
 /**
@@ -7142,8 +7142,8 @@ class AdvancedSecurity
 		$sql = "SELECT COUNT(*) FROM " . USER_LEVEL_PRIV_TABLE . " WHERE EXISTS(SELECT * FROM " .
 				USER_LEVEL_PRIV_TABLE . " WHERE " . USER_LEVEL_PRIV_TABLE_NAME_FIELD . " NOT LIKE '{%')";
 		if (ExecuteScalar($sql, $conn) > 0) {
-			$ar = array_map(function ($t) {
-				return "'" . AdjustSql($t, USER_LEVEL_PRIV_DBID) . "'";
+			$ar = array_map(function($t) {
+				return "'" . AdjustSql($t[0], USER_LEVEL_PRIV_DBID) . "'";
 			}, $arTable);
 			$sql = "UPDATE " . USER_LEVEL_PRIV_TABLE . " SET " .
 				USER_LEVEL_PRIV_TABLE_NAME_FIELD . " = " . $conn->concat("'" . AdjustSql($projectID, USER_LEVEL_PRIV_DBID) . "'", USER_LEVEL_PRIV_TABLE_NAME_FIELD) . " WHERE " .
@@ -7158,8 +7158,8 @@ class AdvancedSecurity
 				USER_LEVEL_PRIV_TABLE . " WHERE " . USER_LEVEL_PRIV_TABLE_NAME_FIELD . " LIKE '" .
 				AdjustSql(TABLE_PREFIX, USER_LEVEL_PRIV_DBID) . "%')";
 			if (ExecuteScalar($sql, $conn) > 0) {
-				$ar = array_map(function ($t) {
-					return "'" . AdjustSql(TABLE_PREFIX . $t, USER_LEVEL_PRIV_DBID) . "'";
+				$ar = array_map(function($t) {
+					return "'" . AdjustSql(TABLE_PREFIX . $t[0], USER_LEVEL_PRIV_DBID) . "'";
 				}, $arTable);
 				$sql = "UPDATE " . USER_LEVEL_PRIV_TABLE . " SET " .
 					USER_LEVEL_PRIV_TABLE_NAME_FIELD . " = REPLACE(" . USER_LEVEL_PRIV_TABLE_NAME_FIELD . "," .

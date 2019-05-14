@@ -149,6 +149,11 @@ fdatasheetsadd.validate = function() {
 			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->isdatasheet->caption(), $datasheets->isdatasheet->RequiredErrorMessage)) ?>");
 		<?php } ?>
+		<?php if ($datasheets_add->cddrenewal_required->Required) { ?>
+			elm = this.getElements("x" + infix + "_cddrenewal_required");
+			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
+				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->cddrenewal_required->caption(), $datasheets->cddrenewal_required->RequiredErrorMessage)) ?>");
+		<?php } ?>
 		<?php if ($datasheets_add->nativeFiles->Required) { ?>
 			elm = this.getElements("x" + infix + "_nativeFiles");
 			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -199,6 +204,8 @@ fdatasheetsadd.lists["x_systrade"] = <?php echo $datasheets_add->systrade->Looku
 fdatasheetsadd.lists["x_systrade"].options = <?php echo JsonEncode($datasheets_add->systrade->options(FALSE, TRUE)) ?>;
 fdatasheetsadd.lists["x_isdatasheet"] = <?php echo $datasheets_add->isdatasheet->Lookup->toClientList() ?>;
 fdatasheetsadd.lists["x_isdatasheet"].options = <?php echo JsonEncode($datasheets_add->isdatasheet->options(FALSE, TRUE)) ?>;
+fdatasheetsadd.lists["x_cddrenewal_required"] = <?php echo $datasheets_add->cddrenewal_required->Lookup->toClientList() ?>;
+fdatasheetsadd.lists["x_cddrenewal_required"].options = <?php echo JsonEncode($datasheets_add->cddrenewal_required->options(FALSE, TRUE)) ?>;
 
 // Form object for search
 </script>
@@ -1086,6 +1093,49 @@ fdatasheetsadd.createAutoSuggest({"id":"x_coo","forceSelect":false});
 <input type="hidden" data-table="datasheets" data-field="x_isdatasheet" data-page="2" name="x_isdatasheet" id="x_isdatasheet" value="<?php echo HtmlEncode($datasheets->isdatasheet->FormValue) ?>">
 <?php } ?>
 <?php echo $datasheets->isdatasheet->CustomMsg ?></td>
+	</tr>
+<?php } ?>
+<?php } ?>
+<?php if ($datasheets->cddrenewal_required->Visible) { // cddrenewal_required ?>
+<?php if ($datasheets_add->IsMobileOrModal) { ?>
+	<div id="r_cddrenewal_required" class="form-group row">
+		<label id="elh_datasheets_cddrenewal_required" class="<?php echo $datasheets_add->LeftColumnClass ?>"><?php echo $datasheets->cddrenewal_required->caption() ?><?php echo ($datasheets->cddrenewal_required->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<div class="<?php echo $datasheets_add->RightColumnClass ?>"><div<?php echo $datasheets->cddrenewal_required->cellAttributes() ?>>
+<?php if (!$datasheets->isConfirm()) { ?>
+<span id="el_datasheets_cddrenewal_required">
+<div id="tp_x_cddrenewal_required" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_cddrenewal_required" data-page="2" data-value-separator="<?php echo $datasheets->cddrenewal_required->displayValueSeparatorAttribute() ?>" name="x_cddrenewal_required" id="x_cddrenewal_required" value="{value}"<?php echo $datasheets->cddrenewal_required->editAttributes() ?>></div>
+<div id="dsl_x_cddrenewal_required" data-repeatcolumn="5" class="ew-item-list d-none"><div>
+<?php echo $datasheets->cddrenewal_required->radioButtonListHtml(FALSE, "x_cddrenewal_required", 2) ?>
+</div></div>
+</span>
+<?php } else { ?>
+<span id="el_datasheets_cddrenewal_required">
+<span<?php echo $datasheets->cddrenewal_required->viewAttributes() ?>>
+<input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->cddrenewal_required->ViewValue) ?>"></span>
+</span>
+<input type="hidden" data-table="datasheets" data-field="x_cddrenewal_required" data-page="2" name="x_cddrenewal_required" id="x_cddrenewal_required" value="<?php echo HtmlEncode($datasheets->cddrenewal_required->FormValue) ?>">
+<?php } ?>
+<?php echo $datasheets->cddrenewal_required->CustomMsg ?></div></div>
+	</div>
+<?php } else { ?>
+	<tr id="r_cddrenewal_required">
+		<td class="<?php echo $datasheets_add->TableLeftColumnClass ?>"><span id="elh_datasheets_cddrenewal_required"><?php echo $datasheets->cddrenewal_required->caption() ?><?php echo ($datasheets->cddrenewal_required->Required) ? $Language->phrase("FieldRequiredIndicator") : "" ?></span></td>
+		<td<?php echo $datasheets->cddrenewal_required->cellAttributes() ?>>
+<?php if (!$datasheets->isConfirm()) { ?>
+<span id="el_datasheets_cddrenewal_required">
+<div id="tp_x_cddrenewal_required" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_cddrenewal_required" data-page="2" data-value-separator="<?php echo $datasheets->cddrenewal_required->displayValueSeparatorAttribute() ?>" name="x_cddrenewal_required" id="x_cddrenewal_required" value="{value}"<?php echo $datasheets->cddrenewal_required->editAttributes() ?>></div>
+<div id="dsl_x_cddrenewal_required" data-repeatcolumn="5" class="ew-item-list d-none"><div>
+<?php echo $datasheets->cddrenewal_required->radioButtonListHtml(FALSE, "x_cddrenewal_required", 2) ?>
+</div></div>
+</span>
+<?php } else { ?>
+<span id="el_datasheets_cddrenewal_required">
+<span<?php echo $datasheets->cddrenewal_required->viewAttributes() ?>>
+<input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->cddrenewal_required->ViewValue) ?>"></span>
+</span>
+<input type="hidden" data-table="datasheets" data-field="x_cddrenewal_required" data-page="2" name="x_cddrenewal_required" id="x_cddrenewal_required" value="<?php echo HtmlEncode($datasheets->cddrenewal_required->FormValue) ?>">
+<?php } ?>
+<?php echo $datasheets->cddrenewal_required->CustomMsg ?></td>
 	</tr>
 <?php } ?>
 <?php } ?>

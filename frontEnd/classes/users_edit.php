@@ -11,7 +11,7 @@ class users_edit extends users
 	public $PageID = "edit";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'users';

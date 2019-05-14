@@ -11,7 +11,7 @@ class countryOfOrigin_delete extends countryOfOrigin
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'countryOfOrigin';

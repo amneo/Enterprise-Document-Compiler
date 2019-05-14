@@ -11,7 +11,7 @@ class countryOfOrigin_add extends countryOfOrigin
 	public $PageID = "add";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'countryOfOrigin';

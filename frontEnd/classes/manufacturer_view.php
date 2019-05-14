@@ -11,7 +11,7 @@ class manufacturer_view extends manufacturer
 	public $PageID = "view";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'manufacturer';

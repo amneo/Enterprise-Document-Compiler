@@ -11,7 +11,7 @@ class userlevels_list extends userlevels
 	public $PageID = "list";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'userlevels';

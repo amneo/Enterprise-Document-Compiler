@@ -11,7 +11,7 @@ class logout
 	public $PageID = "logout";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Page object name
 	public $PageObjName = "logout";

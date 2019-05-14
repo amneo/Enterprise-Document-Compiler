@@ -11,7 +11,7 @@ class countryOfOrigin_edit extends countryOfOrigin
 	public $PageID = "edit";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'countryOfOrigin';

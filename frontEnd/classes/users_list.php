@@ -11,7 +11,7 @@ class users_list extends users
 	public $PageID = "list";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'users';

@@ -11,7 +11,7 @@ class userlevelpermissions_add extends userlevelpermissions
 	public $PageID = "add";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'userlevelpermissions';

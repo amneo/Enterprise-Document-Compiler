@@ -11,7 +11,7 @@ class countryOfOrigin_view extends countryOfOrigin
 	public $PageID = "view";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'countryOfOrigin';

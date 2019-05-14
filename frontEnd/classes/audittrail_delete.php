@@ -11,7 +11,7 @@ class audittrail_delete extends audittrail
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'audittrail';

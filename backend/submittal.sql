@@ -16,7 +16,7 @@ DROP TABLE IF EXISTS public."countryOfOrigin";
 DROP TABLE IF EXISTS public.manufacturer;
 SET check_function_bodies = false;
 --
--- Structure for table manufacturer (OID = 53325) :
+-- Structure for table manufacturer (OID = 53325) : 
 --
 CREATE TABLE public.manufacturer (
     "manufacturerId" bigserial NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE public.manufacturer (
 )
 WITH (oids = false);
 --
--- Structure for table countryOfOrigin (OID = 53340) :
+-- Structure for table countryOfOrigin (OID = 53340) : 
 --
 CREATE TABLE public."countryOfOrigin" (
     "cooId" serial NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE public."countryOfOrigin" (
 )
 WITH (oids = false);
 --
--- Structure for table datasheets (OID = 53361) :
+-- Structure for table datasheets (OID = 53361) : 
 --
 CREATE TABLE public.datasheets (
     partid bigserial NOT NULL,
@@ -60,11 +60,12 @@ CREATE TABLE public.datasheets (
     datasheetdate date DEFAULT '2019-03-20'::date,
     username varchar,
     "nativeFiles" varchar NOT NULL,
-    "thirdPartyNo" varchar NOT NULL
+    "thirdPartyNo" varchar NOT NULL,
+    cddrenewal_required boolean DEFAULT true
 )
 WITH (oids = false);
 --
--- Structure for table audittrail (OID = 53385) :
+-- Structure for table audittrail (OID = 53385) : 
 --
 CREATE TABLE public.audittrail (
     id serial NOT NULL,
@@ -80,7 +81,7 @@ CREATE TABLE public.audittrail (
 )
 WITH (oids = false);
 --
--- Structure for table users (OID = 53470) :
+-- Structure for table users (OID = 53470) : 
 --
 CREATE TABLE public.users (
     seqid serial NOT NULL,
@@ -96,7 +97,7 @@ CREATE TABLE public.users (
 WITH (oids = false);
 ALTER TABLE ONLY public.users ALTER COLUMN "userName" SET STATISTICS 0;
 --
--- Structure for table userlevels (OID = 53495) :
+-- Structure for table userlevels (OID = 53495) : 
 --
 CREATE TABLE public.userlevels (
     userlevelid integer NOT NULL,
@@ -104,7 +105,7 @@ CREATE TABLE public.userlevels (
 )
 WITH (oids = false);
 --
--- Structure for table userlevelpermissions (OID = 53500) :
+-- Structure for table userlevelpermissions (OID = 53500) : 
 --
 CREATE TABLE public.userlevelpermissions (
     userlevelid integer NOT NULL,
@@ -113,85 +114,85 @@ CREATE TABLE public.userlevelpermissions (
 )
 WITH (oids = false);
 --
--- Definition for index manufacturer_pkey (OID = 53332) :
+-- Definition for index manufacturer_pkey (OID = 53332) : 
 --
 ALTER TABLE ONLY manufacturer
     ADD CONSTRAINT manufacturer_pkey
     PRIMARY KEY ("manufacturerId");
 --
--- Definition for index manufacturer_manufacturerName_key (OID = 53334) :
+-- Definition for index manufacturer_manufacturerName_key (OID = 53334) : 
 --
 ALTER TABLE ONLY manufacturer
     ADD CONSTRAINT "manufacturer_manufacturerName_key"
     UNIQUE ("manufacturerName");
 --
--- Definition for index countryOfOrigin_countryName_key (OID = 53349) :
+-- Definition for index countryOfOrigin_countryName_key (OID = 53349) : 
 --
 ALTER TABLE ONLY "countryOfOrigin"
     ADD CONSTRAINT "countryOfOrigin_countryName_key"
     UNIQUE ("countryName");
 --
--- Definition for index countryOfOrigin_countryIsoCode_key (OID = 53351) :
+-- Definition for index countryOfOrigin_countryIsoCode_key (OID = 53351) : 
 --
 ALTER TABLE ONLY "countryOfOrigin"
     ADD CONSTRAINT "countryOfOrigin_countryIsoCode_key"
     UNIQUE ("countryIsoCode");
 --
--- Definition for index datasheets_pkey (OID = 53378) :
+-- Definition for index datasheets_pkey (OID = 53378) : 
 --
 ALTER TABLE ONLY datasheets
     ADD CONSTRAINT datasheets_pkey
     PRIMARY KEY (partid);
 --
--- Definition for index datasheets_partno_key (OID = 53380) :
+-- Definition for index datasheets_partno_key (OID = 53380) : 
 --
 ALTER TABLE ONLY datasheets
     ADD CONSTRAINT datasheets_partno_key
     UNIQUE (partno);
 --
--- Definition for index pkaudittrail (OID = 53392) :
+-- Definition for index pkaudittrail (OID = 53392) : 
 --
 ALTER TABLE ONLY audittrail
     ADD CONSTRAINT pkaudittrail
     PRIMARY KEY (id);
 --
--- Definition for index users_pkey (OID = 53479) :
+-- Definition for index users_pkey (OID = 53479) : 
 --
 ALTER TABLE ONLY users
     ADD CONSTRAINT users_pkey
     PRIMARY KEY (seqid);
 --
--- Definition for index users_userLoginId_key (OID = 53481) :
+-- Definition for index users_userLoginId_key (OID = 53481) : 
 --
 ALTER TABLE ONLY users
     ADD CONSTRAINT "users_userLoginId_key"
     UNIQUE ("userLoginId");
 --
--- Definition for index users_uEmail_key (OID = 53483) :
+-- Definition for index users_uEmail_key (OID = 53483) : 
 --
 ALTER TABLE ONLY users
     ADD CONSTRAINT "users_uEmail_key"
     UNIQUE ("uEmail");
 --
--- Definition for index pkuserlevels (OID = 53498) :
+-- Definition for index pkuserlevels (OID = 53498) : 
 --
 ALTER TABLE ONLY userlevels
     ADD CONSTRAINT pkuserlevels
     PRIMARY KEY (userlevelid);
 --
--- Definition for index pkuserlevelpermissions (OID = 53503) :
+-- Definition for index pkuserlevelpermissions (OID = 53503) : 
 --
 ALTER TABLE ONLY userlevelpermissions
     ADD CONSTRAINT pkuserlevelpermissions
     PRIMARY KEY (userlevelid, tablename);
 --
--- Definition for index countryOfOrigin_pkey (OID = 53507) :
+-- Definition for index countryOfOrigin_pkey (OID = 53507) : 
 --
 ALTER TABLE ONLY "countryOfOrigin"
     ADD CONSTRAINT "countryOfOrigin_pkey"
     PRIMARY KEY ("cooId");
 --
--- Definition for index datasheets_fk (OID = 53534) :
+-- Definition for index datasheets_fk (OID = 53534) : 
 --
 ALTER TABLE ONLY datasheets
     ADD CONSTRAINT datasheets_fk
@@ -200,3 +201,4 @@ ALTER TABLE ONLY datasheets
 -- Comments
 --
 COMMENT ON SCHEMA public IS 'standard public schema';
+COMMENT ON COLUMN public.datasheets.cddrenewal_required IS 'This field is to over come the problem of certificates that are not to be renewed';

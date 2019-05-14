@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<configuration date="2019/05/14" author="e.World Technology Ltd.">
+  <project id="{vishal-sub}" file="E:\submittal_tool\Enterprise-Document-Compiler\SUBMITTAL.pmp" name="SUBMITTAL" product="PHPMaker" version="15.0" datetime="2019/05/14 17:06:47" languagefolder="phplang" userlevel="-2,&quot;Anonymous&quot;,0;0,&quot;Default&quot;,0">
+    <table id="datasheets" name="datasheets" caption="Data Sheets" userlevel="-2,&quot;Anonymous&quot;,104;0,&quot;Default&quot;,109" priv="1" />
+    <table id="manufacturer" name="manufacturer" caption="Manufacturer" userlevel="-2,&quot;Anonymous&quot;,0;0,&quot;Default&quot;,109" priv="1" />
+    <table id="countryOfOrigin" name="countryOfOrigin" caption="Country Of Origin" userlevel="-2,&quot;Anonymous&quot;,0;0,&quot;Default&quot;,109" priv="1" />
+    <table id="audittrail" name="audittrail" caption="Audit Trail" userlevel="-2,&quot;Anonymous&quot;,0;0,&quot;Default&quot;,0" priv="1" />
+    <table id="users" name="users" caption="User Details" userlevel="-2,&quot;Anonymous&quot;,0;0,&quot;Default&quot;,0" priv="1" />
+    <table id="userlevels" name="userlevels" caption="User Levels" userlevel="-2,&quot;Anonymous&quot;,0;0,&quot;Default&quot;,0" priv="1" />
+    <table id="userlevelpermissions" name="userlevelpermissions" caption="User Level Permissions" userlevel="-2,&quot;Anonymous&quot;,0;0,&quot;Default&quot;,0" priv="1" />
+  </project>
+</configuration>

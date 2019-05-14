@@ -11,7 +11,7 @@ class manufacturer_add extends manufacturer
 	public $PageID = "add";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'manufacturer';

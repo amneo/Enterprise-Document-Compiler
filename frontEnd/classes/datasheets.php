@@ -51,6 +51,7 @@ class datasheets extends DbTable
 	public $hssCode;
 	public $systrade;
 	public $isdatasheet;
+	public $cddrenewal_required;
 	public $datasheetdate;
 	public $username;
 	public $nativeFiles;
@@ -84,7 +85,7 @@ class datasheets extends DbTable
 		$this->ShowMultipleDetails = FALSE; // Show multiple details
 		$this->GridAddRowCount = 8;
 		$this->AllowAddDeleteRow = TRUE; // Allow add/delete row
-		$this->UserIDAllowSecurity = 0; // User ID Allow
+		$this->UserIDAllowSecurity = 104; // User ID Allow
 		$this->BasicSearch = new BasicSearch($this->TableVar);
 		$this->BasicSearch->TypeDefault = "OR";
 
@@ -183,6 +184,7 @@ class datasheets extends DbTable
 
 		// expirydt
 		$this->expirydt = new DbField('datasheets', 'datasheets', 'x_expirydt', 'expirydt', '"expirydt"', CastDateFieldForLike('"expirydt"', 5, "DB"), 133, 5, FALSE, '"expirydt"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'TEXT');
+		$this->expirydt->Required = TRUE; // Required field
 		$this->expirydt->Sortable = TRUE; // Allow sort
 		$this->expirydt->DefaultErrorMessage = str_replace("%s", $GLOBALS["DATE_SEPARATOR"], $Language->phrase("IncorrectDateYMD"));
 		$this->fields['expirydt'] = &$this->expirydt;
@@ -227,6 +229,15 @@ class datasheets extends DbTable
 		$this->isdatasheet->Lookup = new Lookup('isdatasheet', 'datasheets', FALSE, '', ["","","",""], [], [], [], [], [], [], '', '');
 		$this->isdatasheet->OptionCount = 2;
 		$this->fields['isdatasheet'] = &$this->isdatasheet;
+
+		// cddrenewal_required
+		$this->cddrenewal_required = new DbField('datasheets', 'datasheets', 'x_cddrenewal_required', 'cddrenewal_required', '"cddrenewal_required"', 'CAST("cddrenewal_required" AS varchar(255))', 11, -1, FALSE, '"cddrenewal_required"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'RADIO');
+		$this->cddrenewal_required->Required = TRUE; // Required field
+		$this->cddrenewal_required->Sortable = TRUE; // Allow sort
+		$this->cddrenewal_required->DataType = DATATYPE_BOOLEAN;
+		$this->cddrenewal_required->Lookup = new Lookup('cddrenewal_required', 'datasheets', FALSE, '', ["","","",""], [], [], [], [], [], [], '', '');
+		$this->cddrenewal_required->OptionCount = 2;
+		$this->fields['cddrenewal_required'] = &$this->cddrenewal_required;
 
 		// datasheetdate
 		$this->datasheetdate = new DbField('datasheets', 'datasheets', 'x_datasheetdate', 'datasheetdate', '"datasheetdate"', CastDateFieldForLike('"datasheetdate"', 0, "DB"), 133, 0, FALSE, '"datasheetdate"', FALSE, FALSE, FALSE, 'FORMATTED TEXT', 'NO');
@@ -702,6 +713,7 @@ class datasheets extends DbTable
 		$this->hssCode->DbValue = $row['hssCode'];
 		$this->systrade->DbValue = $row['systrade'];
 		$this->isdatasheet->DbValue = (ConvertToBool($row['isdatasheet']) ? "1" : "0");
+		$this->cddrenewal_required->DbValue = (ConvertToBool($row['cddrenewal_required']) ? "1" : "0");
 		$this->datasheetdate->DbValue = $row['datasheetdate'];
 		$this->username->DbValue = $row['username'];
 		$this->nativeFiles->DbValue = $row['nativeFiles'];
@@ -968,6 +980,7 @@ class datasheets extends DbTable
 		$this->hssCode->setDbValue($rs->fields('hssCode'));
 		$this->systrade->setDbValue($rs->fields('systrade'));
 		$this->isdatasheet->setDbValue(ConvertToBool($rs->fields('isdatasheet')) ? "1" : "0");
+		$this->cddrenewal_required->setDbValue(ConvertToBool($rs->fields('cddrenewal_required')) ? "1" : "0");
 		$this->datasheetdate->setDbValue($rs->fields('datasheetdate'));
 		$this->username->setDbValue($rs->fields('username'));
 		$this->nativeFiles->setDbValue($rs->fields('nativeFiles'));
@@ -1034,7 +1047,9 @@ class datasheets extends DbTable
 		// isdatasheet
 		$this->isdatasheet->CellCssStyle = "width: 10px;";
 
+		// cddrenewal_required
 		// datasheetdate
+
 		$this->datasheetdate->CellCssStyle = "width: 10px;";
 
 		// username
@@ -1201,6 +1216,14 @@ class datasheets extends DbTable
 		}
 		$this->isdatasheet->ViewCustomAttributes = "";
 
+		// cddrenewal_required
+		if (ConvertToBool($this->cddrenewal_required->CurrentValue)) {
+			$this->cddrenewal_required->ViewValue = $this->cddrenewal_required->tagCaption(1) <> "" ? $this->cddrenewal_required->tagCaption(1) : "Y";
+		} else {
+			$this->cddrenewal_required->ViewValue = $this->cddrenewal_required->tagCaption(2) <> "" ? $this->cddrenewal_required->tagCaption(2) : "N";
+		}
+		$this->cddrenewal_required->ViewCustomAttributes = "";
+
 		// datasheetdate
 		$this->datasheetdate->ViewValue = $this->datasheetdate->CurrentValue;
 		$this->datasheetdate->ViewValue = FormatDateTime($this->datasheetdate->ViewValue, 0);
@@ -1349,6 +1372,11 @@ class datasheets extends DbTable
 		$this->isdatasheet->LinkCustomAttributes = "";
 		$this->isdatasheet->HrefValue = "";
 		$this->isdatasheet->TooltipValue = "";
+
+		// cddrenewal_required
+		$this->cddrenewal_required->LinkCustomAttributes = "";
+		$this->cddrenewal_required->HrefValue = "";
+		$this->cddrenewal_required->TooltipValue = "";
 
 		// datasheetdate
 		$this->datasheetdate->LinkCustomAttributes = "";
@@ -1513,6 +1541,10 @@ class datasheets extends DbTable
 		$this->isdatasheet->EditCustomAttributes = "";
 		$this->isdatasheet->EditValue = $this->isdatasheet->options(FALSE);
 
+		// cddrenewal_required
+		$this->cddrenewal_required->EditCustomAttributes = "";
+		$this->cddrenewal_required->EditValue = $this->cddrenewal_required->options(FALSE);
+
 		// datasheetdate
 		$this->datasheetdate->EditAttrs["class"] = "form-control";
 		$this->datasheetdate->EditCustomAttributes = "";
@@ -1567,6 +1599,7 @@ class datasheets extends DbTable
 					$doc->exportCaption($this->hssCode);
 					$doc->exportCaption($this->systrade);
 					$doc->exportCaption($this->isdatasheet);
+					$doc->exportCaption($this->cddrenewal_required);
 					$doc->exportCaption($this->nativeFiles);
 				} else {
 					$doc->exportCaption($this->partno);
@@ -1580,6 +1613,7 @@ class datasheets extends DbTable
 					$doc->exportCaption($this->hssCode);
 					$doc->exportCaption($this->systrade);
 					$doc->exportCaption($this->isdatasheet);
+					$doc->exportCaption($this->cddrenewal_required);
 					$doc->exportCaption($this->nativeFiles);
 				}
 				$doc->endExportRow();
@@ -1623,6 +1657,7 @@ class datasheets extends DbTable
 						$doc->exportField($this->hssCode);
 						$doc->exportField($this->systrade);
 						$doc->exportField($this->isdatasheet);
+						$doc->exportField($this->cddrenewal_required);
 						$doc->exportField($this->nativeFiles);
 					} else {
 						$doc->exportField($this->partno);
@@ -1636,6 +1671,7 @@ class datasheets extends DbTable
 						$doc->exportField($this->hssCode);
 						$doc->exportField($this->systrade);
 						$doc->exportField($this->isdatasheet);
+						$doc->exportField($this->cddrenewal_required);
 						$doc->exportField($this->nativeFiles);
 					}
 					$doc->endExportRow($rowCnt);

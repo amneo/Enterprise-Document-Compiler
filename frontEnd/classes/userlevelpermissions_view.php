@@ -11,7 +11,7 @@ class userlevelpermissions_view extends userlevelpermissions
 	public $PageID = "view";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'userlevelpermissions';

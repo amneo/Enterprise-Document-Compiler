@@ -117,6 +117,11 @@ fdatasheetslist.validate = function() {
 			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->isdatasheet->caption(), $datasheets->isdatasheet->RequiredErrorMessage)) ?>");
 		<?php } ?>
+		<?php if ($datasheets_list->cddrenewal_required->Required) { ?>
+			elm = this.getElements("x" + infix + "_cddrenewal_required");
+			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
+				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->cddrenewal_required->caption(), $datasheets->cddrenewal_required->RequiredErrorMessage)) ?>");
+		<?php } ?>
 		<?php if ($datasheets_list->nativeFiles->Required) { ?>
 			elm = this.getElements("x" + infix + "_nativeFiles");
 			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
@@ -151,6 +156,8 @@ fdatasheetslist.lists["x_systrade"] = <?php echo $datasheets_list->systrade->Loo
 fdatasheetslist.lists["x_systrade"].options = <?php echo JsonEncode($datasheets_list->systrade->options(FALSE, TRUE)) ?>;
 fdatasheetslist.lists["x_isdatasheet"] = <?php echo $datasheets_list->isdatasheet->Lookup->toClientList() ?>;
 fdatasheetslist.lists["x_isdatasheet"].options = <?php echo JsonEncode($datasheets_list->isdatasheet->options(FALSE, TRUE)) ?>;
+fdatasheetslist.lists["x_cddrenewal_required"] = <?php echo $datasheets_list->cddrenewal_required->Lookup->toClientList() ?>;
+fdatasheetslist.lists["x_cddrenewal_required"].options = <?php echo JsonEncode($datasheets_list->cddrenewal_required->options(FALSE, TRUE)) ?>;
 
 // Form object for search
 var fdatasheetslistsrch = currentSearchForm = new ew.Form("fdatasheetslistsrch");
@@ -234,7 +241,7 @@ $datasheets_list->renderRow();
 <?php if ($datasheets->partno->Visible) { // partno ?>
 	<div id="xsc_partno" class="ew-cell form-group">
 		<label for="x_partno" class="ew-search-caption ew-label"><?php echo $datasheets->partno->caption() ?></label>
-		<span class="ew-search-operator"><?php echo $Language->phrase("LIKE") ?><input type="hidden" name="z_partno" id="z_partno" value="LIKE"></span>
+		<span class="ew-search-operator"><?php echo $Language->phrase("=") ?><input type="hidden" name="z_partno" id="z_partno" value="="></span>
 		<span class="ew-search-field">
 <input type="text" data-table="datasheets" data-field="x_partno" name="x_partno" id="x_partno" size="30" placeholder="<?php echo HtmlEncode($datasheets->partno->getPlaceHolder()) ?>" value="<?php echo $datasheets->partno->EditValue ?>"<?php echo $datasheets->partno->editAttributes() ?>>
 </span>
@@ -464,6 +471,15 @@ $datasheets_list->ListOptions->render("header", "left");
 		</div></div></th>
 	<?php } ?>
 <?php } ?>
+<?php if ($datasheets->cddrenewal_required->Visible) { // cddrenewal_required ?>
+	<?php if ($datasheets->sortUrl($datasheets->cddrenewal_required) == "") { ?>
+		<th data-name="cddrenewal_required" class="<?php echo $datasheets->cddrenewal_required->headerCellClass() ?>"><div id="elh_datasheets_cddrenewal_required" class="datasheets_cddrenewal_required"><div class="ew-table-header-caption"><?php echo $datasheets->cddrenewal_required->caption() ?></div></div></th>
+	<?php } else { ?>
+		<th data-name="cddrenewal_required" class="<?php echo $datasheets->cddrenewal_required->headerCellClass() ?>"><div class="ew-pointer" onclick="ew.sort(event,'<?php echo $datasheets->SortUrl($datasheets->cddrenewal_required) ?>',2);"><div id="elh_datasheets_cddrenewal_required" class="datasheets_cddrenewal_required">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption"><?php echo $datasheets->cddrenewal_required->caption() ?></span><span class="ew-table-header-sort"><?php if ($datasheets->cddrenewal_required->getSort() == "ASC") { ?><i class="fa fa-sort-up"></i><?php } elseif ($datasheets->cddrenewal_required->getSort() == "DESC") { ?><i class="fa fa-sort-down"></i><?php } ?></span></div>
+		</div></div></th>
+	<?php } ?>
+<?php } ?>
 <?php if ($datasheets->nativeFiles->Visible) { // nativeFiles ?>
 	<?php if ($datasheets->sortUrl($datasheets->nativeFiles) == "") { ?>
 		<th data-name="nativeFiles" class="<?php echo $datasheets->nativeFiles->headerCellClass() ?>" style="width: 10px;"><div id="elh_datasheets_nativeFiles" class="datasheets_nativeFiles"><div class="ew-table-header-caption"><?php echo $datasheets->nativeFiles->caption() ?></div></div></th>
@@ -663,6 +679,17 @@ fdatasheetslist.createAutoSuggest({"id":"x<?php echo $datasheets_list->RowIndex 
 <input type="hidden" data-table="datasheets" data-field="x_isdatasheet" name="o<?php echo $datasheets_list->RowIndex ?>_isdatasheet" id="o<?php echo $datasheets_list->RowIndex ?>_isdatasheet" value="<?php echo HtmlEncode($datasheets->isdatasheet->OldValue) ?>">
 </td>
 	<?php } ?>
+	<?php if ($datasheets->cddrenewal_required->Visible) { // cddrenewal_required ?>
+		<td data-name="cddrenewal_required">
+<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_cddrenewal_required" class="form-group datasheets_cddrenewal_required">
+<div id="tp_x<?php echo $datasheets_list->RowIndex ?>_cddrenewal_required" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_cddrenewal_required" data-value-separator="<?php echo $datasheets->cddrenewal_required->displayValueSeparatorAttribute() ?>" name="x<?php echo $datasheets_list->RowIndex ?>_cddrenewal_required" id="x<?php echo $datasheets_list->RowIndex ?>_cddrenewal_required" value="{value}"<?php echo $datasheets->cddrenewal_required->editAttributes() ?>></div>
+<div id="dsl_x<?php echo $datasheets_list->RowIndex ?>_cddrenewal_required" data-repeatcolumn="5" class="ew-item-list d-none"><div>
+<?php echo $datasheets->cddrenewal_required->radioButtonListHtml(FALSE, "x{$datasheets_list->RowIndex}_cddrenewal_required") ?>
+</div></div>
+</span>
+<input type="hidden" data-table="datasheets" data-field="x_cddrenewal_required" name="o<?php echo $datasheets_list->RowIndex ?>_cddrenewal_required" id="o<?php echo $datasheets_list->RowIndex ?>_cddrenewal_required" value="<?php echo HtmlEncode($datasheets->cddrenewal_required->OldValue) ?>">
+</td>
+	<?php } ?>
 	<?php if ($datasheets->nativeFiles->Visible) { // nativeFiles ?>
 		<td data-name="nativeFiles">
 <span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_nativeFiles" class="form-group datasheets_nativeFiles">
@@ -850,6 +877,14 @@ $datasheets_list->ListOptions->render("body", "left", $datasheets_list->RowCnt);
 <span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_isdatasheet" class="datasheets_isdatasheet">
 <span<?php echo $datasheets->isdatasheet->viewAttributes() ?>>
 <?php echo $datasheets->isdatasheet->getViewValue() ?></span>
+</span>
+</td>
+	<?php } ?>
+	<?php if ($datasheets->cddrenewal_required->Visible) { // cddrenewal_required ?>
+		<td data-name="cddrenewal_required"<?php echo $datasheets->cddrenewal_required->cellAttributes() ?>>
+<span id="el<?php echo $datasheets_list->RowCnt ?>_datasheets_cddrenewal_required" class="datasheets_cddrenewal_required">
+<span<?php echo $datasheets->cddrenewal_required->viewAttributes() ?>>
+<?php echo $datasheets->cddrenewal_required->getViewValue() ?></span>
 </span>
 </td>
 	<?php } ?>

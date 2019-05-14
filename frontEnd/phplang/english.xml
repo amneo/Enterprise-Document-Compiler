@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ew-language date="2019/5/13" version="15.0.0.1" id="en" name="English" desc="English" author="e.World Technology Ltd.">
+<ew-language date="2019/5/14" version="15.0.0.1" id="en" name="English" desc="English" author="e.World Technology Ltd.">
   <!-- 
 	*** Important Notes:
 	1. Language ID should follow: https://developers.google.com/recaptcha/docs/language,
@@ -698,7 +698,7 @@
   </global>
   <project>
     <phrase id="bodytitle" value="TracQCDD - CDD Tracker and Submittal Tool" />
-    <phrase id="footertext" value="Maintained By Estimation and Engineering Team-Vishal | Version:01-Release Date: 13-05-2019" />
+    <phrase id="footertext" value="Maintained By Estimation and Engineering Team-Vishal | Version:01.01-Release Date: 15-05-2019" />
     <menu id="4">
       <phrase id="menutext" value="Workspace" />
     </menu>
@@ -800,6 +800,13 @@
         <phrase id="fldtagvalue1" value="1" />
         <phrase id="fldtagcaption1" value="Yes" />
         <phrase id="fldtagvalue2" value="0" />
+        <phrase id="fldtagcaption2" value="No" />
+      </field>
+      <field id="cddrenewal_required">
+        <phrase id="fldcaption" value="CDD Renewal Required ?" />
+        <phrase id="fldtagvalue1" value="TRUE" />
+        <phrase id="fldtagcaption1" value="Yes" />
+        <phrase id="fldtagvalue2" value="FALSE" />
         <phrase id="fldtagcaption2" value="No" />
       </field>
       <field id="datasheetdate">

@@ -11,7 +11,7 @@ class changepwd extends users
 	public $PageID = "changepwd";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Page object name
 	public $PageObjName = "changepwd";

@@ -11,7 +11,7 @@ class manufacturer_delete extends manufacturer
 	public $PageID = "delete";
 
 	// Project ID
-	public $ProjectID = "vishal-sub";
+	public $ProjectID = "{vishal-sub}";
 
 	// Table name
 	public $TableName = 'manufacturer';
