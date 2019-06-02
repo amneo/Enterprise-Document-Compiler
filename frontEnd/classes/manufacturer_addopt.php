@@ -23,9 +23,9 @@ class manufacturer_addopt extends manufacturer
 	public $AuditTrailOnAdd = TRUE;
 	public $AuditTrailOnEdit = TRUE;
 	public $AuditTrailOnDelete = TRUE;
-	public $AuditTrailOnView = TRUE;
-	public $AuditTrailOnViewData = TRUE;
-	public $AuditTrailOnSearch = TRUE;
+	public $AuditTrailOnView = FALSE;
+	public $AuditTrailOnViewData = FALSE;
+	public $AuditTrailOnSearch = FALSE;
 
 	// Page headings
 	public $Heading = "";

@@ -601,8 +601,6 @@ class userlevels_view extends userlevels
 	public $StopRec;
 	public $TotalRecs = 0;
 	public $RecRange = 10;
-	public $Pager;
-	public $AutoHidePager = AUTO_HIDE_PAGER;
 	public $RecCnt;
 	public $RecKey = array();
 	public $IsModal = FALSE;
@@ -675,51 +673,7 @@ class userlevels_view extends userlevels
 			Write($Language->phrase("UserProfileCorrupted"));
 			$this->terminate();
 		}
-
-		// Get export parameters
-		$custom = "";
-		if (Param("export") !== NULL) {
-			$this->Export = Param("export");
-			$custom = Param("custom", "");
-		} elseif (IsPost()) {
-			if (Post("exporttype") !== NULL)
-				$this->Export = Post("exporttype");
-			$custom = Post("custom", "");
-		} elseif (Get("cmd") == "json") {
-			$this->Export = Get("cmd");
-		} else {
-			$this->setExportReturnUrl(CurrentUrl());
-		}
-		$ExportFileName = $this->TableVar; // Get export file, used in header
-		if (Get("userlevelid") !== NULL) {
-			if ($ExportFileName <> "")
-				$ExportFileName .= "_";
-			$ExportFileName .= Get("userlevelid");
-		}
-
-		// Get custom export parameters
-		if ($this->isExport() && $custom <> "") {
-			$this->CustomExport = $this->Export;
-			$this->Export = "print";
-		}
-		$CustomExportType = $this->CustomExport;
-		$ExportType = $this->Export; // Get export parameter, used in header
-
-		// Update Export URLs
-		if (defined(PROJECT_NAMESPACE . "USE_PHPEXCEL"))
-			$this->ExportExcelCustom = FALSE;
-		if ($this->ExportExcelCustom)
-			$this->ExportExcelUrl .= "&amp;custom=1";
-		if (defined(PROJECT_NAMESPACE . "USE_PHPWORD"))
-			$this->ExportWordCustom = FALSE;
-		if ($this->ExportWordCustom)
-			$this->ExportWordUrl .= "&amp;custom=1";
-		if ($this->ExportPdfCustom)
-			$this->ExportPdfUrl .= "&amp;custom=1";
 		$this->CurrentAction = Param("action"); // Set up current action
-
-		// Setup export options
-		$this->setupExportOptions();
 		$this->userlevelid->setVisibility();
 		$this->userlevelname->setVisibility();
 		$this->hideFieldsForAddEdit();
@@ -766,53 +720,30 @@ class userlevels_view extends userlevels
 				$this->userlevelid->setFormValue(Route(2));
 				$this->RecKey["userlevelid"] = $this->userlevelid->FormValue;
 			} else {
-				$loadCurrentRecord = TRUE;
+				$returnUrl = "userlevelslist.php"; // Return to list
 			}
 
 			// Get action
 			$this->CurrentAction = "show"; // Display
 			switch ($this->CurrentAction) {
 				case "show": // Get a record to display
-					$this->StartRec = 1; // Initialize start position
-					if ($this->Recordset = $this->loadRecordset()) // Load records
-						$this->TotalRecs = $this->Recordset->RecordCount(); // Get record count
-					if ($this->TotalRecs <= 0) { // No record found
-						if ($this->getSuccessMessage() == "" && $this->getFailureMessage() == "")
-							$this->setFailureMessage($Language->phrase("NoRecord")); // Set no record message
-						$this->terminate("userlevelslist.php"); // Return to list page
-					} elseif ($loadCurrentRecord) { // Load current record position
-						$this->setupStartRec(); // Set up start record position
 
-						// Point to current record
-						if ($this->StartRec <= $this->TotalRecs) {
-							$matchRecord = TRUE;
-							$this->Recordset->move($this->StartRec - 1);
-						}
-					} else { // Match key values
-						while (!$this->Recordset->EOF) {
-							if (SameString($this->userlevelid->CurrentValue, $this->Recordset->fields('userlevelid'))) {
-								$this->setStartRecordNumber($this->StartRec); // Save record position
-								$matchRecord = TRUE;
-								break;
-							} else {
-								$this->StartRec++;
-								$this->Recordset->moveNext();
-							}
-						}
+					// Load record based on key
+					if (IsApi()) {
+						$filter = $this->getRecordFilter();
+						$this->CurrentFilter = $filter;
+						$sql = $this->getCurrentSql();
+						$conn = &$this->getConnection();
+						$this->Recordset = LoadRecordset($sql, $conn);
+						$res = $this->Recordset && !$this->Recordset->EOF;
+					} else {
+						$res = $this->loadRow();
 					}
-					if (!$matchRecord) {
+					if (!$res) { // Load record based on key
 						if ($this->getSuccessMessage() == "" && $this->getFailureMessage() == "")
 							$this->setFailureMessage($Language->phrase("NoRecord")); // Set no record message
 						$returnUrl = "userlevelslist.php"; // No matching record, return to list
-					} else {
-						$this->loadRowValues($this->Recordset); // Load row values
 					}
-			}
-
-			// Export data only
-			if (!$this->CustomExport && in_array($this->Export, array_keys($EXPORT))) {
-				$this->exportData();
-				$this->terminate();
 			}
 		} else {
 			$returnUrl = "userlevelslist.php"; // Not page request, return to list
@@ -929,33 +860,6 @@ class userlevels_view extends userlevels
 		}
 	}
 
-	// Load recordset
-	public function loadRecordset($offset = -1, $rowcnt = -1)
-	{
-
-		// Load List page SQL
-		$sql = $this->getListSql();
-		$conn = &$this->getConnection();
-
-		// Load recordset
-		$dbtype = GetConnectionType($this->Dbid);
-		if ($this->UseSelectLimit) {
-			$conn->raiseErrorFn = $GLOBALS["ERROR_FUNC"];
-			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
-			} else {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
-			}
-			$conn->raiseErrorFn = '';
-		} else {
-			$rs = LoadRecordset($sql, $conn);
-		}
-
-		// Call Recordset Selected event
-		$this->Recordset_Selected($rs);
-		return $rs;
-	}
-
 	// Load row based on key values
 	public function loadRow()
 	{
@@ -1052,281 +956,6 @@ class userlevels_view extends userlevels
 		// Call Row Rendered event
 		if ($this->RowType <> ROWTYPE_AGGREGATEINIT)
 			$this->Row_Rendered();
-	}
-
-	// Get export HTML tag
-	protected function getExportTag($type, $custom = FALSE)
-	{
-		global $Language;
-		if (SameText($type, "excel")) {
-			if ($custom)
-				return "<a href=\"javascript:void(0);\" class=\"ew-export-link ew-excel\" title=\"" . HtmlEncode($Language->phrase("ExportToExcelText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToExcelText")) . "\" onclick=\"ew.export(document.fuserlevelsview,'" . $this->ExportExcelUrl . "','excel',true);\">" . $Language->phrase("ExportToExcel") . "</a>";
-			else
-				return "<a href=\"" . $this->ExportExcelUrl . "\" class=\"ew-export-link ew-excel\" title=\"" . HtmlEncode($Language->phrase("ExportToExcelText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToExcelText")) . "\">" . $Language->phrase("ExportToExcel") . "</a>";
-		} elseif (SameText($type, "word")) {
-			if ($custom)
-				return "<a href=\"javascript:void(0);\" class=\"ew-export-link ew-word\" title=\"" . HtmlEncode($Language->phrase("ExportToWordText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToWordText")) . "\" onclick=\"ew.export(document.fuserlevelsview,'" . $this->ExportWordUrl . "','word',true);\">" . $Language->phrase("ExportToWord") . "</a>";
-			else
-				return "<a href=\"" . $this->ExportWordUrl . "\" class=\"ew-export-link ew-word\" title=\"" . HtmlEncode($Language->phrase("ExportToWordText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToWordText")) . "\">" . $Language->phrase("ExportToWord") . "</a>";
-		} elseif (SameText($type, "pdf")) {
-			if ($custom)
-				return "<a href=\"javascript:void(0);\" class=\"ew-export-link ew-pdf\" title=\"" . HtmlEncode($Language->phrase("ExportToPDFText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToPDFText")) . "\" onclick=\"ew.export(document.fuserlevelsview,'" . $this->ExportPdfUrl . "','pdf',true);\">" . $Language->phrase("ExportToPDF") . "</a>";
-			else
-				return "<a href=\"" . $this->ExportPdfUrl . "\" class=\"ew-export-link ew-pdf\" title=\"" . HtmlEncode($Language->phrase("ExportToPDFText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToPDFText")) . "\">" . $Language->phrase("ExportToPDF") . "</a>";
-		} elseif (SameText($type, "html")) {
-			return "<a href=\"" . $this->ExportHtmlUrl . "\" class=\"ew-export-link ew-html\" title=\"" . HtmlEncode($Language->phrase("ExportToHtmlText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToHtmlText")) . "\">" . $Language->phrase("ExportToHtml") . "</a>";
-		} elseif (SameText($type, "xml")) {
-			return "<a href=\"" . $this->ExportXmlUrl . "\" class=\"ew-export-link ew-xml\" title=\"" . HtmlEncode($Language->phrase("ExportToXmlText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToXmlText")) . "\">" . $Language->phrase("ExportToXml") . "</a>";
-		} elseif (SameText($type, "csv")) {
-			return "<a href=\"" . $this->ExportCsvUrl . "\" class=\"ew-export-link ew-csv\" title=\"" . HtmlEncode($Language->phrase("ExportToCsvText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("ExportToCsvText")) . "\">" . $Language->phrase("ExportToCsv") . "</a>";
-		} elseif (SameText($type, "print")) {
-			return "<a href=\"" . $this->ExportPrintUrl . "\" class=\"ew-export-link ew-print\" title=\"" . HtmlEncode($Language->phrase("PrinterFriendlyText")) . "\" data-caption=\"" . HtmlEncode($Language->phrase("PrinterFriendlyText")) . "\">" . $Language->phrase("PrinterFriendly") . "</a>";
-		}
-	}
-
-	// Set up export options
-	protected function setupExportOptions()
-	{
-		global $Language;
-
-		// Printer friendly
-		$item = &$this->ExportOptions->add("print");
-		$item->Body = $this->getExportTag("print");
-		$item->Visible = FALSE;
-
-		// Export to Excel
-		$item = &$this->ExportOptions->add("excel");
-		$item->Body = $this->getExportTag("excel");
-		$item->Visible = TRUE;
-
-		// Export to Word
-		$item = &$this->ExportOptions->add("word");
-		$item->Body = $this->getExportTag("word");
-		$item->Visible = TRUE;
-
-		// Export to Html
-		$item = &$this->ExportOptions->add("html");
-		$item->Body = $this->getExportTag("html");
-		$item->Visible = FALSE;
-
-		// Export to Xml
-		$item = &$this->ExportOptions->add("xml");
-		$item->Body = $this->getExportTag("xml");
-		$item->Visible = FALSE;
-
-		// Export to Csv
-		$item = &$this->ExportOptions->add("csv");
-		$item->Body = $this->getExportTag("csv");
-		$item->Visible = FALSE;
-
-		// Export to Pdf
-		$item = &$this->ExportOptions->add("pdf");
-		$item->Body = $this->getExportTag("pdf");
-		$item->Visible = TRUE;
-
-		// Export to Email
-		$item = &$this->ExportOptions->add("email");
-		$url = "";
-		$item->Body = "<button id=\"emf_userlevels\" class=\"ew-export-link ew-email\" title=\"" . $Language->phrase("ExportToEmailText") . "\" data-caption=\"" . $Language->phrase("ExportToEmailText") . "\" onclick=\"ew.emailDialogShow({lnk:'emf_userlevels',hdr:ew.language.phrase('ExportToEmailText'),f:document.fuserlevelsview,key:" . ArrayToJsonAttribute($this->RecKey) . ",sel:false" . $url . "});\">" . $Language->phrase("ExportToEmail") . "</button>";
-		$item->Visible = TRUE;
-
-		// Drop down button for export
-		$this->ExportOptions->UseButtonGroup = TRUE;
-		$this->ExportOptions->UseDropDownButton = TRUE;
-		if ($this->ExportOptions->UseButtonGroup && IsMobile())
-			$this->ExportOptions->UseDropDownButton = TRUE;
-		$this->ExportOptions->DropDownButtonPhrase = $Language->phrase("ButtonExport");
-
-		// Add group option item
-		$item = &$this->ExportOptions->add($this->ExportOptions->GroupOptionName);
-		$item->Body = "";
-		$item->Visible = FALSE;
-
-		// Hide options for export
-		if ($this->isExport())
-			$this->ExportOptions->hideAllOptions();
-	}
-
-	/**
-	 * Export data in HTML/CSV/Word/Excel/XML/Email/PDF format
-	 *
-	 * @param boolean $return Return the data rather than output it
-	 * @return mixed 
-	 */
-	public function exportData($return = FALSE)
-	{
-		global $Language;
-		$utf8 = SameText(PROJECT_CHARSET, "utf-8");
-		$selectLimit = FALSE;
-
-		// Load recordset
-		if ($selectLimit) {
-			$this->TotalRecs = $this->listRecordCount();
-		} else {
-			if (!$this->Recordset)
-				$this->Recordset = $this->loadRecordset();
-			$rs = &$this->Recordset;
-			if ($rs)
-				$this->TotalRecs = $rs->RecordCount();
-		}
-		$this->StartRec = 1;
-		$this->setupStartRec(); // Set up start record position
-
-		// Set the last record to display
-		if ($this->DisplayRecs <= 0) {
-			$this->StopRec = $this->TotalRecs;
-		} else {
-			$this->StopRec = $this->StartRec + $this->DisplayRecs - 1;
-		}
-		$this->ExportDoc = GetExportDocument($this, "v");
-		$doc = &$this->ExportDoc;
-		if (!$doc)
-			$this->setFailureMessage($Language->phrase("ExportClassNotFound")); // Export class not found
-		if (!$rs || !$doc) {
-			RemoveHeader("Content-Type"); // Remove header
-			RemoveHeader("Content-Disposition");
-			$this->showMessage();
-			return;
-		}
-		if ($selectLimit) {
-			$this->StartRec = 1;
-			$this->StopRec = $this->DisplayRecs <= 0 ? $this->TotalRecs : $this->DisplayRecs;
-		}
-
-		// Call Page Exporting server event
-		$this->ExportDoc->ExportCustom = !$this->Page_Exporting();
-		$header = $this->PageHeader;
-		$this->Page_DataRendering($header);
-		$doc->Text .= $header;
-		$this->exportDocument($doc, $rs, $this->StartRec, $this->StopRec, "view");
-		$footer = $this->PageFooter;
-		$this->Page_DataRendered($footer);
-		$doc->Text .= $footer;
-
-		// Close recordset
-		$rs->close();
-
-		// Call Page Exported server event
-		$this->Page_Exported();
-
-		// Export header and footer
-		$doc->exportHeaderAndFooter();
-
-		// Clean output buffer (without destroying output buffer)
-		$buffer = ob_get_contents(); // Save the output buffer
-		if (!DEBUG_ENABLED && $buffer)
-			ob_clean();
-
-		// Write debug message if enabled
-		if (DEBUG_ENABLED && !$this->isExport("pdf"))
-			echo GetDebugMessage();
-
-		// Output data
-		if ($this->isExport("email")) {
-			if ($return)
-				return $doc->Text; // Return email content
-			else
-				echo $this->exportEmail($doc->Text); // Send email
-		} else {
-			$doc->export();
-			if ($return) {
-				RemoveHeader("Content-Type"); // Remove header
-				RemoveHeader("Content-Disposition");
-				$content = ob_get_contents();
-				if ($content)
-					ob_clean();
-				if ($buffer)
-					echo $buffer; // Resume the output buffer
-				return $content;
-			}
-		}
-	}
-
-	// Export email
-	protected function exportEmail($emailContent)
-	{
-		global $TempImages, $Language;
-		$sender = Post("sender", "");
-		$recipient = Post("recipient", "");
-		$cc = Post("cc", "");
-		$bcc = Post("bcc", "");
-
-		// Subject
-		$subject = Post("subject", "");
-		$emailSubject = $subject;
-
-		// Message
-		$content = Post("message", "");
-		$emailMessage = $content;
-
-		// Check sender
-		if ($sender == "") {
-			return "<p class=\"text-danger\">" . $Language->phrase("EnterSenderEmail") . "</p>";
-		}
-		if (!CheckEmail($sender)) {
-			return "<p class=\"text-danger\">" . $Language->phrase("EnterProperSenderEmail") . "</p>";
-		}
-
-		// Check recipient
-		if (!CheckEmailList($recipient, MAX_EMAIL_RECIPIENT)) {
-			return "<p class=\"text-danger\">" . $Language->phrase("EnterProperRecipientEmail") . "</p>";
-		}
-
-		// Check cc
-		if (!CheckEmailList($cc, MAX_EMAIL_RECIPIENT)) {
-			return "<p class=\"text-danger\">" . $Language->phrase("EnterProperCcEmail") . "</p>";
-		}
-
-		// Check bcc
-		if (!CheckEmailList($bcc, MAX_EMAIL_RECIPIENT)) {
-			return "<p class=\"text-danger\">" . $Language->phrase("EnterProperBccEmail") . "</p>";
-		}
-
-		// Check email sent count
-		if (!isset($_SESSION[EXPORT_EMAIL_COUNTER]))
-			$_SESSION[EXPORT_EMAIL_COUNTER] = 0;
-		if ((int)$_SESSION[EXPORT_EMAIL_COUNTER] > MAX_EMAIL_SENT_COUNT) {
-			return "<p class=\"text-danger\">" . $Language->phrase("ExceedMaxEmailExport") . "</p>";
-		}
-
-		// Send email
-		$email = new Email();
-		$email->Sender = $sender; // Sender
-		$email->Recipient = $recipient; // Recipient
-		$email->Cc = $cc; // Cc
-		$email->Bcc = $bcc; // Bcc
-		$email->Subject = $emailSubject; // Subject
-		$email->Format = "html";
-		if ($emailMessage <> "")
-			$emailMessage = RemoveXss($emailMessage) . "<br><br>";
-		foreach ($TempImages as $tmpImage)
-			$email->addEmbeddedImage($tmpImage);
-		$email->Content = $emailMessage . CleanEmailContent($emailContent); // Content
-		$eventArgs = [];
-		if ($this->Recordset) {
-			$this->RecCnt = $this->StartRec - 1;
-			$this->Recordset->moveFirst();
-			if ($this->StartRec > 1)
-				$this->Recordset->move($this->StartRec - 1);
-			$eventArgs["rs"] = &$this->Recordset;
-		}
-		$emailSent = FALSE;
-		if ($this->Email_Sending($email, $eventArgs))
-			$emailSent = $email->send();
-
-		// Check email sent status
-		if ($emailSent) {
-
-			// Update email sent count
-			$_SESSION[EXPORT_EMAIL_COUNTER]++;
-
-			// Sent email success
-			return "<p class=\"text-success\">" . $Language->phrase("SendEmailSuccess") . "</p>"; // Set up success message
-		} else {
-
-			// Sent email failure
-			return "<p class=\"text-danger\">" . $email->SendErrDescription . "</p>";
-		}
 	}
 
 	// Set up Breadcrumb

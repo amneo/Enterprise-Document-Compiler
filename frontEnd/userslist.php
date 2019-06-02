@@ -432,6 +432,45 @@ $users_list->ListOptions->render("body", "right", $users_list->RowCnt);
 if ($users_list->Recordset)
 	$users_list->Recordset->Close();
 ?>
+<?php if (!$users->isExport()) { ?>
+<div class="card-footer ew-grid-lower-panel">
+<?php if (!$users->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php if (!isset($users_list->Pager)) $users_list->Pager = new NumericPager($users_list->StartRec, $users_list->DisplayRecs, $users_list->TotalRecs, $users_list->RecRange, $users_list->AutoHidePager) ?>
+<?php if ($users_list->Pager->RecordCount > 0 && $users_list->Pager->Visible) { ?>
+<div class="ew-pager">
+<div class="ew-numeric-page"><ul class="pagination">
+	<?php if ($users_list->Pager->FirstButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $users_list->pageUrl() ?>start=<?php echo $users_list->Pager->FirstButton->Start ?>"><?php echo $Language->Phrase("PagerFirst") ?></a></li>
+	<?php } ?>
+	<?php if ($users_list->Pager->PrevButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $users_list->pageUrl() ?>start=<?php echo $users_list->Pager->PrevButton->Start ?>"><?php echo $Language->Phrase("PagerPrevious") ?></a></li>
+	<?php } ?>
+	<?php foreach ($users_list->Pager->Items as $pagerItem) { ?>
+		<li class="page-item<?php if (!$pagerItem->Enabled) { ?> active<?php } ?>"><a class="page-link" href="<?php if ($pagerItem->Enabled) { echo $users_list->pageUrl() . "start=" . $pagerItem->Start; } else { echo "#"; } ?>"><?php echo $pagerItem->Text ?></a></li>
+	<?php } ?>
+	<?php if ($users_list->Pager->NextButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $users_list->pageUrl() ?>start=<?php echo $users_list->Pager->NextButton->Start ?>"><?php echo $Language->Phrase("PagerNext") ?></a></li>
+	<?php } ?>
+	<?php if ($users_list->Pager->LastButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $users_list->pageUrl() ?>start=<?php echo $users_list->Pager->LastButton->Start ?>"><?php echo $Language->Phrase("PagerLast") ?></a></li>
+	<?php } ?>
+</ul></div>
+</div>
+<?php } ?>
+<?php if ($users_list->Pager->RecordCount > 0) { ?>
+<div class="ew-pager ew-rec">
+	<span><?php echo $Language->Phrase("Record") ?>&nbsp;<?php echo $users_list->Pager->FromIndex ?>&nbsp;<?php echo $Language->Phrase("To") ?>&nbsp;<?php echo $users_list->Pager->ToIndex ?>&nbsp;<?php echo $Language->Phrase("Of") ?>&nbsp;<?php echo $users_list->Pager->RecordCount ?></span>
+</div>
+<?php } ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $users_list->OtherOptions->render("body", "bottom") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 </div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($users_list->TotalRecs == 0 && !$users->CurrentAction) { // Show other options ?>

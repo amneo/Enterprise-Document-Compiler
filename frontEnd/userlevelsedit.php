@@ -126,6 +126,33 @@ fuserlevelsedit.validateRequired = <?php echo json_encode(CLIENT_VALIDATE) ?>;
 <?php
 $userlevels_edit->showMessage();
 ?>
+<?php if (!$userlevels_edit->IsModal) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php if (!isset($userlevels_edit->Pager)) $userlevels_edit->Pager = new NumericPager($userlevels_edit->StartRec, $userlevels_edit->DisplayRecs, $userlevels_edit->TotalRecs, $userlevels_edit->RecRange, $userlevels_edit->AutoHidePager) ?>
+<?php if ($userlevels_edit->Pager->RecordCount > 0 && $userlevels_edit->Pager->Visible) { ?>
+<div class="ew-pager">
+<div class="ew-numeric-page"><ul class="pagination">
+	<?php if ($userlevels_edit->Pager->FirstButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $userlevels_edit->pageUrl() ?>start=<?php echo $userlevels_edit->Pager->FirstButton->Start ?>"><?php echo $Language->Phrase("PagerFirst") ?></a></li>
+	<?php } ?>
+	<?php if ($userlevels_edit->Pager->PrevButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $userlevels_edit->pageUrl() ?>start=<?php echo $userlevels_edit->Pager->PrevButton->Start ?>"><?php echo $Language->Phrase("PagerPrevious") ?></a></li>
+	<?php } ?>
+	<?php foreach ($userlevels_edit->Pager->Items as $pagerItem) { ?>
+		<li class="page-item<?php if (!$pagerItem->Enabled) { ?> active<?php } ?>"><a class="page-link" href="<?php if ($pagerItem->Enabled) { echo $userlevels_edit->pageUrl() . "start=" . $pagerItem->Start; } else { echo "#"; } ?>"><?php echo $pagerItem->Text ?></a></li>
+	<?php } ?>
+	<?php if ($userlevels_edit->Pager->NextButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $userlevels_edit->pageUrl() ?>start=<?php echo $userlevels_edit->Pager->NextButton->Start ?>"><?php echo $Language->Phrase("PagerNext") ?></a></li>
+	<?php } ?>
+	<?php if ($userlevels_edit->Pager->LastButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $userlevels_edit->pageUrl() ?>start=<?php echo $userlevels_edit->Pager->LastButton->Start ?>"><?php echo $Language->Phrase("PagerLast") ?></a></li>
+	<?php } ?>
+</ul></div>
+</div>
+<?php } ?>
+<div class="clearfix"></div>
+</form>
+<?php } ?>
 <form name="fuserlevelsedit" id="fuserlevelsedit" class="<?php echo $userlevels_edit->FormClassName ?>" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($userlevels_edit->CheckToken) { ?>
 <input type="hidden" name="<?php echo TOKEN_NAME ?>" value="<?php echo $userlevels_edit->Token ?>">
@@ -202,6 +229,31 @@ $userlevels_edit->showMessage();
 <?php } ?>
 <?php if (!$userlevels_edit->IsMobileOrModal) { ?>
 </div><!-- /desktop -->
+<?php } ?>
+<?php if (!$userlevels_edit->IsModal) { ?>
+<?php if (!isset($userlevels_edit->Pager)) $userlevels_edit->Pager = new NumericPager($userlevels_edit->StartRec, $userlevels_edit->DisplayRecs, $userlevels_edit->TotalRecs, $userlevels_edit->RecRange, $userlevels_edit->AutoHidePager) ?>
+<?php if ($userlevels_edit->Pager->RecordCount > 0 && $userlevels_edit->Pager->Visible) { ?>
+<div class="ew-pager">
+<div class="ew-numeric-page"><ul class="pagination">
+	<?php if ($userlevels_edit->Pager->FirstButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $userlevels_edit->pageUrl() ?>start=<?php echo $userlevels_edit->Pager->FirstButton->Start ?>"><?php echo $Language->Phrase("PagerFirst") ?></a></li>
+	<?php } ?>
+	<?php if ($userlevels_edit->Pager->PrevButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $userlevels_edit->pageUrl() ?>start=<?php echo $userlevels_edit->Pager->PrevButton->Start ?>"><?php echo $Language->Phrase("PagerPrevious") ?></a></li>
+	<?php } ?>
+	<?php foreach ($userlevels_edit->Pager->Items as $pagerItem) { ?>
+		<li class="page-item<?php if (!$pagerItem->Enabled) { ?> active<?php } ?>"><a class="page-link" href="<?php if ($pagerItem->Enabled) { echo $userlevels_edit->pageUrl() . "start=" . $pagerItem->Start; } else { echo "#"; } ?>"><?php echo $pagerItem->Text ?></a></li>
+	<?php } ?>
+	<?php if ($userlevels_edit->Pager->NextButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $userlevels_edit->pageUrl() ?>start=<?php echo $userlevels_edit->Pager->NextButton->Start ?>"><?php echo $Language->Phrase("PagerNext") ?></a></li>
+	<?php } ?>
+	<?php if ($userlevels_edit->Pager->LastButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $userlevels_edit->pageUrl() ?>start=<?php echo $userlevels_edit->Pager->LastButton->Start ?>"><?php echo $Language->Phrase("PagerLast") ?></a></li>
+	<?php } ?>
+</ul></div>
+</div>
+<?php } ?>
+<div class="clearfix"></div>
 <?php } ?>
 </form>
 <?php

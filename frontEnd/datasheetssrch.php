@@ -53,6 +53,9 @@ fdatasheetssearch.Form_CustomValidate = function(fobj) { // DO NOT CHANGE THIS L
 // Use JavaScript validation or not
 fdatasheetssearch.validateRequired = <?php echo json_encode(CLIENT_VALIDATE) ?>;
 
+// Multi-Page
+fdatasheetssearch.multiPage = new ew.MultiPage("fdatasheetssearch");
+
 // Dynamic selection lists
 fdatasheetssearch.lists["x_systrade"] = <?php echo $datasheets_search->systrade->Lookup->toClientList() ?>;
 fdatasheetssearch.lists["x_systrade"].options = <?php echo JsonEncode($datasheets_search->systrade->options(FALSE, TRUE)) ?>;
@@ -96,10 +99,11 @@ $datasheets_search->showMessage();
 <?php if (!$datasheets_search->IsMobileOrModal) { ?>
 <div class="ew-desktop"><!-- desktop -->
 <?php } ?>
+<?php if ($datasheets_search->MultiPages->Items[0]->Visible) { ?>
 <?php if ($datasheets_search->IsMobileOrModal) { ?>
-<div class="ew-search-div"><!-- page* -->
+<div class="ew-search-div"><!-- page0 -->
 <?php } else { ?>
-<table id="tbl_datasheetssearch" class="table table-striped table-sm ew-desktop-table"><!-- table* -->
+<table id="tbl_datasheetssearch0" class="table table-striped table-sm ew-desktop-table"><!-- page0 table -->
 <?php } ?>
 <?php if ($datasheets->partno->Visible) { // partno ?>
 <?php if ($datasheets_search->IsMobileOrModal) { ?>
@@ -109,7 +113,7 @@ $datasheets_search->showMessage();
 		</label>
 		<div class="<?php echo $datasheets_search->RightColumnClass ?>"><div<?php echo $datasheets->partno->cellAttributes() ?>>
 			<span id="el_datasheets_partno">
-<input type="text" data-table="datasheets" data-field="x_partno" name="x_partno" id="x_partno" size="30" placeholder="<?php echo HtmlEncode($datasheets->partno->getPlaceHolder()) ?>" value="<?php echo $datasheets->partno->EditValue ?>"<?php echo $datasheets->partno->editAttributes() ?>>
+<input type="text" data-table="datasheets" data-field="x_partno" data-page="0" name="x_partno" id="x_partno" size="30" placeholder="<?php echo HtmlEncode($datasheets->partno->getPlaceHolder()) ?>" value="<?php echo $datasheets->partno->EditValue ?>"<?php echo $datasheets->partno->editAttributes() ?>>
 </span>
 		</div></div>
 	</div>
@@ -120,33 +124,7 @@ $datasheets_search->showMessage();
 		<td<?php echo $datasheets->partno->cellAttributes() ?>>
 			<div class="text-nowrap">
 				<span id="el_datasheets_partno">
-<input type="text" data-table="datasheets" data-field="x_partno" name="x_partno" id="x_partno" size="30" placeholder="<?php echo HtmlEncode($datasheets->partno->getPlaceHolder()) ?>" value="<?php echo $datasheets->partno->EditValue ?>"<?php echo $datasheets->partno->editAttributes() ?>>
-</span>
-			</div>
-		</td>
-	</tr>
-<?php } ?>
-<?php } ?>
-<?php if ($datasheets->cddFile->Visible) { // cddFile ?>
-<?php if ($datasheets_search->IsMobileOrModal) { ?>
-	<div id="r_cddFile" class="form-group row">
-		<label class="<?php echo $datasheets_search->LeftColumnClass ?>"><span id="elh_datasheets_cddFile"><?php echo $datasheets->cddFile->caption() ?></span>
-		<span class="ew-search-operator"><?php echo $Language->phrase("LIKE") ?><input type="hidden" name="z_cddFile" id="z_cddFile" value="LIKE"></span>
-		</label>
-		<div class="<?php echo $datasheets_search->RightColumnClass ?>"><div<?php echo $datasheets->cddFile->cellAttributes() ?>>
-			<span id="el_datasheets_cddFile">
-<input type="text" data-table="datasheets" data-field="x_cddFile" name="x_cddFile" id="x_cddFile" size="30" placeholder="<?php echo HtmlEncode($datasheets->cddFile->getPlaceHolder()) ?>" value="<?php echo $datasheets->cddFile->EditValue ?>"<?php echo $datasheets->cddFile->editAttributes() ?>>
-</span>
-		</div></div>
-	</div>
-<?php } else { ?>
-	<tr id="r_cddFile">
-		<td class="<?php echo $datasheets_search->TableLeftColumnClass ?>"><span id="elh_datasheets_cddFile"><?php echo $datasheets->cddFile->caption() ?></span></td>
-		<td class="w-col-1"><span class="ew-search-operator"><?php echo $Language->phrase("LIKE") ?><input type="hidden" name="z_cddFile" id="z_cddFile" value="LIKE"></span></td>
-		<td<?php echo $datasheets->cddFile->cellAttributes() ?>>
-			<div class="text-nowrap">
-				<span id="el_datasheets_cddFile">
-<input type="text" data-table="datasheets" data-field="x_cddFile" name="x_cddFile" id="x_cddFile" size="30" placeholder="<?php echo HtmlEncode($datasheets->cddFile->getPlaceHolder()) ?>" value="<?php echo $datasheets->cddFile->EditValue ?>"<?php echo $datasheets->cddFile->editAttributes() ?>>
+<input type="text" data-table="datasheets" data-field="x_partno" data-page="0" name="x_partno" id="x_partno" size="30" placeholder="<?php echo HtmlEncode($datasheets->partno->getPlaceHolder()) ?>" value="<?php echo $datasheets->partno->EditValue ?>"<?php echo $datasheets->partno->editAttributes() ?>>
 </span>
 			</div>
 		</td>
@@ -161,7 +139,7 @@ $datasheets_search->showMessage();
 		</label>
 		<div class="<?php echo $datasheets_search->RightColumnClass ?>"><div<?php echo $datasheets->tittle->cellAttributes() ?>>
 			<span id="el_datasheets_tittle">
-<input type="text" data-table="datasheets" data-field="x_tittle" name="x_tittle" id="x_tittle" placeholder="<?php echo HtmlEncode($datasheets->tittle->getPlaceHolder()) ?>" value="<?php echo $datasheets->tittle->EditValue ?>"<?php echo $datasheets->tittle->editAttributes() ?>>
+<input type="text" data-table="datasheets" data-field="x_tittle" data-page="0" name="x_tittle" id="x_tittle" placeholder="<?php echo HtmlEncode($datasheets->tittle->getPlaceHolder()) ?>" value="<?php echo $datasheets->tittle->EditValue ?>"<?php echo $datasheets->tittle->editAttributes() ?>>
 </span>
 		</div></div>
 	</div>
@@ -172,12 +150,31 @@ $datasheets_search->showMessage();
 		<td<?php echo $datasheets->tittle->cellAttributes() ?>>
 			<div class="text-nowrap">
 				<span id="el_datasheets_tittle">
-<input type="text" data-table="datasheets" data-field="x_tittle" name="x_tittle" id="x_tittle" placeholder="<?php echo HtmlEncode($datasheets->tittle->getPlaceHolder()) ?>" value="<?php echo $datasheets->tittle->EditValue ?>"<?php echo $datasheets->tittle->editAttributes() ?>>
+<input type="text" data-table="datasheets" data-field="x_tittle" data-page="0" name="x_tittle" id="x_tittle" placeholder="<?php echo HtmlEncode($datasheets->tittle->getPlaceHolder()) ?>" value="<?php echo $datasheets->tittle->EditValue ?>"<?php echo $datasheets->tittle->editAttributes() ?>>
 </span>
 			</div>
 		</td>
 	</tr>
 <?php } ?>
+<?php } ?>
+<?php if ($datasheets_search->IsMobileOrModal) { ?>
+</div><!-- /page0 -->
+<?php } else { ?>
+</table><!-- /page0 table -->
+<?php } ?>
+<?php } ?>
+<div class="ew-multi-page"><!-- multi-page -->
+<div class="ew-nav-tabs" id="datasheets_search"><!-- multi-page tabs -->
+	<ul class="<?php echo $datasheets_search->MultiPages->navStyle() ?>">
+		<li class="nav-item"><a class="nav-link<?php echo $datasheets_search->MultiPages->pageStyle("1") ?>" href="#tab_datasheets1" data-toggle="tab"><?php echo $datasheets->pageCaption(1) ?></a></li>
+		<li class="nav-item"><a class="nav-link<?php echo $datasheets_search->MultiPages->pageStyle("2") ?>" href="#tab_datasheets2" data-toggle="tab"><?php echo $datasheets->pageCaption(2) ?></a></li>
+	</ul>
+	<div class="tab-content"><!-- multi-page tabs .tab-content -->
+		<div class="tab-pane<?php echo $datasheets_search->MultiPages->pageStyle("1") ?>" id="tab_datasheets1"><!-- multi-page .tab-pane -->
+<?php if ($datasheets_search->IsMobileOrModal) { ?>
+<div class="ew-search-div"><!-- page* -->
+<?php } else { ?>
+<table id="tbl_datasheetssearch1" class="table table-striped table-sm ew-desktop-table"><!-- table* -->
 <?php } ?>
 <?php if ($datasheets->cddissue->Visible) { // cddissue ?>
 <?php if ($datasheets_search->IsMobileOrModal) { ?>
@@ -187,7 +184,7 @@ $datasheets_search->showMessage();
 		</label>
 		<div class="<?php echo $datasheets_search->RightColumnClass ?>"><div<?php echo $datasheets->cddissue->cellAttributes() ?>>
 			<span id="el_datasheets_cddissue">
-<input type="text" data-table="datasheets" data-field="x_cddissue" data-format="5" name="x_cddissue" id="x_cddissue" placeholder="<?php echo HtmlEncode($datasheets->cddissue->getPlaceHolder()) ?>" value="<?php echo $datasheets->cddissue->EditValue ?>"<?php echo $datasheets->cddissue->editAttributes() ?>>
+<input type="text" data-table="datasheets" data-field="x_cddissue" data-page="1" data-format="5" name="x_cddissue" id="x_cddissue" placeholder="<?php echo HtmlEncode($datasheets->cddissue->getPlaceHolder()) ?>" value="<?php echo $datasheets->cddissue->EditValue ?>"<?php echo $datasheets->cddissue->editAttributes() ?>>
 <?php if (!$datasheets->cddissue->ReadOnly && !$datasheets->cddissue->Disabled && !isset($datasheets->cddissue->EditAttrs["readonly"]) && !isset($datasheets->cddissue->EditAttrs["disabled"])) { ?>
 <script>
 ew.createDateTimePicker("fdatasheetssearch", "x_cddissue", {"ignoreReadonly":true,"useCurrent":false,"format":5});
@@ -203,7 +200,7 @@ ew.createDateTimePicker("fdatasheetssearch", "x_cddissue", {"ignoreReadonly":tru
 		<td<?php echo $datasheets->cddissue->cellAttributes() ?>>
 			<div class="text-nowrap">
 				<span id="el_datasheets_cddissue">
-<input type="text" data-table="datasheets" data-field="x_cddissue" data-format="5" name="x_cddissue" id="x_cddissue" placeholder="<?php echo HtmlEncode($datasheets->cddissue->getPlaceHolder()) ?>" value="<?php echo $datasheets->cddissue->EditValue ?>"<?php echo $datasheets->cddissue->editAttributes() ?>>
+<input type="text" data-table="datasheets" data-field="x_cddissue" data-page="1" data-format="5" name="x_cddissue" id="x_cddissue" placeholder="<?php echo HtmlEncode($datasheets->cddissue->getPlaceHolder()) ?>" value="<?php echo $datasheets->cddissue->EditValue ?>"<?php echo $datasheets->cddissue->editAttributes() ?>>
 <?php if (!$datasheets->cddissue->ReadOnly && !$datasheets->cddissue->Disabled && !isset($datasheets->cddissue->EditAttrs["readonly"]) && !isset($datasheets->cddissue->EditAttrs["disabled"])) { ?>
 <script>
 ew.createDateTimePicker("fdatasheetssearch", "x_cddissue", {"ignoreReadonly":true,"useCurrent":false,"format":5});
@@ -223,7 +220,7 @@ ew.createDateTimePicker("fdatasheetssearch", "x_cddissue", {"ignoreReadonly":tru
 		</label>
 		<div class="<?php echo $datasheets_search->RightColumnClass ?>"><div<?php echo $datasheets->expirydt->cellAttributes() ?>>
 			<span id="el_datasheets_expirydt">
-<input type="text" data-table="datasheets" data-field="x_expirydt" data-format="5" name="x_expirydt" id="x_expirydt" placeholder="<?php echo HtmlEncode($datasheets->expirydt->getPlaceHolder()) ?>" value="<?php echo $datasheets->expirydt->EditValue ?>"<?php echo $datasheets->expirydt->editAttributes() ?>>
+<input type="text" data-table="datasheets" data-field="x_expirydt" data-page="1" data-format="5" name="x_expirydt" id="x_expirydt" placeholder="<?php echo HtmlEncode($datasheets->expirydt->getPlaceHolder()) ?>" value="<?php echo $datasheets->expirydt->EditValue ?>"<?php echo $datasheets->expirydt->editAttributes() ?>>
 <?php if (!$datasheets->expirydt->ReadOnly && !$datasheets->expirydt->Disabled && !isset($datasheets->expirydt->EditAttrs["readonly"]) && !isset($datasheets->expirydt->EditAttrs["disabled"])) { ?>
 <script>
 ew.createDateTimePicker("fdatasheetssearch", "x_expirydt", {"ignoreReadonly":true,"useCurrent":false,"format":5});
@@ -233,7 +230,7 @@ ew.createDateTimePicker("fdatasheetssearch", "x_expirydt", {"ignoreReadonly":tru
 			<span class="ew-search-cond btw0_expirydt"><div class="form-check form-check-inline"><input class="form-check-input" type="radio" id="v_expirydt_1" name="v_expirydt" value="AND"<?php if ($datasheets->expirydt->AdvancedSearch->SearchCondition <> "OR") echo " checked" ?>><label class="form-check-label" for="v_expirydt_1"><?php echo $Language->phrase("AND") ?></label></div><div class="form-check form-check-inline"><input class="form-check-input" type="radio" id="v_expirydt_2" name="v_expirydt" value="OR"<?php if ($datasheets->expirydt->AdvancedSearch->SearchCondition == "OR") echo " checked" ?>><label class="form-check-label" for="v_expirydt_2"><?php echo $Language->phrase("OR") ?></label></div></span>
 			<span class="ew-search-operator btw0_expirydt"><?php echo $Language->phrase("<=") ?><input type="hidden" name="w_expirydt" id="w_expirydt" value="<="></span>
 			<span id="e2_datasheets_expirydt" class="">
-<input type="text" data-table="datasheets" data-field="x_expirydt" data-format="5" name="y_expirydt" id="y_expirydt" placeholder="<?php echo HtmlEncode($datasheets->expirydt->getPlaceHolder()) ?>" value="<?php echo $datasheets->expirydt->EditValue2 ?>"<?php echo $datasheets->expirydt->editAttributes() ?>>
+<input type="text" data-table="datasheets" data-field="x_expirydt" data-page="1" data-format="5" name="y_expirydt" id="y_expirydt" placeholder="<?php echo HtmlEncode($datasheets->expirydt->getPlaceHolder()) ?>" value="<?php echo $datasheets->expirydt->EditValue2 ?>"<?php echo $datasheets->expirydt->editAttributes() ?>>
 <?php if (!$datasheets->expirydt->ReadOnly && !$datasheets->expirydt->Disabled && !isset($datasheets->expirydt->EditAttrs["readonly"]) && !isset($datasheets->expirydt->EditAttrs["disabled"])) { ?>
 <script>
 ew.createDateTimePicker("fdatasheetssearch", "y_expirydt", {"ignoreReadonly":true,"useCurrent":false,"format":5});
@@ -249,7 +246,7 @@ ew.createDateTimePicker("fdatasheetssearch", "y_expirydt", {"ignoreReadonly":tru
 		<td<?php echo $datasheets->expirydt->cellAttributes() ?>>
 			<div class="text-nowrap">
 				<span id="el_datasheets_expirydt">
-<input type="text" data-table="datasheets" data-field="x_expirydt" data-format="5" name="x_expirydt" id="x_expirydt" placeholder="<?php echo HtmlEncode($datasheets->expirydt->getPlaceHolder()) ?>" value="<?php echo $datasheets->expirydt->EditValue ?>"<?php echo $datasheets->expirydt->editAttributes() ?>>
+<input type="text" data-table="datasheets" data-field="x_expirydt" data-page="1" data-format="5" name="x_expirydt" id="x_expirydt" placeholder="<?php echo HtmlEncode($datasheets->expirydt->getPlaceHolder()) ?>" value="<?php echo $datasheets->expirydt->EditValue ?>"<?php echo $datasheets->expirydt->editAttributes() ?>>
 <?php if (!$datasheets->expirydt->ReadOnly && !$datasheets->expirydt->Disabled && !isset($datasheets->expirydt->EditAttrs["readonly"]) && !isset($datasheets->expirydt->EditAttrs["disabled"])) { ?>
 <script>
 ew.createDateTimePicker("fdatasheetssearch", "x_expirydt", {"ignoreReadonly":true,"useCurrent":false,"format":5});
@@ -259,7 +256,7 @@ ew.createDateTimePicker("fdatasheetssearch", "x_expirydt", {"ignoreReadonly":tru
 				<span class="ew-search-cond btw0_expirydt"><div class="form-check form-check-inline"><input class="form-check-input" type="radio" id="v_expirydt_1" name="v_expirydt" value="AND"<?php if ($datasheets->expirydt->AdvancedSearch->SearchCondition <> "OR") echo " checked" ?>><label class="form-check-label" for="v_expirydt_1"><?php echo $Language->phrase("AND") ?></label></div><div class="form-check form-check-inline"><input class="form-check-input" type="radio" id="v_expirydt_2" name="v_expirydt" value="OR"<?php if ($datasheets->expirydt->AdvancedSearch->SearchCondition == "OR") echo " checked" ?>><label class="form-check-label" for="v_expirydt_2"><?php echo $Language->phrase("OR") ?></label></div></span>
 				<span class="ew-search-operator btw0_expirydt"><?php echo $Language->phrase("<=") ?><input type="hidden" name="w_expirydt" id="w_expirydt" value="<="></span>
 				<span id="e2_datasheets_expirydt" class="">
-<input type="text" data-table="datasheets" data-field="x_expirydt" data-format="5" name="y_expirydt" id="y_expirydt" placeholder="<?php echo HtmlEncode($datasheets->expirydt->getPlaceHolder()) ?>" value="<?php echo $datasheets->expirydt->EditValue2 ?>"<?php echo $datasheets->expirydt->editAttributes() ?>>
+<input type="text" data-table="datasheets" data-field="x_expirydt" data-page="1" data-format="5" name="y_expirydt" id="y_expirydt" placeholder="<?php echo HtmlEncode($datasheets->expirydt->getPlaceHolder()) ?>" value="<?php echo $datasheets->expirydt->EditValue2 ?>"<?php echo $datasheets->expirydt->editAttributes() ?>>
 <?php if (!$datasheets->expirydt->ReadOnly && !$datasheets->expirydt->Disabled && !isset($datasheets->expirydt->EditAttrs["readonly"]) && !isset($datasheets->expirydt->EditAttrs["disabled"])) { ?>
 <script>
 ew.createDateTimePicker("fdatasheetssearch", "y_expirydt", {"ignoreReadonly":true,"useCurrent":false,"format":5});
@@ -284,10 +281,10 @@ ew.createDateTimePicker("fdatasheetssearch", "y_expirydt", {"ignoreReadonly":tru
 		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($datasheets->systrade->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $datasheets->systrade->AdvancedSearch->ViewValue ?></button>
 		<div id="dsl_x_systrade" data-repeatcolumn="1" class="dropdown-menu">
 			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $datasheets->systrade->radioButtonListHtml(TRUE, "x_systrade") ?>
+<?php echo $datasheets->systrade->radioButtonListHtml(TRUE, "x_systrade", 1) ?>
 			</div><!-- /.ew-items ##-->
 		</div><!-- /.dropdown-menu ##-->
-		<div id="tp_x_systrade" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_systrade" data-value-separator="<?php echo $datasheets->systrade->displayValueSeparatorAttribute() ?>" name="x_systrade" id="x_systrade" value="{value}"<?php echo $datasheets->systrade->editAttributes() ?>></div>
+		<div id="tp_x_systrade" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_systrade" data-page="1" data-value-separator="<?php echo $datasheets->systrade->displayValueSeparatorAttribute() ?>" name="x_systrade" id="x_systrade" value="{value}"<?php echo $datasheets->systrade->editAttributes() ?>></div>
 	</div><!-- /.btn-group ##-->
 	<?php if (!$datasheets->systrade->ReadOnly) { ?>
 	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
@@ -310,10 +307,10 @@ ew.createDateTimePicker("fdatasheetssearch", "y_expirydt", {"ignoreReadonly":tru
 		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($datasheets->systrade->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $datasheets->systrade->AdvancedSearch->ViewValue ?></button>
 		<div id="dsl_x_systrade" data-repeatcolumn="1" class="dropdown-menu">
 			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $datasheets->systrade->radioButtonListHtml(TRUE, "x_systrade") ?>
+<?php echo $datasheets->systrade->radioButtonListHtml(TRUE, "x_systrade", 1) ?>
 			</div><!-- /.ew-items ##-->
 		</div><!-- /.dropdown-menu ##-->
-		<div id="tp_x_systrade" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_systrade" data-value-separator="<?php echo $datasheets->systrade->displayValueSeparatorAttribute() ?>" name="x_systrade" id="x_systrade" value="{value}"<?php echo $datasheets->systrade->editAttributes() ?>></div>
+		<div id="tp_x_systrade" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_systrade" data-page="1" data-value-separator="<?php echo $datasheets->systrade->displayValueSeparatorAttribute() ?>" name="x_systrade" id="x_systrade" value="{value}"<?php echo $datasheets->systrade->editAttributes() ?>></div>
 	</div><!-- /.btn-group ##-->
 	<?php if (!$datasheets->systrade->ReadOnly) { ?>
 	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
@@ -332,6 +329,48 @@ ew.createDateTimePicker("fdatasheetssearch", "y_expirydt", {"ignoreReadonly":tru
 <?php } else { ?>
 </table><!-- /table* -->
 <?php } ?>
+		</div><!-- /multi-page .tab-pane -->
+		<div class="tab-pane<?php echo $datasheets_search->MultiPages->pageStyle("2") ?>" id="tab_datasheets2"><!-- multi-page .tab-pane -->
+<?php if ($datasheets_search->IsMobileOrModal) { ?>
+<div class="ew-search-div"><!-- page* -->
+<?php } else { ?>
+<table id="tbl_datasheetssearch2" class="table table-striped table-sm ew-desktop-table"><!-- table* -->
+<?php } ?>
+<?php if ($datasheets->cddFile->Visible) { // cddFile ?>
+<?php if ($datasheets_search->IsMobileOrModal) { ?>
+	<div id="r_cddFile" class="form-group row">
+		<label class="<?php echo $datasheets_search->LeftColumnClass ?>"><span id="elh_datasheets_cddFile"><?php echo $datasheets->cddFile->caption() ?></span>
+		<span class="ew-search-operator"><?php echo $Language->phrase("LIKE") ?><input type="hidden" name="z_cddFile" id="z_cddFile" value="LIKE"></span>
+		</label>
+		<div class="<?php echo $datasheets_search->RightColumnClass ?>"><div<?php echo $datasheets->cddFile->cellAttributes() ?>>
+			<span id="el_datasheets_cddFile">
+<input type="text" data-table="datasheets" data-field="x_cddFile" data-page="2" name="x_cddFile" id="x_cddFile" size="30" placeholder="<?php echo HtmlEncode($datasheets->cddFile->getPlaceHolder()) ?>" value="<?php echo $datasheets->cddFile->EditValue ?>"<?php echo $datasheets->cddFile->editAttributes() ?>>
+</span>
+		</div></div>
+	</div>
+<?php } else { ?>
+	<tr id="r_cddFile">
+		<td class="<?php echo $datasheets_search->TableLeftColumnClass ?>"><span id="elh_datasheets_cddFile"><?php echo $datasheets->cddFile->caption() ?></span></td>
+		<td class="w-col-1"><span class="ew-search-operator"><?php echo $Language->phrase("LIKE") ?><input type="hidden" name="z_cddFile" id="z_cddFile" value="LIKE"></span></td>
+		<td<?php echo $datasheets->cddFile->cellAttributes() ?>>
+			<div class="text-nowrap">
+				<span id="el_datasheets_cddFile">
+<input type="text" data-table="datasheets" data-field="x_cddFile" data-page="2" name="x_cddFile" id="x_cddFile" size="30" placeholder="<?php echo HtmlEncode($datasheets->cddFile->getPlaceHolder()) ?>" value="<?php echo $datasheets->cddFile->EditValue ?>"<?php echo $datasheets->cddFile->editAttributes() ?>>
+</span>
+			</div>
+		</td>
+	</tr>
+<?php } ?>
+<?php } ?>
+<?php if ($datasheets_search->IsMobileOrModal) { ?>
+</div><!-- /page* -->
+<?php } else { ?>
+</table><!-- /table* -->
+<?php } ?>
+		</div><!-- /multi-page .tab-pane -->
+	</div><!-- /multi-page tabs .tab-content -->
+</div><!-- /multi-page tabs -->
+</div><!-- /multi-page -->
 <?php if (!$datasheets_search->IsModal) { ?>
 <div class="form-group row"><!-- buttons .form-group -->
 	<div class="<?php echo $datasheets_search->OffsetColumnClass ?>"><!-- buttons offset -->

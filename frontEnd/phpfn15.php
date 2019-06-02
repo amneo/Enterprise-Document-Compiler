@@ -1307,125 +1307,16 @@ class ExportJson extends ExportBase
 	}
 }
 
-/**
- * Class for export to PDF
- */
+//
+// Class for export to PDF
+//
 class ExportPdf extends ExportBase
 {
-
-	// Table header
-	public function exportTableHeader()
-	{
-		$this->Text .= "<table class=\"ew-table\">\r\n";
-	}
-
-	// Export a value (caption, field value, or aggregate)
-	protected function exportValueEx(&$fld, $val, $useStyle = TRUE)
-	{
-		$wrkVal = strval($val);
-		$wrkVal = "<td" . (($useStyle && EXPORT_CSS_STYLES) ? $fld->cellStyles() : "") . ">" . $wrkVal . "</td>\r\n";
-		$this->Line .= $wrkVal;
-		$this->Text .= $wrkVal;
-	}
-
-	// Begin a row
-	public function beginExportRow($rowCnt = 0, $useStyle = TRUE)
-	{
-		$this->FldCnt = 0;
-		if ($this->Horizontal) {
-			if ($rowCnt == -1)
-				$this->Table->CssClass = "ew-table-footer";
-			elseif ($rowCnt == 0)
-				$this->Table->CssClass = "ew-table-header";
-			else
-				$this->Table->CssClass = (($rowCnt % 2) == 1) ? "ew-table-row" : "ew-table-alt-row";
-			$this->Line = "<tr" . (($useStyle && EXPORT_CSS_STYLES) ? $this->Table->rowStyles() : "") . ">";
-			$this->Text .= $this->Line;
-		}
-	}
-
-	// End a row
-	public function endExportRow($rowCnt = 0)
-	{
-		if ($this->Horizontal) {
-			$this->Line .= "</tr>";
-			$this->Text .= "</tr>";
-			$this->Header = $this->Line;
-		}
-	}
-
-	// Page break
-	public function exportPageBreak()
-	{
-		if ($this->Horizontal) {
-			$this->Text .= "</table>\r\n"; // End current table
-			$this->Text .= "<p style=\"page-break-after:always;\">&nbsp;</p>\r\n"; // Page break
-			$this->Text .= "<table class=\"ew-table ew-table-border\">\r\n"; // New page header
-			$this->Text .= $this->Header;
-		}
-	}
-
-	// Export a field
-	public function exportField(&$fld)
-	{
-		if (!$fld->Exportable)
-			return;
-		$exportValue = $fld->exportValue();
-		if ($fld->ExportFieldImage && $fld->ViewTag == "IMAGE") {
-			$exportValue = GetFileImgTag($fld, $fld->getTempImage());
-		} elseif ($fld->ExportFieldImage && $fld->ExportHrefValue <> "") { // Export custom view tag
-			$exportValue = $fld->ExportHrefValue;
-		} else {
-			$exportValue = str_replace("<br>", "\r\n", $exportValue);
-			$exportValue = strip_tags($exportValue);
-			$exportValue = str_replace("\r\n", "<br>", $exportValue);
-		}
-		if ($this->Horizontal) {
-			$this->exportValueEx($fld, $exportValue);
-		} else { // Vertical, export as a row
-			$this->FldCnt++;
-			$fld->CellCssClass = ($this->FldCnt % 2 == 1) ? "ew-table-row" : "ew-table-alt-row";
-			$this->Text .= "<tr><td" . ((EXPORT_CSS_STYLES) ? $fld->cellStyles() : "") . ">" . $fld->exportCaption() . "</td>";
-			$this->Text .= "<td" . ((EXPORT_CSS_STYLES) ? $fld->cellStyles() : "") . ">" .
-				$exportValue . "</td></tr>";
-		}
-	}
-
-	// Add HTML tags
-	public function exportHeaderAndFooter()
-	{
-		$header = "<html><head>\r\n";
-		$header .= $this->charsetMetaTag();
-		if (PDF_STYLESHEET_FILENAME <> "")
-			$header .= "<style type=\"text/css\">" . file_get_contents(PDF_STYLESHEET_FILENAME) . "</style>\r\n";
-		$header .= "</" . "head>\r\n<body>\r\n";
-		$this->Text = $header . $this->Text . "</body></html>";
-	}
 
 	// Export
 	public function export()
 	{
-		global $ExportFileName;
-		@ini_set("memory_limit", PDF_MEMORY_LIMIT);
-		set_time_limit(PDF_TIME_LIMIT);
-		$txt = $this->Text;
-		if (DEBUG_ENABLED) // Add debug message
-			$txt = str_replace("</body>", GetDebugMessage() . "</body>", $txt);
-		$dompdf = new \Dompdf\Dompdf(array("pdf_backend" => "Cpdf"));
-		$dompdf->load_html($txt);
-		$dompdf->set_paper($this->Table->ExportPageSize, $this->Table->ExportPageOrientation);
-		$dompdf->render();
-		if (!DEBUG_ENABLED && ob_get_length())
-			ob_end_clean();
-		AddHeader('Set-Cookie', 'fileDownload=true; path=/');
-		$dompdf->stream($ExportFileName, array("Attachment" => 1)); // 0 to open in browser, 1 to download
-		DeleteTempImages();
-	}
-
-	// Destructor
-	public function __destruct()
-	{
-		DeleteTempImages();
+		echo "Export PDF extension disabled.";
 	}
 }
 
@@ -9217,10 +9108,7 @@ function FormatNumber($amount, $numDigitsAfterDecimal, $includeLeadingDigit = -2
 	}
 
 	// Start by formatting the unsigned number
-	$number = number_format(abs($amount),
-		$frac_digits,
-		$decimal_point,
-		$thousands_sep);
+	$number = number_format(abs($amount), $frac_digits, $decimal_point, $thousands_sep);
 
 	// Check $includeLeadingDigit
 	if ($includeLeadingDigit == 0 && StartsString("0.", $number))
@@ -9280,10 +9168,7 @@ function FormatPercent($amount, $numDigitsAfterDecimal, $includeLeadingDigit = -
 	}
 
 	// Start by formatting the unsigned number
-	$number = number_format(abs($amount)*100,
-							$frac_digits,
-							$decimal_point,
-							$thousands_sep);
+	$number = number_format(abs($amount)*100, $frac_digits, $decimal_point, $thousands_sep);
 
 	// Check $includeLeadingDigit
 	if ($includeLeadingDigit == 0 && StartsString("0.", $number))
@@ -11507,8 +11392,9 @@ function CheckInteger($value) {
 function CheckNumber($value) {
 	global $THOUSANDS_SEP, $DECIMAL_POINT;
 	if (strval($value) == "") return TRUE;
-	$pat = '/^[+-]?(\d{1,3}(' . (($THOUSANDS_SEP) ? '\\' . $THOUSANDS_SEP . '?' : '') . '\d{3})*(\\' .
-		$DECIMAL_POINT . '\d+)?|\\' . $DECIMAL_POINT . '\d+)$/';
+	$ts = preg_quote($THOUSANDS_SEP);
+	$dp = preg_quote($DECIMAL_POINT);
+	$pat = '/^[+-]?(\d{1,3}(' . ($ts ? $ts . '?' : '') . '\d{3})*(' . $dp . '\d+)?|' . $dp . '\d+)$/';
 	return preg_match($pat, $value);
 }
 

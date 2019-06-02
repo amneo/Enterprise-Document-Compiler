@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<ew-language date="2019/5/14" version="15.0.0.1" id="en" name="English" desc="English" author="e.World Technology Ltd.">
+<ew-language date="2019/6/3" version="15.0.0.1" id="en" name="English" desc="English" author="e.World Technology Ltd.">
   <!-- 
 	*** Important Notes:
 	1. Language ID should follow: https://developers.google.com/recaptcha/docs/language,
@@ -698,7 +698,7 @@
   </global>
   <project>
     <phrase id="bodytitle" value="TracQCDD - CDD Tracker and Submittal Tool" />
-    <phrase id="footertext" value="Maintained By Estimation and Engineering Team-Vishal | Version:01.01-Release Date: 15-05-2019" />
+    <phrase id="footertext" value="Maintained By Estimation and Engineering Team-Vishal | Version:01.01-Release Date: 03-06-2019" />
     <menu id="4">
       <phrase id="menutext" value="Workspace" />
     </menu>
@@ -742,17 +742,8 @@
       <field id="manufacturer">
         <phrase id="fldcaption" value="Manufacturer" />
       </field>
-      <field id="cddfile">
-        <phrase id="fldcaption" value="CDD Approval File" />
-      </field>
-      <field id="thirdpartyfile">
-        <phrase id="fldcaption" value="Third Party Certificate File" />
-      </field>
       <field id="tittle">
         <phrase id="fldcaption" value="Description" />
-      </field>
-      <field id="cover">
-        <phrase id="fldcaption" value="Cover File i.e Divider" />
       </field>
       <field id="cddissue">
         <phrase id="fldcaption" value="CDD Issue Date" />
@@ -760,8 +751,17 @@
       <field id="cddno">
         <phrase id="fldcaption" value="Civil Defence File Name" />
       </field>
+      <field id="cddfile">
+        <phrase id="fldcaption" value="CDD Approval File" />
+      </field>
       <field id="thirdpartyno">
         <phrase id="fldcaption" value="Third Party Certificate No" />
+      </field>
+      <field id="thirdpartyfile">
+        <phrase id="fldcaption" value="Third Party Certificate File" />
+      </field>
+      <field id="cover">
+        <phrase id="fldcaption" value="Cover File i.e Divider" />
       </field>
       <field id="duration">
         <phrase id="fldcaption" value="Approval Duration" />

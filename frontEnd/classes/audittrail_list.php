@@ -2052,7 +2052,7 @@ class audittrail_list extends audittrail
 		// Printer friendly
 		$item = &$this->ExportOptions->add("print");
 		$item->Body = $this->getExportTag("print");
-		$item->Visible = FALSE;
+		$item->Visible = TRUE;
 
 		// Export to Excel
 		$item = &$this->ExportOptions->add("excel");
@@ -2062,12 +2062,12 @@ class audittrail_list extends audittrail
 		// Export to Word
 		$item = &$this->ExportOptions->add("word");
 		$item->Body = $this->getExportTag("word");
-		$item->Visible = TRUE;
+		$item->Visible = FALSE;
 
 		// Export to Html
 		$item = &$this->ExportOptions->add("html");
 		$item->Body = $this->getExportTag("html");
-		$item->Visible = FALSE;
+		$item->Visible = TRUE;
 
 		// Export to Xml
 		$item = &$this->ExportOptions->add("xml");
@@ -2082,7 +2082,7 @@ class audittrail_list extends audittrail
 		// Export to Pdf
 		$item = &$this->ExportOptions->add("pdf");
 		$item->Body = $this->getExportTag("pdf");
-		$item->Visible = TRUE;
+		$item->Visible = FALSE;
 
 		// Export to Email
 		$item = &$this->ExportOptions->add("email");
@@ -2092,7 +2092,7 @@ class audittrail_list extends audittrail
 
 		// Drop down button for export
 		$this->ExportOptions->UseButtonGroup = TRUE;
-		$this->ExportOptions->UseDropDownButton = TRUE;
+		$this->ExportOptions->UseDropDownButton = FALSE;
 		if ($this->ExportOptions->UseButtonGroup && IsMobile())
 			$this->ExportOptions->UseDropDownButton = TRUE;
 		$this->ExportOptions->DropDownButtonPhrase = $Language->phrase("ButtonExport");

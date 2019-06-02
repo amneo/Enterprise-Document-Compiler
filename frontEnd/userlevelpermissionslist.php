@@ -307,6 +307,45 @@ $userlevelpermissions_list->ListOptions->render("body", "right", $userlevelpermi
 if ($userlevelpermissions_list->Recordset)
 	$userlevelpermissions_list->Recordset->Close();
 ?>
+<?php if (!$userlevelpermissions->isExport()) { ?>
+<div class="card-footer ew-grid-lower-panel">
+<?php if (!$userlevelpermissions->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php if (!isset($userlevelpermissions_list->Pager)) $userlevelpermissions_list->Pager = new NumericPager($userlevelpermissions_list->StartRec, $userlevelpermissions_list->DisplayRecs, $userlevelpermissions_list->TotalRecs, $userlevelpermissions_list->RecRange, $userlevelpermissions_list->AutoHidePager) ?>
+<?php if ($userlevelpermissions_list->Pager->RecordCount > 0 && $userlevelpermissions_list->Pager->Visible) { ?>
+<div class="ew-pager">
+<div class="ew-numeric-page"><ul class="pagination">
+	<?php if ($userlevelpermissions_list->Pager->FirstButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $userlevelpermissions_list->pageUrl() ?>start=<?php echo $userlevelpermissions_list->Pager->FirstButton->Start ?>"><?php echo $Language->Phrase("PagerFirst") ?></a></li>
+	<?php } ?>
+	<?php if ($userlevelpermissions_list->Pager->PrevButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $userlevelpermissions_list->pageUrl() ?>start=<?php echo $userlevelpermissions_list->Pager->PrevButton->Start ?>"><?php echo $Language->Phrase("PagerPrevious") ?></a></li>
+	<?php } ?>
+	<?php foreach ($userlevelpermissions_list->Pager->Items as $pagerItem) { ?>
+		<li class="page-item<?php if (!$pagerItem->Enabled) { ?> active<?php } ?>"><a class="page-link" href="<?php if ($pagerItem->Enabled) { echo $userlevelpermissions_list->pageUrl() . "start=" . $pagerItem->Start; } else { echo "#"; } ?>"><?php echo $pagerItem->Text ?></a></li>
+	<?php } ?>
+	<?php if ($userlevelpermissions_list->Pager->NextButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $userlevelpermissions_list->pageUrl() ?>start=<?php echo $userlevelpermissions_list->Pager->NextButton->Start ?>"><?php echo $Language->Phrase("PagerNext") ?></a></li>
+	<?php } ?>
+	<?php if ($userlevelpermissions_list->Pager->LastButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $userlevelpermissions_list->pageUrl() ?>start=<?php echo $userlevelpermissions_list->Pager->LastButton->Start ?>"><?php echo $Language->Phrase("PagerLast") ?></a></li>
+	<?php } ?>
+</ul></div>
+</div>
+<?php } ?>
+<?php if ($userlevelpermissions_list->Pager->RecordCount > 0) { ?>
+<div class="ew-pager ew-rec">
+	<span><?php echo $Language->Phrase("Record") ?>&nbsp;<?php echo $userlevelpermissions_list->Pager->FromIndex ?>&nbsp;<?php echo $Language->Phrase("To") ?>&nbsp;<?php echo $userlevelpermissions_list->Pager->ToIndex ?>&nbsp;<?php echo $Language->Phrase("Of") ?>&nbsp;<?php echo $userlevelpermissions_list->Pager->RecordCount ?></span>
+</div>
+<?php } ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $userlevelpermissions_list->OtherOptions->render("body", "bottom") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 </div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($userlevelpermissions_list->TotalRecs == 0 && !$userlevelpermissions->CurrentAction) { // Show other options ?>

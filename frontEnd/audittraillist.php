@@ -389,6 +389,45 @@ $audittrail_list->ListOptions->render("body", "right", $audittrail_list->RowCnt)
 if ($audittrail_list->Recordset)
 	$audittrail_list->Recordset->Close();
 ?>
+<?php if (!$audittrail->isExport()) { ?>
+<div class="card-footer ew-grid-lower-panel">
+<?php if (!$audittrail->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php if (!isset($audittrail_list->Pager)) $audittrail_list->Pager = new NumericPager($audittrail_list->StartRec, $audittrail_list->DisplayRecs, $audittrail_list->TotalRecs, $audittrail_list->RecRange, $audittrail_list->AutoHidePager) ?>
+<?php if ($audittrail_list->Pager->RecordCount > 0 && $audittrail_list->Pager->Visible) { ?>
+<div class="ew-pager">
+<div class="ew-numeric-page"><ul class="pagination">
+	<?php if ($audittrail_list->Pager->FirstButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $audittrail_list->pageUrl() ?>start=<?php echo $audittrail_list->Pager->FirstButton->Start ?>"><?php echo $Language->Phrase("PagerFirst") ?></a></li>
+	<?php } ?>
+	<?php if ($audittrail_list->Pager->PrevButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $audittrail_list->pageUrl() ?>start=<?php echo $audittrail_list->Pager->PrevButton->Start ?>"><?php echo $Language->Phrase("PagerPrevious") ?></a></li>
+	<?php } ?>
+	<?php foreach ($audittrail_list->Pager->Items as $pagerItem) { ?>
+		<li class="page-item<?php if (!$pagerItem->Enabled) { ?> active<?php } ?>"><a class="page-link" href="<?php if ($pagerItem->Enabled) { echo $audittrail_list->pageUrl() . "start=" . $pagerItem->Start; } else { echo "#"; } ?>"><?php echo $pagerItem->Text ?></a></li>
+	<?php } ?>
+	<?php if ($audittrail_list->Pager->NextButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $audittrail_list->pageUrl() ?>start=<?php echo $audittrail_list->Pager->NextButton->Start ?>"><?php echo $Language->Phrase("PagerNext") ?></a></li>
+	<?php } ?>
+	<?php if ($audittrail_list->Pager->LastButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $audittrail_list->pageUrl() ?>start=<?php echo $audittrail_list->Pager->LastButton->Start ?>"><?php echo $Language->Phrase("PagerLast") ?></a></li>
+	<?php } ?>
+</ul></div>
+</div>
+<?php } ?>
+<?php if ($audittrail_list->Pager->RecordCount > 0) { ?>
+<div class="ew-pager ew-rec">
+	<span><?php echo $Language->Phrase("Record") ?>&nbsp;<?php echo $audittrail_list->Pager->FromIndex ?>&nbsp;<?php echo $Language->Phrase("To") ?>&nbsp;<?php echo $audittrail_list->Pager->ToIndex ?>&nbsp;<?php echo $Language->Phrase("Of") ?>&nbsp;<?php echo $audittrail_list->Pager->RecordCount ?></span>
+</div>
+<?php } ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $audittrail_list->OtherOptions->render("body", "bottom") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 </div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($audittrail_list->TotalRecs == 0 && !$audittrail->CurrentAction) { // Show other options ?>

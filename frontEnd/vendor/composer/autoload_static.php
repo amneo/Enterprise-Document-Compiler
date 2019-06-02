@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit76911ae0942afb6f0d9789117aa84f3a
+class ComposerStaticInitd33ae5d01f868b272e3fe0f6c8526cb0
 {
     public static $files = array (
         '253c157292f75eb38082b5acb06f3f01' => __DIR__ . '/..' . '/nikic/fast-route/src/functions.php',
@@ -105,13 +105,11 @@ class ComposerStaticInit76911ae0942afb6f0d9789117aa84f3a
         ),
         'F' => 
         array (
-            'FontLib\\' => 8,
             'Firebase\\JWT\\' => 13,
             'FastRoute\\' => 10,
         ),
         'D' => 
         array (
-            'Dompdf\\' => 7,
             'Defuse\\Crypto\\' => 14,
         ),
         'C' => 
@@ -181,10 +179,6 @@ class ComposerStaticInit76911ae0942afb6f0d9789117aa84f3a
         array (
             0 => __DIR__ . '/..' . '/soundasleep/html2text/src',
         ),
-        'FontLib\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/phenx/php-font-lib/src/FontLib',
-        ),
         'Firebase\\JWT\\' => 
         array (
             0 => __DIR__ . '/..' . '/firebase/php-jwt/src',
@@ -192,10 +186,6 @@ class ComposerStaticInit76911ae0942afb6f0d9789117aa84f3a
         'FastRoute\\' => 
         array (
             0 => __DIR__ . '/..' . '/nikic/fast-route/src',
-        ),
-        'Dompdf\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/hkvstore/dompdf/src',
         ),
         'Defuse\\Crypto\\' => 
         array (
@@ -208,17 +198,6 @@ class ComposerStaticInit76911ae0942afb6f0d9789117aa84f3a
     );
 
     public static $prefixesPsr0 = array (
-        'S' => 
-        array (
-            'Svg\\' => 
-            array (
-                0 => __DIR__ . '/..' . '/phenx/php-svg-lib/src',
-            ),
-            'Sabberworm\\CSS' => 
-            array (
-                0 => __DIR__ . '/..' . '/sabberworm/php-css-parser/lib',
-            ),
-        ),
         'P' => 
         array (
             'Pimple' => 
@@ -247,12 +226,6 @@ class ComposerStaticInit76911ae0942afb6f0d9789117aa84f3a
     );
 
     public static $classMap = array (
-        'Cpdf' => __DIR__ . '/..' . '/hkvstore/dompdf/lib/Cpdf.php',
-        'HTML5_Data' => __DIR__ . '/..' . '/hkvstore/dompdf/lib/html5lib/Data.php',
-        'HTML5_InputStream' => __DIR__ . '/..' . '/hkvstore/dompdf/lib/html5lib/InputStream.php',
-        'HTML5_Parser' => __DIR__ . '/..' . '/hkvstore/dompdf/lib/html5lib/Parser.php',
-        'HTML5_Tokenizer' => __DIR__ . '/..' . '/hkvstore/dompdf/lib/html5lib/Tokenizer.php',
-        'HTML5_TreeBuilder' => __DIR__ . '/..' . '/hkvstore/dompdf/lib/html5lib/TreeBuilder.php',
         'Mobile_Detect' => __DIR__ . '/..' . '/mobiledetect/mobiledetectlib/Mobile_Detect.php',
         'PclZip' => __DIR__ . '/..' . '/pclzip/pclzip/pclzip.lib.php',
     );
@@ -260,10 +233,10 @@ class ComposerStaticInit76911ae0942afb6f0d9789117aa84f3a
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit76911ae0942afb6f0d9789117aa84f3a::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit76911ae0942afb6f0d9789117aa84f3a::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit76911ae0942afb6f0d9789117aa84f3a::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInit76911ae0942afb6f0d9789117aa84f3a::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitd33ae5d01f868b272e3fe0f6c8526cb0::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitd33ae5d01f868b272e3fe0f6c8526cb0::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInitd33ae5d01f868b272e3fe0f6c8526cb0::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInitd33ae5d01f868b272e3fe0f6c8526cb0::$classMap;
 
         }, null, ClassLoader::class);
     }

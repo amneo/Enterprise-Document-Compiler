@@ -545,6 +545,7 @@ class datasheets_search extends datasheets
 	public $FormClassName = "ew-horizontal ew-form ew-search-form";
 	public $IsModal = FALSE;
 	public $IsMobileOrModal = FALSE;
+	public $MultiPages; // Multi pages object
 
 	//
 	// Page run
@@ -644,6 +645,9 @@ class datasheets_search extends datasheets
 
 		// Do not use lookup cache
 		$this->setUseLookupCache(FALSE);
+
+		// Set up multi page object
+		$this->setupMultiPages();
 
 		// Global Page Loading event (in userfn*.php)
 		Page_Loading();
@@ -1130,6 +1134,17 @@ class datasheets_search extends datasheets
 		$Breadcrumb->add("list", $this->TableVar, $this->addMasterUrl("datasheetslist.php"), "", $this->TableVar, TRUE);
 		$pageId = "search";
 		$Breadcrumb->add("search", $pageId, $url);
+	}
+
+	// Set up multi pages
+	protected function setupMultiPages()
+	{
+		$pages = new SubPages();
+		$pages->Style = "tabs";
+		$pages->add(0);
+		$pages->add(1);
+		$pages->add(2);
+		$this->MultiPages = $pages;
 	}
 
 	// Setup lookup options

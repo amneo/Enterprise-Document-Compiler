@@ -70,28 +70,10 @@ fdatasheetsadd.validate = function() {
 			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->manufacturer->caption(), $datasheets->manufacturer->RequiredErrorMessage)) ?>");
 		<?php } ?>
-		<?php if ($datasheets_add->cddFile->Required) { ?>
-			felm = this.getElements("x" + infix + "_cddFile");
-			elm = this.getElements("fn_x" + infix + "_cddFile");
-			if (felm && elm && !ew.hasValue(elm))
-				return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->cddFile->caption(), $datasheets->cddFile->RequiredErrorMessage)) ?>");
-		<?php } ?>
-		<?php if ($datasheets_add->thirdPartyFile->Required) { ?>
-			felm = this.getElements("x" + infix + "_thirdPartyFile");
-			elm = this.getElements("fn_x" + infix + "_thirdPartyFile");
-			if (felm && elm && !ew.hasValue(elm))
-				return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->thirdPartyFile->caption(), $datasheets->thirdPartyFile->RequiredErrorMessage)) ?>");
-		<?php } ?>
 		<?php if ($datasheets_add->tittle->Required) { ?>
 			elm = this.getElements("x" + infix + "_tittle");
 			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->tittle->caption(), $datasheets->tittle->RequiredErrorMessage)) ?>");
-		<?php } ?>
-		<?php if ($datasheets_add->cover->Required) { ?>
-			felm = this.getElements("x" + infix + "_cover");
-			elm = this.getElements("fn_x" + infix + "_cover");
-			if (felm && elm && !ew.hasValue(elm))
-				return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->cover->caption(), $datasheets->cover->RequiredErrorMessage)) ?>");
 		<?php } ?>
 		<?php if ($datasheets_add->cddissue->Required) { ?>
 			elm = this.getElements("x" + infix + "_cddissue");
@@ -106,10 +88,28 @@ fdatasheetsadd.validate = function() {
 			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->cddno->caption(), $datasheets->cddno->RequiredErrorMessage)) ?>");
 		<?php } ?>
+		<?php if ($datasheets_add->cddFile->Required) { ?>
+			felm = this.getElements("x" + infix + "_cddFile");
+			elm = this.getElements("fn_x" + infix + "_cddFile");
+			if (felm && elm && !ew.hasValue(elm))
+				return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->cddFile->caption(), $datasheets->cddFile->RequiredErrorMessage)) ?>");
+		<?php } ?>
 		<?php if ($datasheets_add->thirdPartyNo->Required) { ?>
 			elm = this.getElements("x" + infix + "_thirdPartyNo");
 			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->thirdPartyNo->caption(), $datasheets->thirdPartyNo->RequiredErrorMessage)) ?>");
+		<?php } ?>
+		<?php if ($datasheets_add->thirdPartyFile->Required) { ?>
+			felm = this.getElements("x" + infix + "_thirdPartyFile");
+			elm = this.getElements("fn_x" + infix + "_thirdPartyFile");
+			if (felm && elm && !ew.hasValue(elm))
+				return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->thirdPartyFile->caption(), $datasheets->thirdPartyFile->RequiredErrorMessage)) ?>");
+		<?php } ?>
+		<?php if ($datasheets_add->cover->Required) { ?>
+			felm = this.getElements("x" + infix + "_cover");
+			elm = this.getElements("fn_x" + infix + "_cover");
+			if (felm && elm && !ew.hasValue(elm))
+				return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->cover->caption(), $datasheets->cover->RequiredErrorMessage)) ?>");
 		<?php } ?>
 		<?php if ($datasheets_add->duration->Required) { ?>
 			elm = this.getElements("x" + infix + "_duration");
@@ -809,22 +809,11 @@ fdatasheetsadd.createAutoSuggest({"id":"x_coo","forceSelect":false});
 		<div class="<?php echo $datasheets_add->RightColumnClass ?>"><div<?php echo $datasheets->systrade->cellAttributes() ?>>
 <?php if (!$datasheets->isConfirm()) { ?>
 <span id="el_datasheets_systrade">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($datasheets->systrade->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $datasheets->systrade->ViewValue ?></button>
-		<div id="dsl_x_systrade" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $datasheets->systrade->radioButtonListHtml(TRUE, "x_systrade", 1) ?>
-			</div><!-- /.ew-items ##-->
-		</div><!-- /.dropdown-menu ##-->
-		<div id="tp_x_systrade" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_systrade" data-page="1" data-value-separator="<?php echo $datasheets->systrade->displayValueSeparatorAttribute() ?>" name="x_systrade" id="x_systrade" value="{value}"<?php echo $datasheets->systrade->editAttributes() ?>></div>
-	</div><!-- /.btn-group ##-->
-	<?php if (!$datasheets->systrade->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fa fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list ##-->
+<div class="input-group">
+	<select class="custom-select ew-custom-select" data-table="datasheets" data-field="x_systrade" data-page="1" data-value-separator="<?php echo $datasheets->systrade->displayValueSeparatorAttribute() ?>" id="x_systrade" name="x_systrade"<?php echo $datasheets->systrade->editAttributes() ?>>
+		<?php echo $datasheets->systrade->selectOptionListHtml("x_systrade") ?>
+	</select>
+</div>
 </span>
 <?php } else { ?>
 <span id="el_datasheets_systrade">
@@ -841,22 +830,11 @@ fdatasheetsadd.createAutoSuggest({"id":"x_coo","forceSelect":false});
 		<td<?php echo $datasheets->systrade->cellAttributes() ?>>
 <?php if (!$datasheets->isConfirm()) { ?>
 <span id="el_datasheets_systrade">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($datasheets->systrade->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $datasheets->systrade->ViewValue ?></button>
-		<div id="dsl_x_systrade" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $datasheets->systrade->radioButtonListHtml(TRUE, "x_systrade", 1) ?>
-			</div><!-- /.ew-items ##-->
-		</div><!-- /.dropdown-menu ##-->
-		<div id="tp_x_systrade" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_systrade" data-page="1" data-value-separator="<?php echo $datasheets->systrade->displayValueSeparatorAttribute() ?>" name="x_systrade" id="x_systrade" value="{value}"<?php echo $datasheets->systrade->editAttributes() ?>></div>
-	</div><!-- /.btn-group ##-->
-	<?php if (!$datasheets->systrade->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fa fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list ##-->
+<div class="input-group">
+	<select class="custom-select ew-custom-select" data-table="datasheets" data-field="x_systrade" data-page="1" data-value-separator="<?php echo $datasheets->systrade->displayValueSeparatorAttribute() ?>" id="x_systrade" name="x_systrade"<?php echo $datasheets->systrade->editAttributes() ?>>
+		<?php echo $datasheets->systrade->selectOptionListHtml("x_systrade") ?>
+	</select>
+</div>
 </span>
 <?php } else { ?>
 <span id="el_datasheets_systrade">

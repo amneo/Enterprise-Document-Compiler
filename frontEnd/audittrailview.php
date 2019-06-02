@@ -70,35 +70,6 @@ faudittrailview.validateRequired = <?php echo json_encode(CLIENT_VALIDATE) ?>;
 <?php
 $audittrail_view->showMessage();
 ?>
-<?php if (!$audittrail_view->IsModal) { ?>
-<?php if (!$audittrail->isExport()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php if (!isset($audittrail_view->Pager)) $audittrail_view->Pager = new NumericPager($audittrail_view->StartRec, $audittrail_view->DisplayRecs, $audittrail_view->TotalRecs, $audittrail_view->RecRange, $audittrail_view->AutoHidePager) ?>
-<?php if ($audittrail_view->Pager->RecordCount > 0 && $audittrail_view->Pager->Visible) { ?>
-<div class="ew-pager">
-<div class="ew-numeric-page"><ul class="pagination">
-	<?php if ($audittrail_view->Pager->FirstButton->Enabled) { ?>
-	<li class="page-item"><a class="page-link" href="<?php echo $audittrail_view->pageUrl() ?>start=<?php echo $audittrail_view->Pager->FirstButton->Start ?>"><?php echo $Language->Phrase("PagerFirst") ?></a></li>
-	<?php } ?>
-	<?php if ($audittrail_view->Pager->PrevButton->Enabled) { ?>
-	<li class="page-item"><a class="page-link" href="<?php echo $audittrail_view->pageUrl() ?>start=<?php echo $audittrail_view->Pager->PrevButton->Start ?>"><?php echo $Language->Phrase("PagerPrevious") ?></a></li>
-	<?php } ?>
-	<?php foreach ($audittrail_view->Pager->Items as $pagerItem) { ?>
-		<li class="page-item<?php if (!$pagerItem->Enabled) { ?> active<?php } ?>"><a class="page-link" href="<?php if ($pagerItem->Enabled) { echo $audittrail_view->pageUrl() . "start=" . $pagerItem->Start; } else { echo "#"; } ?>"><?php echo $pagerItem->Text ?></a></li>
-	<?php } ?>
-	<?php if ($audittrail_view->Pager->NextButton->Enabled) { ?>
-	<li class="page-item"><a class="page-link" href="<?php echo $audittrail_view->pageUrl() ?>start=<?php echo $audittrail_view->Pager->NextButton->Start ?>"><?php echo $Language->Phrase("PagerNext") ?></a></li>
-	<?php } ?>
-	<?php if ($audittrail_view->Pager->LastButton->Enabled) { ?>
-	<li class="page-item"><a class="page-link" href="<?php echo $audittrail_view->pageUrl() ?>start=<?php echo $audittrail_view->Pager->LastButton->Start ?>"><?php echo $Language->Phrase("PagerLast") ?></a></li>
-	<?php } ?>
-</ul></div>
-</div>
-<?php } ?>
-<div class="clearfix"></div>
-</form>
-<?php } ?>
-<?php } ?>
 <form name="faudittrailview" id="faudittrailview" class="form-inline ew-form ew-view-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($audittrail_view->CheckToken) { ?>
 <input type="hidden" name="<?php echo TOKEN_NAME ?>" value="<?php echo $audittrail_view->Token ?>">

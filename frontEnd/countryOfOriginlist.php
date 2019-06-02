@@ -338,6 +338,45 @@ $countryOfOrigin_list->ListOptions->render("body", "right", $countryOfOrigin_lis
 if ($countryOfOrigin_list->Recordset)
 	$countryOfOrigin_list->Recordset->Close();
 ?>
+<?php if (!$countryOfOrigin->isExport()) { ?>
+<div class="card-footer ew-grid-lower-panel">
+<?php if (!$countryOfOrigin->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php if (!isset($countryOfOrigin_list->Pager)) $countryOfOrigin_list->Pager = new NumericPager($countryOfOrigin_list->StartRec, $countryOfOrigin_list->DisplayRecs, $countryOfOrigin_list->TotalRecs, $countryOfOrigin_list->RecRange, $countryOfOrigin_list->AutoHidePager) ?>
+<?php if ($countryOfOrigin_list->Pager->RecordCount > 0 && $countryOfOrigin_list->Pager->Visible) { ?>
+<div class="ew-pager">
+<div class="ew-numeric-page"><ul class="pagination">
+	<?php if ($countryOfOrigin_list->Pager->FirstButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $countryOfOrigin_list->pageUrl() ?>start=<?php echo $countryOfOrigin_list->Pager->FirstButton->Start ?>"><?php echo $Language->Phrase("PagerFirst") ?></a></li>
+	<?php } ?>
+	<?php if ($countryOfOrigin_list->Pager->PrevButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $countryOfOrigin_list->pageUrl() ?>start=<?php echo $countryOfOrigin_list->Pager->PrevButton->Start ?>"><?php echo $Language->Phrase("PagerPrevious") ?></a></li>
+	<?php } ?>
+	<?php foreach ($countryOfOrigin_list->Pager->Items as $pagerItem) { ?>
+		<li class="page-item<?php if (!$pagerItem->Enabled) { ?> active<?php } ?>"><a class="page-link" href="<?php if ($pagerItem->Enabled) { echo $countryOfOrigin_list->pageUrl() . "start=" . $pagerItem->Start; } else { echo "#"; } ?>"><?php echo $pagerItem->Text ?></a></li>
+	<?php } ?>
+	<?php if ($countryOfOrigin_list->Pager->NextButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $countryOfOrigin_list->pageUrl() ?>start=<?php echo $countryOfOrigin_list->Pager->NextButton->Start ?>"><?php echo $Language->Phrase("PagerNext") ?></a></li>
+	<?php } ?>
+	<?php if ($countryOfOrigin_list->Pager->LastButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $countryOfOrigin_list->pageUrl() ?>start=<?php echo $countryOfOrigin_list->Pager->LastButton->Start ?>"><?php echo $Language->Phrase("PagerLast") ?></a></li>
+	<?php } ?>
+</ul></div>
+</div>
+<?php } ?>
+<?php if ($countryOfOrigin_list->Pager->RecordCount > 0) { ?>
+<div class="ew-pager ew-rec">
+	<span><?php echo $Language->Phrase("Record") ?>&nbsp;<?php echo $countryOfOrigin_list->Pager->FromIndex ?>&nbsp;<?php echo $Language->Phrase("To") ?>&nbsp;<?php echo $countryOfOrigin_list->Pager->ToIndex ?>&nbsp;<?php echo $Language->Phrase("Of") ?>&nbsp;<?php echo $countryOfOrigin_list->Pager->RecordCount ?></span>
+</div>
+<?php } ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $countryOfOrigin_list->OtherOptions->render("body", "bottom") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 </div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($countryOfOrigin_list->TotalRecs == 0 && !$countryOfOrigin->CurrentAction) { // Show other options ?>

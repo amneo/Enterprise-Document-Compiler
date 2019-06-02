@@ -58,21 +58,29 @@ fdatasheetsupdate.validate = function() {
 	for (var i = startcnt; i <= rowcnt; i++) {
 		var infix = ($k[0]) ? String(i) : "";
 		$fobj.data("rowindex", infix);
+		<?php if ($datasheets_update->partno->Required) { ?>
+			elm = this.getElements("x" + infix + "_partno");
+			uelm = this.getElements("u" + infix + "_partno");
+			if (uelm && uelm.checked) {
+				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
+					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->partno->caption(), $datasheets->partno->RequiredErrorMessage)) ?>");
+			}
+		<?php } ?>
+		<?php if ($datasheets_update->dataSheetFile->Required) { ?>
+			felm = this.getElements("x" + infix + "_dataSheetFile");
+			elm = this.getElements("fn_x" + infix + "_dataSheetFile");
+			uelm = this.getElements("u" + infix + "_dataSheetFile");
+			if (uelm && uelm.checked) {
+				if (felm && elm && !ew.hasValue(elm))
+					return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->dataSheetFile->caption(), $datasheets->dataSheetFile->RequiredErrorMessage)) ?>");
+			}
+		<?php } ?>
 		<?php if ($datasheets_update->manufacturer->Required) { ?>
 			elm = this.getElements("x" + infix + "_manufacturer");
 			uelm = this.getElements("u" + infix + "_manufacturer");
 			if (uelm && uelm.checked) {
 				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->manufacturer->caption(), $datasheets->manufacturer->RequiredErrorMessage)) ?>");
-			}
-		<?php } ?>
-		<?php if ($datasheets_update->cddFile->Required) { ?>
-			felm = this.getElements("x" + infix + "_cddFile");
-			elm = this.getElements("fn_x" + infix + "_cddFile");
-			uelm = this.getElements("u" + infix + "_cddFile");
-			if (uelm && uelm.checked) {
-				if (felm && elm && !ew.hasValue(elm))
-					return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->cddFile->caption(), $datasheets->cddFile->RequiredErrorMessage)) ?>");
 			}
 		<?php } ?>
 		<?php if ($datasheets_update->cddissue->Required) { ?>
@@ -95,6 +103,41 @@ fdatasheetsupdate.validate = function() {
 					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->cddno->caption(), $datasheets->cddno->RequiredErrorMessage)) ?>");
 			}
 		<?php } ?>
+		<?php if ($datasheets_update->cddFile->Required) { ?>
+			felm = this.getElements("x" + infix + "_cddFile");
+			elm = this.getElements("fn_x" + infix + "_cddFile");
+			uelm = this.getElements("u" + infix + "_cddFile");
+			if (uelm && uelm.checked) {
+				if (felm && elm && !ew.hasValue(elm))
+					return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->cddFile->caption(), $datasheets->cddFile->RequiredErrorMessage)) ?>");
+			}
+		<?php } ?>
+		<?php if ($datasheets_update->thirdPartyNo->Required) { ?>
+			elm = this.getElements("x" + infix + "_thirdPartyNo");
+			uelm = this.getElements("u" + infix + "_thirdPartyNo");
+			if (uelm && uelm.checked) {
+				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
+					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->thirdPartyNo->caption(), $datasheets->thirdPartyNo->RequiredErrorMessage)) ?>");
+			}
+		<?php } ?>
+		<?php if ($datasheets_update->thirdPartyFile->Required) { ?>
+			felm = this.getElements("x" + infix + "_thirdPartyFile");
+			elm = this.getElements("fn_x" + infix + "_thirdPartyFile");
+			uelm = this.getElements("u" + infix + "_thirdPartyFile");
+			if (uelm && uelm.checked) {
+				if (felm && elm && !ew.hasValue(elm))
+					return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->thirdPartyFile->caption(), $datasheets->thirdPartyFile->RequiredErrorMessage)) ?>");
+			}
+		<?php } ?>
+		<?php if ($datasheets_update->cover->Required) { ?>
+			felm = this.getElements("x" + infix + "_cover");
+			elm = this.getElements("fn_x" + infix + "_cover");
+			uelm = this.getElements("u" + infix + "_cover");
+			if (uelm && uelm.checked) {
+				if (felm && elm && !ew.hasValue(elm))
+					return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->cover->caption(), $datasheets->cover->RequiredErrorMessage)) ?>");
+			}
+		<?php } ?>
 		<?php if ($datasheets_update->duration->Required) { ?>
 			elm = this.getElements("x" + infix + "_duration");
 			uelm = this.getElements("u" + infix + "_duration");
@@ -115,6 +158,14 @@ fdatasheetsupdate.validate = function() {
 			uelm = this.getElements("u" + infix + "_expirydt");
 			if (uelm && uelm.checked && elm && !ew.checkDate(elm.value))
 				return this.onError(elm, "<?php echo JsEncode($datasheets->expirydt->errorMessage()) ?>");
+		<?php if ($datasheets_update->highlighted->Required) { ?>
+			elm = this.getElements("x" + infix + "_highlighted");
+			uelm = this.getElements("u" + infix + "_highlighted");
+			if (uelm && uelm.checked) {
+				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
+					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->highlighted->caption(), $datasheets->highlighted->RequiredErrorMessage)) ?>");
+			}
+		<?php } ?>
 		<?php if ($datasheets_update->systrade->Required) { ?>
 			elm = this.getElements("x" + infix + "_systrade");
 			uelm = this.getElements("u" + infix + "_systrade");
@@ -171,6 +222,8 @@ fdatasheetsupdate.lists["x_manufacturer"].options = <?php echo JsonEncode($datas
 fdatasheetsupdate.autoSuggests["x_manufacturer"] = <?php echo json_encode(["data" => "ajax=autosuggest"]) ?>;
 fdatasheetsupdate.lists["x_duration"] = <?php echo $datasheets_update->duration->Lookup->toClientList() ?>;
 fdatasheetsupdate.lists["x_duration"].options = <?php echo JsonEncode($datasheets_update->duration->options(FALSE, TRUE)) ?>;
+fdatasheetsupdate.lists["x_highlighted"] = <?php echo $datasheets_update->highlighted->Lookup->toClientList() ?>;
+fdatasheetsupdate.lists["x_highlighted"].options = <?php echo JsonEncode($datasheets_update->highlighted->options(FALSE, TRUE)) ?>;
 fdatasheetsupdate.lists["x_systrade"] = <?php echo $datasheets_update->systrade->Lookup->toClientList() ?>;
 fdatasheetsupdate.lists["x_systrade"].options = <?php echo JsonEncode($datasheets_update->systrade->options(FALSE, TRUE)) ?>;
 fdatasheetsupdate.lists["x_isdatasheet"] = <?php echo $datasheets_update->isdatasheet->Lookup->toClientList() ?>;
@@ -220,6 +273,71 @@ $datasheets_update->showMessage();
 	</tr>
 	</thead>
 	<tbody>
+<?php } ?>
+<?php if ($datasheets->dataSheetFile->Visible) { // dataSheetFile ?>
+<?php if ($datasheets_update->IsMobileOrModal) { ?>
+	<div id="r_dataSheetFile" class="form-group row">
+		<label class="<?php echo $datasheets_update->LeftColumnClass ?>"><div class="form-check">
+<?php if (!$datasheets->isConfirm()) { ?>
+<input type="checkbox" name="u_dataSheetFile" id="u_dataSheetFile" class="form-check-input ew-multi-select" value="1"<?php echo ($datasheets->dataSheetFile->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } else { ?>
+<input type="hidden" name="u_dataSheetFile" id="u_dataSheetFile" value="<?php echo $datasheets->dataSheetFile->MultiUpdate ?>">
+<input type="checkbox" class="form-check-input" disabled<?php echo ($datasheets->dataSheetFile->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } ?>
+<label class="form-check-label" for="u_dataSheetFile"><?php echo $datasheets->dataSheetFile->caption() ?></label></div></label>
+		<div class="<?php echo $datasheets_update->RightColumnClass ?>"><div<?php echo $datasheets->dataSheetFile->cellAttributes() ?>>
+<span id="el_datasheets_dataSheetFile">
+<div id="fd_x_dataSheetFile">
+<span title="<?php echo $datasheets->dataSheetFile->title() ? $datasheets->dataSheetFile->title() : $Language->phrase("ChooseFile") ?>" class="btn btn-default btn-sm fileinput-button ew-tooltip<?php if ($datasheets->dataSheetFile->ReadOnly || $datasheets->dataSheetFile->Disabled) echo " d-none"; ?>">
+	<span><?php echo $Language->phrase("ChooseFileBtn") ?></span>
+	<input type="file" title=" " data-table="datasheets" data-field="x_dataSheetFile" name="x_dataSheetFile" id="x_dataSheetFile"<?php echo $datasheets->dataSheetFile->editAttributes() ?>>
+</span>
+<input type="hidden" name="fn_x_dataSheetFile" id= "fn_x_dataSheetFile" value="<?php echo $datasheets->dataSheetFile->Upload->FileName ?>">
+<?php if (Post("fa_x_dataSheetFile") == "0") { ?>
+<input type="hidden" name="fa_x_dataSheetFile" id= "fa_x_dataSheetFile" value="0">
+<?php } else { ?>
+<input type="hidden" name="fa_x_dataSheetFile" id= "fa_x_dataSheetFile" value="1">
+<?php } ?>
+<input type="hidden" name="fs_x_dataSheetFile" id= "fs_x_dataSheetFile" value="0">
+<input type="hidden" name="fx_x_dataSheetFile" id= "fx_x_dataSheetFile" value="<?php echo $datasheets->dataSheetFile->UploadAllowedFileExt ?>">
+<input type="hidden" name="fm_x_dataSheetFile" id= "fm_x_dataSheetFile" value="<?php echo $datasheets->dataSheetFile->UploadMaxFileSize ?>">
+</div>
+<table id="ft_x_dataSheetFile" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
+</span>
+<?php echo $datasheets->dataSheetFile->CustomMsg ?></div></div>
+	</div>
+<?php } else { ?>
+	<tr id="r_dataSheetFile">
+		<td class="<?php echo $datasheets_update->TableLeftColumnClass ?>"<?php echo $datasheets->dataSheetFile->cellAttributes() ?>><span id="elh_datasheets_dataSheetFile"><div class="form-check">
+<?php if (!$datasheets->isConfirm()) { ?>
+<input type="checkbox" name="u_dataSheetFile" id="u_dataSheetFile" class="form-check-input ew-multi-select" value="1"<?php echo ($datasheets->dataSheetFile->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } else { ?>
+<input type="hidden" name="u_dataSheetFile" id="u_dataSheetFile" value="<?php echo $datasheets->dataSheetFile->MultiUpdate ?>">
+<input type="checkbox" class="form-check-input" disabled<?php echo ($datasheets->dataSheetFile->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } ?>
+<label class="form-check-label" for="u_dataSheetFile"><?php echo $datasheets->dataSheetFile->caption() ?></label></div></span></td>
+		<td<?php echo $datasheets->dataSheetFile->cellAttributes() ?>>
+<span id="el_datasheets_dataSheetFile">
+<div id="fd_x_dataSheetFile">
+<span title="<?php echo $datasheets->dataSheetFile->title() ? $datasheets->dataSheetFile->title() : $Language->phrase("ChooseFile") ?>" class="btn btn-default btn-sm fileinput-button ew-tooltip<?php if ($datasheets->dataSheetFile->ReadOnly || $datasheets->dataSheetFile->Disabled) echo " d-none"; ?>">
+	<span><?php echo $Language->phrase("ChooseFileBtn") ?></span>
+	<input type="file" title=" " data-table="datasheets" data-field="x_dataSheetFile" name="x_dataSheetFile" id="x_dataSheetFile"<?php echo $datasheets->dataSheetFile->editAttributes() ?>>
+</span>
+<input type="hidden" name="fn_x_dataSheetFile" id= "fn_x_dataSheetFile" value="<?php echo $datasheets->dataSheetFile->Upload->FileName ?>">
+<?php if (Post("fa_x_dataSheetFile") == "0") { ?>
+<input type="hidden" name="fa_x_dataSheetFile" id= "fa_x_dataSheetFile" value="0">
+<?php } else { ?>
+<input type="hidden" name="fa_x_dataSheetFile" id= "fa_x_dataSheetFile" value="1">
+<?php } ?>
+<input type="hidden" name="fs_x_dataSheetFile" id= "fs_x_dataSheetFile" value="0">
+<input type="hidden" name="fx_x_dataSheetFile" id= "fx_x_dataSheetFile" value="<?php echo $datasheets->dataSheetFile->UploadAllowedFileExt ?>">
+<input type="hidden" name="fm_x_dataSheetFile" id= "fm_x_dataSheetFile" value="<?php echo $datasheets->dataSheetFile->UploadMaxFileSize ?>">
+</div>
+<table id="ft_x_dataSheetFile" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
+</span>
+<?php echo $datasheets->dataSheetFile->CustomMsg ?></td>
+	</tr>
+<?php } ?>
 <?php } ?>
 <?php if ($datasheets->manufacturer->Visible) { // manufacturer ?>
 <?php if ($datasheets_update->IsMobileOrModal) { ?>
@@ -303,71 +421,6 @@ fdatasheetsupdate.createAutoSuggest({"id":"x_manufacturer","forceSelect":true});
 <input type="hidden" data-table="datasheets" data-field="x_manufacturer" name="x_manufacturer" id="x_manufacturer" value="<?php echo HtmlEncode($datasheets->manufacturer->FormValue) ?>">
 <?php } ?>
 <?php echo $datasheets->manufacturer->CustomMsg ?></td>
-	</tr>
-<?php } ?>
-<?php } ?>
-<?php if ($datasheets->cddFile->Visible) { // cddFile ?>
-<?php if ($datasheets_update->IsMobileOrModal) { ?>
-	<div id="r_cddFile" class="form-group row">
-		<label class="<?php echo $datasheets_update->LeftColumnClass ?>"><div class="form-check">
-<?php if (!$datasheets->isConfirm()) { ?>
-<input type="checkbox" name="u_cddFile" id="u_cddFile" class="form-check-input ew-multi-select" value="1"<?php echo ($datasheets->cddFile->MultiUpdate == "1") ? " checked" : "" ?>>
-<?php } else { ?>
-<input type="hidden" name="u_cddFile" id="u_cddFile" value="<?php echo $datasheets->cddFile->MultiUpdate ?>">
-<input type="checkbox" class="form-check-input" disabled<?php echo ($datasheets->cddFile->MultiUpdate == "1") ? " checked" : "" ?>>
-<?php } ?>
-<label class="form-check-label" for="u_cddFile"><?php echo $datasheets->cddFile->caption() ?></label></div></label>
-		<div class="<?php echo $datasheets_update->RightColumnClass ?>"><div<?php echo $datasheets->cddFile->cellAttributes() ?>>
-<span id="el_datasheets_cddFile">
-<div id="fd_x_cddFile">
-<span title="<?php echo $datasheets->cddFile->title() ? $datasheets->cddFile->title() : $Language->phrase("ChooseFile") ?>" class="btn btn-default btn-sm fileinput-button ew-tooltip<?php if ($datasheets->cddFile->ReadOnly || $datasheets->cddFile->Disabled) echo " d-none"; ?>">
-	<span><?php echo $Language->phrase("ChooseFileBtn") ?></span>
-	<input type="file" title=" " data-table="datasheets" data-field="x_cddFile" name="x_cddFile" id="x_cddFile"<?php echo $datasheets->cddFile->editAttributes() ?>>
-</span>
-<input type="hidden" name="fn_x_cddFile" id= "fn_x_cddFile" value="<?php echo $datasheets->cddFile->Upload->FileName ?>">
-<?php if (Post("fa_x_cddFile") == "0") { ?>
-<input type="hidden" name="fa_x_cddFile" id= "fa_x_cddFile" value="0">
-<?php } else { ?>
-<input type="hidden" name="fa_x_cddFile" id= "fa_x_cddFile" value="1">
-<?php } ?>
-<input type="hidden" name="fs_x_cddFile" id= "fs_x_cddFile" value="0">
-<input type="hidden" name="fx_x_cddFile" id= "fx_x_cddFile" value="<?php echo $datasheets->cddFile->UploadAllowedFileExt ?>">
-<input type="hidden" name="fm_x_cddFile" id= "fm_x_cddFile" value="<?php echo $datasheets->cddFile->UploadMaxFileSize ?>">
-</div>
-<table id="ft_x_cddFile" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
-</span>
-<?php echo $datasheets->cddFile->CustomMsg ?></div></div>
-	</div>
-<?php } else { ?>
-	<tr id="r_cddFile">
-		<td class="<?php echo $datasheets_update->TableLeftColumnClass ?>"<?php echo $datasheets->cddFile->cellAttributes() ?>><span id="elh_datasheets_cddFile"><div class="form-check">
-<?php if (!$datasheets->isConfirm()) { ?>
-<input type="checkbox" name="u_cddFile" id="u_cddFile" class="form-check-input ew-multi-select" value="1"<?php echo ($datasheets->cddFile->MultiUpdate == "1") ? " checked" : "" ?>>
-<?php } else { ?>
-<input type="hidden" name="u_cddFile" id="u_cddFile" value="<?php echo $datasheets->cddFile->MultiUpdate ?>">
-<input type="checkbox" class="form-check-input" disabled<?php echo ($datasheets->cddFile->MultiUpdate == "1") ? " checked" : "" ?>>
-<?php } ?>
-<label class="form-check-label" for="u_cddFile"><?php echo $datasheets->cddFile->caption() ?></label></div></span></td>
-		<td<?php echo $datasheets->cddFile->cellAttributes() ?>>
-<span id="el_datasheets_cddFile">
-<div id="fd_x_cddFile">
-<span title="<?php echo $datasheets->cddFile->title() ? $datasheets->cddFile->title() : $Language->phrase("ChooseFile") ?>" class="btn btn-default btn-sm fileinput-button ew-tooltip<?php if ($datasheets->cddFile->ReadOnly || $datasheets->cddFile->Disabled) echo " d-none"; ?>">
-	<span><?php echo $Language->phrase("ChooseFileBtn") ?></span>
-	<input type="file" title=" " data-table="datasheets" data-field="x_cddFile" name="x_cddFile" id="x_cddFile"<?php echo $datasheets->cddFile->editAttributes() ?>>
-</span>
-<input type="hidden" name="fn_x_cddFile" id= "fn_x_cddFile" value="<?php echo $datasheets->cddFile->Upload->FileName ?>">
-<?php if (Post("fa_x_cddFile") == "0") { ?>
-<input type="hidden" name="fa_x_cddFile" id= "fa_x_cddFile" value="0">
-<?php } else { ?>
-<input type="hidden" name="fa_x_cddFile" id= "fa_x_cddFile" value="1">
-<?php } ?>
-<input type="hidden" name="fs_x_cddFile" id= "fs_x_cddFile" value="0">
-<input type="hidden" name="fx_x_cddFile" id= "fx_x_cddFile" value="<?php echo $datasheets->cddFile->UploadAllowedFileExt ?>">
-<input type="hidden" name="fm_x_cddFile" id= "fm_x_cddFile" value="<?php echo $datasheets->cddFile->UploadMaxFileSize ?>">
-</div>
-<table id="ft_x_cddFile" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
-</span>
-<?php echo $datasheets->cddFile->CustomMsg ?></td>
 	</tr>
 <?php } ?>
 <?php } ?>
@@ -493,6 +546,262 @@ ew.createDateTimePicker("fdatasheetsupdate", "x_cddissue", {"ignoreReadonly":tru
 	</tr>
 <?php } ?>
 <?php } ?>
+<?php if ($datasheets->cddFile->Visible) { // cddFile ?>
+<?php if ($datasheets_update->IsMobileOrModal) { ?>
+	<div id="r_cddFile" class="form-group row">
+		<label class="<?php echo $datasheets_update->LeftColumnClass ?>"><div class="form-check">
+<?php if (!$datasheets->isConfirm()) { ?>
+<input type="checkbox" name="u_cddFile" id="u_cddFile" class="form-check-input ew-multi-select" value="1"<?php echo ($datasheets->cddFile->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } else { ?>
+<input type="hidden" name="u_cddFile" id="u_cddFile" value="<?php echo $datasheets->cddFile->MultiUpdate ?>">
+<input type="checkbox" class="form-check-input" disabled<?php echo ($datasheets->cddFile->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } ?>
+<label class="form-check-label" for="u_cddFile"><?php echo $datasheets->cddFile->caption() ?></label></div></label>
+		<div class="<?php echo $datasheets_update->RightColumnClass ?>"><div<?php echo $datasheets->cddFile->cellAttributes() ?>>
+<span id="el_datasheets_cddFile">
+<div id="fd_x_cddFile">
+<span title="<?php echo $datasheets->cddFile->title() ? $datasheets->cddFile->title() : $Language->phrase("ChooseFile") ?>" class="btn btn-default btn-sm fileinput-button ew-tooltip<?php if ($datasheets->cddFile->ReadOnly || $datasheets->cddFile->Disabled) echo " d-none"; ?>">
+	<span><?php echo $Language->phrase("ChooseFileBtn") ?></span>
+	<input type="file" title=" " data-table="datasheets" data-field="x_cddFile" name="x_cddFile" id="x_cddFile"<?php echo $datasheets->cddFile->editAttributes() ?>>
+</span>
+<input type="hidden" name="fn_x_cddFile" id= "fn_x_cddFile" value="<?php echo $datasheets->cddFile->Upload->FileName ?>">
+<?php if (Post("fa_x_cddFile") == "0") { ?>
+<input type="hidden" name="fa_x_cddFile" id= "fa_x_cddFile" value="0">
+<?php } else { ?>
+<input type="hidden" name="fa_x_cddFile" id= "fa_x_cddFile" value="1">
+<?php } ?>
+<input type="hidden" name="fs_x_cddFile" id= "fs_x_cddFile" value="0">
+<input type="hidden" name="fx_x_cddFile" id= "fx_x_cddFile" value="<?php echo $datasheets->cddFile->UploadAllowedFileExt ?>">
+<input type="hidden" name="fm_x_cddFile" id= "fm_x_cddFile" value="<?php echo $datasheets->cddFile->UploadMaxFileSize ?>">
+</div>
+<table id="ft_x_cddFile" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
+</span>
+<?php echo $datasheets->cddFile->CustomMsg ?></div></div>
+	</div>
+<?php } else { ?>
+	<tr id="r_cddFile">
+		<td class="<?php echo $datasheets_update->TableLeftColumnClass ?>"<?php echo $datasheets->cddFile->cellAttributes() ?>><span id="elh_datasheets_cddFile"><div class="form-check">
+<?php if (!$datasheets->isConfirm()) { ?>
+<input type="checkbox" name="u_cddFile" id="u_cddFile" class="form-check-input ew-multi-select" value="1"<?php echo ($datasheets->cddFile->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } else { ?>
+<input type="hidden" name="u_cddFile" id="u_cddFile" value="<?php echo $datasheets->cddFile->MultiUpdate ?>">
+<input type="checkbox" class="form-check-input" disabled<?php echo ($datasheets->cddFile->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } ?>
+<label class="form-check-label" for="u_cddFile"><?php echo $datasheets->cddFile->caption() ?></label></div></span></td>
+		<td<?php echo $datasheets->cddFile->cellAttributes() ?>>
+<span id="el_datasheets_cddFile">
+<div id="fd_x_cddFile">
+<span title="<?php echo $datasheets->cddFile->title() ? $datasheets->cddFile->title() : $Language->phrase("ChooseFile") ?>" class="btn btn-default btn-sm fileinput-button ew-tooltip<?php if ($datasheets->cddFile->ReadOnly || $datasheets->cddFile->Disabled) echo " d-none"; ?>">
+	<span><?php echo $Language->phrase("ChooseFileBtn") ?></span>
+	<input type="file" title=" " data-table="datasheets" data-field="x_cddFile" name="x_cddFile" id="x_cddFile"<?php echo $datasheets->cddFile->editAttributes() ?>>
+</span>
+<input type="hidden" name="fn_x_cddFile" id= "fn_x_cddFile" value="<?php echo $datasheets->cddFile->Upload->FileName ?>">
+<?php if (Post("fa_x_cddFile") == "0") { ?>
+<input type="hidden" name="fa_x_cddFile" id= "fa_x_cddFile" value="0">
+<?php } else { ?>
+<input type="hidden" name="fa_x_cddFile" id= "fa_x_cddFile" value="1">
+<?php } ?>
+<input type="hidden" name="fs_x_cddFile" id= "fs_x_cddFile" value="0">
+<input type="hidden" name="fx_x_cddFile" id= "fx_x_cddFile" value="<?php echo $datasheets->cddFile->UploadAllowedFileExt ?>">
+<input type="hidden" name="fm_x_cddFile" id= "fm_x_cddFile" value="<?php echo $datasheets->cddFile->UploadMaxFileSize ?>">
+</div>
+<table id="ft_x_cddFile" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
+</span>
+<?php echo $datasheets->cddFile->CustomMsg ?></td>
+	</tr>
+<?php } ?>
+<?php } ?>
+<?php if ($datasheets->thirdPartyNo->Visible) { // thirdPartyNo ?>
+<?php if ($datasheets_update->IsMobileOrModal) { ?>
+	<div id="r_thirdPartyNo" class="form-group row">
+		<label for="x_thirdPartyNo" class="<?php echo $datasheets_update->LeftColumnClass ?>"><div class="form-check">
+<?php if (!$datasheets->isConfirm()) { ?>
+<input type="checkbox" name="u_thirdPartyNo" id="u_thirdPartyNo" class="form-check-input ew-multi-select" value="1"<?php echo ($datasheets->thirdPartyNo->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } else { ?>
+<input type="hidden" name="u_thirdPartyNo" id="u_thirdPartyNo" value="<?php echo $datasheets->thirdPartyNo->MultiUpdate ?>">
+<input type="checkbox" class="form-check-input" disabled<?php echo ($datasheets->thirdPartyNo->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } ?>
+<label class="form-check-label" for="u_thirdPartyNo"><?php echo $datasheets->thirdPartyNo->caption() ?></label></div></label>
+		<div class="<?php echo $datasheets_update->RightColumnClass ?>"><div<?php echo $datasheets->thirdPartyNo->cellAttributes() ?>>
+<?php if (!$datasheets->isConfirm()) { ?>
+<span id="el_datasheets_thirdPartyNo">
+<input type="text" data-table="datasheets" data-field="x_thirdPartyNo" name="x_thirdPartyNo" id="x_thirdPartyNo" size="30" placeholder="<?php echo HtmlEncode($datasheets->thirdPartyNo->getPlaceHolder()) ?>" value="<?php echo $datasheets->thirdPartyNo->EditValue ?>"<?php echo $datasheets->thirdPartyNo->editAttributes() ?>>
+</span>
+<?php } else { ?>
+<span id="el_datasheets_thirdPartyNo">
+<span<?php echo $datasheets->thirdPartyNo->viewAttributes() ?>>
+<?php if ((!EmptyString($datasheets->thirdPartyNo->ViewValue)) && $datasheets->thirdPartyNo->linkAttributes() <> "") { ?>
+<a<?php echo $datasheets->thirdPartyNo->linkAttributes() ?>><input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->thirdPartyNo->ViewValue) ?>"></a>
+<?php } else { ?>
+<input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->thirdPartyNo->ViewValue) ?>">
+<?php } ?>
+</span>
+</span>
+<input type="hidden" data-table="datasheets" data-field="x_thirdPartyNo" name="x_thirdPartyNo" id="x_thirdPartyNo" value="<?php echo HtmlEncode($datasheets->thirdPartyNo->FormValue) ?>">
+<?php } ?>
+<?php echo $datasheets->thirdPartyNo->CustomMsg ?></div></div>
+	</div>
+<?php } else { ?>
+	<tr id="r_thirdPartyNo">
+		<td class="<?php echo $datasheets_update->TableLeftColumnClass ?>"<?php echo $datasheets->thirdPartyNo->cellAttributes() ?>><span id="elh_datasheets_thirdPartyNo"><div class="form-check">
+<?php if (!$datasheets->isConfirm()) { ?>
+<input type="checkbox" name="u_thirdPartyNo" id="u_thirdPartyNo" class="form-check-input ew-multi-select" value="1"<?php echo ($datasheets->thirdPartyNo->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } else { ?>
+<input type="hidden" name="u_thirdPartyNo" id="u_thirdPartyNo" value="<?php echo $datasheets->thirdPartyNo->MultiUpdate ?>">
+<input type="checkbox" class="form-check-input" disabled<?php echo ($datasheets->thirdPartyNo->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } ?>
+<label class="form-check-label" for="u_thirdPartyNo"><?php echo $datasheets->thirdPartyNo->caption() ?></label></div></span></td>
+		<td<?php echo $datasheets->thirdPartyNo->cellAttributes() ?>>
+<?php if (!$datasheets->isConfirm()) { ?>
+<span id="el_datasheets_thirdPartyNo">
+<input type="text" data-table="datasheets" data-field="x_thirdPartyNo" name="x_thirdPartyNo" id="x_thirdPartyNo" size="30" placeholder="<?php echo HtmlEncode($datasheets->thirdPartyNo->getPlaceHolder()) ?>" value="<?php echo $datasheets->thirdPartyNo->EditValue ?>"<?php echo $datasheets->thirdPartyNo->editAttributes() ?>>
+</span>
+<?php } else { ?>
+<span id="el_datasheets_thirdPartyNo">
+<span<?php echo $datasheets->thirdPartyNo->viewAttributes() ?>>
+<?php if ((!EmptyString($datasheets->thirdPartyNo->ViewValue)) && $datasheets->thirdPartyNo->linkAttributes() <> "") { ?>
+<a<?php echo $datasheets->thirdPartyNo->linkAttributes() ?>><input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->thirdPartyNo->ViewValue) ?>"></a>
+<?php } else { ?>
+<input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->thirdPartyNo->ViewValue) ?>">
+<?php } ?>
+</span>
+</span>
+<input type="hidden" data-table="datasheets" data-field="x_thirdPartyNo" name="x_thirdPartyNo" id="x_thirdPartyNo" value="<?php echo HtmlEncode($datasheets->thirdPartyNo->FormValue) ?>">
+<?php } ?>
+<?php echo $datasheets->thirdPartyNo->CustomMsg ?></td>
+	</tr>
+<?php } ?>
+<?php } ?>
+<?php if ($datasheets->thirdPartyFile->Visible) { // thirdPartyFile ?>
+<?php if ($datasheets_update->IsMobileOrModal) { ?>
+	<div id="r_thirdPartyFile" class="form-group row">
+		<label class="<?php echo $datasheets_update->LeftColumnClass ?>"><div class="form-check">
+<?php if (!$datasheets->isConfirm()) { ?>
+<input type="checkbox" name="u_thirdPartyFile" id="u_thirdPartyFile" class="form-check-input ew-multi-select" value="1"<?php echo ($datasheets->thirdPartyFile->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } else { ?>
+<input type="hidden" name="u_thirdPartyFile" id="u_thirdPartyFile" value="<?php echo $datasheets->thirdPartyFile->MultiUpdate ?>">
+<input type="checkbox" class="form-check-input" disabled<?php echo ($datasheets->thirdPartyFile->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } ?>
+<label class="form-check-label" for="u_thirdPartyFile"><?php echo $datasheets->thirdPartyFile->caption() ?></label></div></label>
+		<div class="<?php echo $datasheets_update->RightColumnClass ?>"><div<?php echo $datasheets->thirdPartyFile->cellAttributes() ?>>
+<span id="el_datasheets_thirdPartyFile">
+<div id="fd_x_thirdPartyFile">
+<span title="<?php echo $datasheets->thirdPartyFile->title() ? $datasheets->thirdPartyFile->title() : $Language->phrase("ChooseFile") ?>" class="btn btn-default btn-sm fileinput-button ew-tooltip<?php if ($datasheets->thirdPartyFile->ReadOnly || $datasheets->thirdPartyFile->Disabled) echo " d-none"; ?>">
+	<span><?php echo $Language->phrase("ChooseFileBtn") ?></span>
+	<input type="file" title=" " data-table="datasheets" data-field="x_thirdPartyFile" name="x_thirdPartyFile" id="x_thirdPartyFile"<?php echo $datasheets->thirdPartyFile->editAttributes() ?>>
+</span>
+<input type="hidden" name="fn_x_thirdPartyFile" id= "fn_x_thirdPartyFile" value="<?php echo $datasheets->thirdPartyFile->Upload->FileName ?>">
+<?php if (Post("fa_x_thirdPartyFile") == "0") { ?>
+<input type="hidden" name="fa_x_thirdPartyFile" id= "fa_x_thirdPartyFile" value="0">
+<?php } else { ?>
+<input type="hidden" name="fa_x_thirdPartyFile" id= "fa_x_thirdPartyFile" value="1">
+<?php } ?>
+<input type="hidden" name="fs_x_thirdPartyFile" id= "fs_x_thirdPartyFile" value="0">
+<input type="hidden" name="fx_x_thirdPartyFile" id= "fx_x_thirdPartyFile" value="<?php echo $datasheets->thirdPartyFile->UploadAllowedFileExt ?>">
+<input type="hidden" name="fm_x_thirdPartyFile" id= "fm_x_thirdPartyFile" value="<?php echo $datasheets->thirdPartyFile->UploadMaxFileSize ?>">
+</div>
+<table id="ft_x_thirdPartyFile" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
+</span>
+<?php echo $datasheets->thirdPartyFile->CustomMsg ?></div></div>
+	</div>
+<?php } else { ?>
+	<tr id="r_thirdPartyFile">
+		<td class="<?php echo $datasheets_update->TableLeftColumnClass ?>"<?php echo $datasheets->thirdPartyFile->cellAttributes() ?>><span id="elh_datasheets_thirdPartyFile"><div class="form-check">
+<?php if (!$datasheets->isConfirm()) { ?>
+<input type="checkbox" name="u_thirdPartyFile" id="u_thirdPartyFile" class="form-check-input ew-multi-select" value="1"<?php echo ($datasheets->thirdPartyFile->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } else { ?>
+<input type="hidden" name="u_thirdPartyFile" id="u_thirdPartyFile" value="<?php echo $datasheets->thirdPartyFile->MultiUpdate ?>">
+<input type="checkbox" class="form-check-input" disabled<?php echo ($datasheets->thirdPartyFile->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } ?>
+<label class="form-check-label" for="u_thirdPartyFile"><?php echo $datasheets->thirdPartyFile->caption() ?></label></div></span></td>
+		<td<?php echo $datasheets->thirdPartyFile->cellAttributes() ?>>
+<span id="el_datasheets_thirdPartyFile">
+<div id="fd_x_thirdPartyFile">
+<span title="<?php echo $datasheets->thirdPartyFile->title() ? $datasheets->thirdPartyFile->title() : $Language->phrase("ChooseFile") ?>" class="btn btn-default btn-sm fileinput-button ew-tooltip<?php if ($datasheets->thirdPartyFile->ReadOnly || $datasheets->thirdPartyFile->Disabled) echo " d-none"; ?>">
+	<span><?php echo $Language->phrase("ChooseFileBtn") ?></span>
+	<input type="file" title=" " data-table="datasheets" data-field="x_thirdPartyFile" name="x_thirdPartyFile" id="x_thirdPartyFile"<?php echo $datasheets->thirdPartyFile->editAttributes() ?>>
+</span>
+<input type="hidden" name="fn_x_thirdPartyFile" id= "fn_x_thirdPartyFile" value="<?php echo $datasheets->thirdPartyFile->Upload->FileName ?>">
+<?php if (Post("fa_x_thirdPartyFile") == "0") { ?>
+<input type="hidden" name="fa_x_thirdPartyFile" id= "fa_x_thirdPartyFile" value="0">
+<?php } else { ?>
+<input type="hidden" name="fa_x_thirdPartyFile" id= "fa_x_thirdPartyFile" value="1">
+<?php } ?>
+<input type="hidden" name="fs_x_thirdPartyFile" id= "fs_x_thirdPartyFile" value="0">
+<input type="hidden" name="fx_x_thirdPartyFile" id= "fx_x_thirdPartyFile" value="<?php echo $datasheets->thirdPartyFile->UploadAllowedFileExt ?>">
+<input type="hidden" name="fm_x_thirdPartyFile" id= "fm_x_thirdPartyFile" value="<?php echo $datasheets->thirdPartyFile->UploadMaxFileSize ?>">
+</div>
+<table id="ft_x_thirdPartyFile" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
+</span>
+<?php echo $datasheets->thirdPartyFile->CustomMsg ?></td>
+	</tr>
+<?php } ?>
+<?php } ?>
+<?php if ($datasheets->cover->Visible) { // cover ?>
+<?php if ($datasheets_update->IsMobileOrModal) { ?>
+	<div id="r_cover" class="form-group row">
+		<label class="<?php echo $datasheets_update->LeftColumnClass ?>"><div class="form-check">
+<?php if (!$datasheets->isConfirm()) { ?>
+<input type="checkbox" name="u_cover" id="u_cover" class="form-check-input ew-multi-select" value="1"<?php echo ($datasheets->cover->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } else { ?>
+<input type="hidden" name="u_cover" id="u_cover" value="<?php echo $datasheets->cover->MultiUpdate ?>">
+<input type="checkbox" class="form-check-input" disabled<?php echo ($datasheets->cover->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } ?>
+<label class="form-check-label" for="u_cover"><?php echo $datasheets->cover->caption() ?></label></div></label>
+		<div class="<?php echo $datasheets_update->RightColumnClass ?>"><div<?php echo $datasheets->cover->cellAttributes() ?>>
+<span id="el_datasheets_cover">
+<div id="fd_x_cover">
+<span title="<?php echo $datasheets->cover->title() ? $datasheets->cover->title() : $Language->phrase("ChooseFile") ?>" class="btn btn-default btn-sm fileinput-button ew-tooltip<?php if ($datasheets->cover->ReadOnly || $datasheets->cover->Disabled) echo " d-none"; ?>">
+	<span><?php echo $Language->phrase("ChooseFileBtn") ?></span>
+	<input type="file" title=" " data-table="datasheets" data-field="x_cover" name="x_cover" id="x_cover"<?php echo $datasheets->cover->editAttributes() ?>>
+</span>
+<input type="hidden" name="fn_x_cover" id= "fn_x_cover" value="<?php echo $datasheets->cover->Upload->FileName ?>">
+<?php if (Post("fa_x_cover") == "0") { ?>
+<input type="hidden" name="fa_x_cover" id= "fa_x_cover" value="0">
+<?php } else { ?>
+<input type="hidden" name="fa_x_cover" id= "fa_x_cover" value="1">
+<?php } ?>
+<input type="hidden" name="fs_x_cover" id= "fs_x_cover" value="0">
+<input type="hidden" name="fx_x_cover" id= "fx_x_cover" value="<?php echo $datasheets->cover->UploadAllowedFileExt ?>">
+<input type="hidden" name="fm_x_cover" id= "fm_x_cover" value="<?php echo $datasheets->cover->UploadMaxFileSize ?>">
+</div>
+<table id="ft_x_cover" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
+</span>
+<?php echo $datasheets->cover->CustomMsg ?></div></div>
+	</div>
+<?php } else { ?>
+	<tr id="r_cover">
+		<td class="<?php echo $datasheets_update->TableLeftColumnClass ?>"<?php echo $datasheets->cover->cellAttributes() ?>><span id="elh_datasheets_cover"><div class="form-check">
+<?php if (!$datasheets->isConfirm()) { ?>
+<input type="checkbox" name="u_cover" id="u_cover" class="form-check-input ew-multi-select" value="1"<?php echo ($datasheets->cover->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } else { ?>
+<input type="hidden" name="u_cover" id="u_cover" value="<?php echo $datasheets->cover->MultiUpdate ?>">
+<input type="checkbox" class="form-check-input" disabled<?php echo ($datasheets->cover->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } ?>
+<label class="form-check-label" for="u_cover"><?php echo $datasheets->cover->caption() ?></label></div></span></td>
+		<td<?php echo $datasheets->cover->cellAttributes() ?>>
+<span id="el_datasheets_cover">
+<div id="fd_x_cover">
+<span title="<?php echo $datasheets->cover->title() ? $datasheets->cover->title() : $Language->phrase("ChooseFile") ?>" class="btn btn-default btn-sm fileinput-button ew-tooltip<?php if ($datasheets->cover->ReadOnly || $datasheets->cover->Disabled) echo " d-none"; ?>">
+	<span><?php echo $Language->phrase("ChooseFileBtn") ?></span>
+	<input type="file" title=" " data-table="datasheets" data-field="x_cover" name="x_cover" id="x_cover"<?php echo $datasheets->cover->editAttributes() ?>>
+</span>
+<input type="hidden" name="fn_x_cover" id= "fn_x_cover" value="<?php echo $datasheets->cover->Upload->FileName ?>">
+<?php if (Post("fa_x_cover") == "0") { ?>
+<input type="hidden" name="fa_x_cover" id= "fa_x_cover" value="0">
+<?php } else { ?>
+<input type="hidden" name="fa_x_cover" id= "fa_x_cover" value="1">
+<?php } ?>
+<input type="hidden" name="fs_x_cover" id= "fs_x_cover" value="0">
+<input type="hidden" name="fx_x_cover" id= "fx_x_cover" value="<?php echo $datasheets->cover->UploadAllowedFileExt ?>">
+<input type="hidden" name="fm_x_cover" id= "fm_x_cover" value="<?php echo $datasheets->cover->UploadMaxFileSize ?>">
+</div>
+<table id="ft_x_cover" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
+</span>
+<?php echo $datasheets->cover->CustomMsg ?></td>
+	</tr>
+<?php } ?>
+<?php } ?>
 <?php if ($datasheets->duration->Visible) { // duration ?>
 <?php if ($datasheets_update->IsMobileOrModal) { ?>
 	<div id="r_duration" class="form-group row">
@@ -613,6 +922,63 @@ ew.createDateTimePicker("fdatasheetsupdate", "x_expirydt", {"ignoreReadonly":tru
 	</tr>
 <?php } ?>
 <?php } ?>
+<?php if ($datasheets->highlighted->Visible) { // highlighted ?>
+<?php if ($datasheets_update->IsMobileOrModal) { ?>
+	<div id="r_highlighted" class="form-group row">
+		<label class="<?php echo $datasheets_update->LeftColumnClass ?>"><div class="form-check">
+<?php if (!$datasheets->isConfirm()) { ?>
+<input type="checkbox" name="u_highlighted" id="u_highlighted" class="form-check-input ew-multi-select" value="1"<?php echo ($datasheets->highlighted->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } else { ?>
+<input type="hidden" name="u_highlighted" id="u_highlighted" value="<?php echo $datasheets->highlighted->MultiUpdate ?>">
+<input type="checkbox" class="form-check-input" disabled<?php echo ($datasheets->highlighted->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } ?>
+<label class="form-check-label" for="u_highlighted"><?php echo $datasheets->highlighted->caption() ?></label></div></label>
+		<div class="<?php echo $datasheets_update->RightColumnClass ?>"><div<?php echo $datasheets->highlighted->cellAttributes() ?>>
+<?php if (!$datasheets->isConfirm()) { ?>
+<span id="el_datasheets_highlighted">
+<div id="tp_x_highlighted" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_highlighted" data-value-separator="<?php echo $datasheets->highlighted->displayValueSeparatorAttribute() ?>" name="x_highlighted" id="x_highlighted" value="{value}"<?php echo $datasheets->highlighted->editAttributes() ?>></div>
+<div id="dsl_x_highlighted" data-repeatcolumn="5" class="ew-item-list d-none"><div>
+<?php echo $datasheets->highlighted->radioButtonListHtml(FALSE, "x_highlighted") ?>
+</div></div>
+</span>
+<?php } else { ?>
+<span id="el_datasheets_highlighted">
+<span<?php echo $datasheets->highlighted->viewAttributes() ?>>
+<input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->highlighted->ViewValue) ?>"></span>
+</span>
+<input type="hidden" data-table="datasheets" data-field="x_highlighted" name="x_highlighted" id="x_highlighted" value="<?php echo HtmlEncode($datasheets->highlighted->FormValue) ?>">
+<?php } ?>
+<?php echo $datasheets->highlighted->CustomMsg ?></div></div>
+	</div>
+<?php } else { ?>
+	<tr id="r_highlighted">
+		<td class="<?php echo $datasheets_update->TableLeftColumnClass ?>"<?php echo $datasheets->highlighted->cellAttributes() ?>><span id="elh_datasheets_highlighted"><div class="form-check">
+<?php if (!$datasheets->isConfirm()) { ?>
+<input type="checkbox" name="u_highlighted" id="u_highlighted" class="form-check-input ew-multi-select" value="1"<?php echo ($datasheets->highlighted->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } else { ?>
+<input type="hidden" name="u_highlighted" id="u_highlighted" value="<?php echo $datasheets->highlighted->MultiUpdate ?>">
+<input type="checkbox" class="form-check-input" disabled<?php echo ($datasheets->highlighted->MultiUpdate == "1") ? " checked" : "" ?>>
+<?php } ?>
+<label class="form-check-label" for="u_highlighted"><?php echo $datasheets->highlighted->caption() ?></label></div></span></td>
+		<td<?php echo $datasheets->highlighted->cellAttributes() ?>>
+<?php if (!$datasheets->isConfirm()) { ?>
+<span id="el_datasheets_highlighted">
+<div id="tp_x_highlighted" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_highlighted" data-value-separator="<?php echo $datasheets->highlighted->displayValueSeparatorAttribute() ?>" name="x_highlighted" id="x_highlighted" value="{value}"<?php echo $datasheets->highlighted->editAttributes() ?>></div>
+<div id="dsl_x_highlighted" data-repeatcolumn="5" class="ew-item-list d-none"><div>
+<?php echo $datasheets->highlighted->radioButtonListHtml(FALSE, "x_highlighted") ?>
+</div></div>
+</span>
+<?php } else { ?>
+<span id="el_datasheets_highlighted">
+<span<?php echo $datasheets->highlighted->viewAttributes() ?>>
+<input type="text" readonly class="form-control-plaintext" value="<?php echo RemoveHtml($datasheets->highlighted->ViewValue) ?>"></span>
+</span>
+<input type="hidden" data-table="datasheets" data-field="x_highlighted" name="x_highlighted" id="x_highlighted" value="<?php echo HtmlEncode($datasheets->highlighted->FormValue) ?>">
+<?php } ?>
+<?php echo $datasheets->highlighted->CustomMsg ?></td>
+	</tr>
+<?php } ?>
+<?php } ?>
 <?php if ($datasheets->systrade->Visible) { // systrade ?>
 <?php if ($datasheets_update->IsMobileOrModal) { ?>
 	<div id="r_systrade" class="form-group row">
@@ -627,22 +993,11 @@ ew.createDateTimePicker("fdatasheetsupdate", "x_expirydt", {"ignoreReadonly":tru
 		<div class="<?php echo $datasheets_update->RightColumnClass ?>"><div<?php echo $datasheets->systrade->cellAttributes() ?>>
 <?php if (!$datasheets->isConfirm()) { ?>
 <span id="el_datasheets_systrade">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($datasheets->systrade->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $datasheets->systrade->ViewValue ?></button>
-		<div id="dsl_x_systrade" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $datasheets->systrade->radioButtonListHtml(TRUE, "x_systrade") ?>
-			</div><!-- /.ew-items ##-->
-		</div><!-- /.dropdown-menu ##-->
-		<div id="tp_x_systrade" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_systrade" data-value-separator="<?php echo $datasheets->systrade->displayValueSeparatorAttribute() ?>" name="x_systrade" id="x_systrade" value="{value}"<?php echo $datasheets->systrade->editAttributes() ?>></div>
-	</div><!-- /.btn-group ##-->
-	<?php if (!$datasheets->systrade->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fa fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list ##-->
+<div class="input-group">
+	<select class="custom-select ew-custom-select" data-table="datasheets" data-field="x_systrade" data-value-separator="<?php echo $datasheets->systrade->displayValueSeparatorAttribute() ?>" id="x_systrade" name="x_systrade"<?php echo $datasheets->systrade->editAttributes() ?>>
+		<?php echo $datasheets->systrade->selectOptionListHtml("x_systrade") ?>
+	</select>
+</div>
 </span>
 <?php } else { ?>
 <span id="el_datasheets_systrade">
@@ -666,22 +1021,11 @@ ew.createDateTimePicker("fdatasheetsupdate", "x_expirydt", {"ignoreReadonly":tru
 		<td<?php echo $datasheets->systrade->cellAttributes() ?>>
 <?php if (!$datasheets->isConfirm()) { ?>
 <span id="el_datasheets_systrade">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($datasheets->systrade->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $datasheets->systrade->ViewValue ?></button>
-		<div id="dsl_x_systrade" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $datasheets->systrade->radioButtonListHtml(TRUE, "x_systrade") ?>
-			</div><!-- /.ew-items ##-->
-		</div><!-- /.dropdown-menu ##-->
-		<div id="tp_x_systrade" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_systrade" data-value-separator="<?php echo $datasheets->systrade->displayValueSeparatorAttribute() ?>" name="x_systrade" id="x_systrade" value="{value}"<?php echo $datasheets->systrade->editAttributes() ?>></div>
-	</div><!-- /.btn-group ##-->
-	<?php if (!$datasheets->systrade->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fa fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list ##-->
+<div class="input-group">
+	<select class="custom-select ew-custom-select" data-table="datasheets" data-field="x_systrade" data-value-separator="<?php echo $datasheets->systrade->displayValueSeparatorAttribute() ?>" id="x_systrade" name="x_systrade"<?php echo $datasheets->systrade->editAttributes() ?>>
+		<?php echo $datasheets->systrade->selectOptionListHtml("x_systrade") ?>
+	</select>
+</div>
 </span>
 <?php } else { ?>
 <span id="el_datasheets_systrade">

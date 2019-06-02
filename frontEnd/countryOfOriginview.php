@@ -70,35 +70,6 @@ fcountryOfOriginview.validateRequired = <?php echo json_encode(CLIENT_VALIDATE) 
 <?php
 $countryOfOrigin_view->showMessage();
 ?>
-<?php if (!$countryOfOrigin_view->IsModal) { ?>
-<?php if (!$countryOfOrigin->isExport()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php if (!isset($countryOfOrigin_view->Pager)) $countryOfOrigin_view->Pager = new NumericPager($countryOfOrigin_view->StartRec, $countryOfOrigin_view->DisplayRecs, $countryOfOrigin_view->TotalRecs, $countryOfOrigin_view->RecRange, $countryOfOrigin_view->AutoHidePager) ?>
-<?php if ($countryOfOrigin_view->Pager->RecordCount > 0 && $countryOfOrigin_view->Pager->Visible) { ?>
-<div class="ew-pager">
-<div class="ew-numeric-page"><ul class="pagination">
-	<?php if ($countryOfOrigin_view->Pager->FirstButton->Enabled) { ?>
-	<li class="page-item"><a class="page-link" href="<?php echo $countryOfOrigin_view->pageUrl() ?>start=<?php echo $countryOfOrigin_view->Pager->FirstButton->Start ?>"><?php echo $Language->Phrase("PagerFirst") ?></a></li>
-	<?php } ?>
-	<?php if ($countryOfOrigin_view->Pager->PrevButton->Enabled) { ?>
-	<li class="page-item"><a class="page-link" href="<?php echo $countryOfOrigin_view->pageUrl() ?>start=<?php echo $countryOfOrigin_view->Pager->PrevButton->Start ?>"><?php echo $Language->Phrase("PagerPrevious") ?></a></li>
-	<?php } ?>
-	<?php foreach ($countryOfOrigin_view->Pager->Items as $pagerItem) { ?>
-		<li class="page-item<?php if (!$pagerItem->Enabled) { ?> active<?php } ?>"><a class="page-link" href="<?php if ($pagerItem->Enabled) { echo $countryOfOrigin_view->pageUrl() . "start=" . $pagerItem->Start; } else { echo "#"; } ?>"><?php echo $pagerItem->Text ?></a></li>
-	<?php } ?>
-	<?php if ($countryOfOrigin_view->Pager->NextButton->Enabled) { ?>
-	<li class="page-item"><a class="page-link" href="<?php echo $countryOfOrigin_view->pageUrl() ?>start=<?php echo $countryOfOrigin_view->Pager->NextButton->Start ?>"><?php echo $Language->Phrase("PagerNext") ?></a></li>
-	<?php } ?>
-	<?php if ($countryOfOrigin_view->Pager->LastButton->Enabled) { ?>
-	<li class="page-item"><a class="page-link" href="<?php echo $countryOfOrigin_view->pageUrl() ?>start=<?php echo $countryOfOrigin_view->Pager->LastButton->Start ?>"><?php echo $Language->Phrase("PagerLast") ?></a></li>
-	<?php } ?>
-</ul></div>
-</div>
-<?php } ?>
-<div class="clearfix"></div>
-</form>
-<?php } ?>
-<?php } ?>
 <form name="fcountryOfOriginview" id="fcountryOfOriginview" class="form-inline ew-form ew-view-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($countryOfOrigin_view->CheckToken) { ?>
 <input type="hidden" name="<?php echo TOKEN_NAME ?>" value="<?php echo $countryOfOrigin_view->Token ?>">

@@ -321,6 +321,45 @@ $manufacturer_list->ListOptions->render("body", "right", $manufacturer_list->Row
 if ($manufacturer_list->Recordset)
 	$manufacturer_list->Recordset->Close();
 ?>
+<?php if (!$manufacturer->isExport()) { ?>
+<div class="card-footer ew-grid-lower-panel">
+<?php if (!$manufacturer->isGridAdd()) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php if (!isset($manufacturer_list->Pager)) $manufacturer_list->Pager = new NumericPager($manufacturer_list->StartRec, $manufacturer_list->DisplayRecs, $manufacturer_list->TotalRecs, $manufacturer_list->RecRange, $manufacturer_list->AutoHidePager) ?>
+<?php if ($manufacturer_list->Pager->RecordCount > 0 && $manufacturer_list->Pager->Visible) { ?>
+<div class="ew-pager">
+<div class="ew-numeric-page"><ul class="pagination">
+	<?php if ($manufacturer_list->Pager->FirstButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $manufacturer_list->pageUrl() ?>start=<?php echo $manufacturer_list->Pager->FirstButton->Start ?>"><?php echo $Language->Phrase("PagerFirst") ?></a></li>
+	<?php } ?>
+	<?php if ($manufacturer_list->Pager->PrevButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $manufacturer_list->pageUrl() ?>start=<?php echo $manufacturer_list->Pager->PrevButton->Start ?>"><?php echo $Language->Phrase("PagerPrevious") ?></a></li>
+	<?php } ?>
+	<?php foreach ($manufacturer_list->Pager->Items as $pagerItem) { ?>
+		<li class="page-item<?php if (!$pagerItem->Enabled) { ?> active<?php } ?>"><a class="page-link" href="<?php if ($pagerItem->Enabled) { echo $manufacturer_list->pageUrl() . "start=" . $pagerItem->Start; } else { echo "#"; } ?>"><?php echo $pagerItem->Text ?></a></li>
+	<?php } ?>
+	<?php if ($manufacturer_list->Pager->NextButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $manufacturer_list->pageUrl() ?>start=<?php echo $manufacturer_list->Pager->NextButton->Start ?>"><?php echo $Language->Phrase("PagerNext") ?></a></li>
+	<?php } ?>
+	<?php if ($manufacturer_list->Pager->LastButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $manufacturer_list->pageUrl() ?>start=<?php echo $manufacturer_list->Pager->LastButton->Start ?>"><?php echo $Language->Phrase("PagerLast") ?></a></li>
+	<?php } ?>
+</ul></div>
+</div>
+<?php } ?>
+<?php if ($manufacturer_list->Pager->RecordCount > 0) { ?>
+<div class="ew-pager ew-rec">
+	<span><?php echo $Language->Phrase("Record") ?>&nbsp;<?php echo $manufacturer_list->Pager->FromIndex ?>&nbsp;<?php echo $Language->Phrase("To") ?>&nbsp;<?php echo $manufacturer_list->Pager->ToIndex ?>&nbsp;<?php echo $Language->Phrase("Of") ?>&nbsp;<?php echo $manufacturer_list->Pager->RecordCount ?></span>
+</div>
+<?php } ?>
+</form>
+<?php } ?>
+<div class="ew-list-other-options">
+<?php $manufacturer_list->OtherOptions->render("body", "bottom") ?>
+</div>
+<div class="clearfix"></div>
+</div>
+<?php } ?>
 </div><!-- /.ew-grid -->
 <?php } ?>
 <?php if ($manufacturer_list->TotalRecs == 0 && !$manufacturer->CurrentAction) { // Show other options ?>

@@ -70,28 +70,10 @@ fdatasheetsedit.validate = function() {
 			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->manufacturer->caption(), $datasheets->manufacturer->RequiredErrorMessage)) ?>");
 		<?php } ?>
-		<?php if ($datasheets_edit->cddFile->Required) { ?>
-			felm = this.getElements("x" + infix + "_cddFile");
-			elm = this.getElements("fn_x" + infix + "_cddFile");
-			if (felm && elm && !ew.hasValue(elm))
-				return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->cddFile->caption(), $datasheets->cddFile->RequiredErrorMessage)) ?>");
-		<?php } ?>
-		<?php if ($datasheets_edit->thirdPartyFile->Required) { ?>
-			felm = this.getElements("x" + infix + "_thirdPartyFile");
-			elm = this.getElements("fn_x" + infix + "_thirdPartyFile");
-			if (felm && elm && !ew.hasValue(elm))
-				return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->thirdPartyFile->caption(), $datasheets->thirdPartyFile->RequiredErrorMessage)) ?>");
-		<?php } ?>
 		<?php if ($datasheets_edit->tittle->Required) { ?>
 			elm = this.getElements("x" + infix + "_tittle");
 			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->tittle->caption(), $datasheets->tittle->RequiredErrorMessage)) ?>");
-		<?php } ?>
-		<?php if ($datasheets_edit->cover->Required) { ?>
-			felm = this.getElements("x" + infix + "_cover");
-			elm = this.getElements("fn_x" + infix + "_cover");
-			if (felm && elm && !ew.hasValue(elm))
-				return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->cover->caption(), $datasheets->cover->RequiredErrorMessage)) ?>");
 		<?php } ?>
 		<?php if ($datasheets_edit->cddissue->Required) { ?>
 			elm = this.getElements("x" + infix + "_cddissue");
@@ -106,10 +88,28 @@ fdatasheetsedit.validate = function() {
 			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->cddno->caption(), $datasheets->cddno->RequiredErrorMessage)) ?>");
 		<?php } ?>
+		<?php if ($datasheets_edit->cddFile->Required) { ?>
+			felm = this.getElements("x" + infix + "_cddFile");
+			elm = this.getElements("fn_x" + infix + "_cddFile");
+			if (felm && elm && !ew.hasValue(elm))
+				return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->cddFile->caption(), $datasheets->cddFile->RequiredErrorMessage)) ?>");
+		<?php } ?>
 		<?php if ($datasheets_edit->thirdPartyNo->Required) { ?>
 			elm = this.getElements("x" + infix + "_thirdPartyNo");
 			if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
 				return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $datasheets->thirdPartyNo->caption(), $datasheets->thirdPartyNo->RequiredErrorMessage)) ?>");
+		<?php } ?>
+		<?php if ($datasheets_edit->thirdPartyFile->Required) { ?>
+			felm = this.getElements("x" + infix + "_thirdPartyFile");
+			elm = this.getElements("fn_x" + infix + "_thirdPartyFile");
+			if (felm && elm && !ew.hasValue(elm))
+				return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->thirdPartyFile->caption(), $datasheets->thirdPartyFile->RequiredErrorMessage)) ?>");
+		<?php } ?>
+		<?php if ($datasheets_edit->cover->Required) { ?>
+			felm = this.getElements("x" + infix + "_cover");
+			elm = this.getElements("fn_x" + infix + "_cover");
+			if (felm && elm && !ew.hasValue(elm))
+				return this.onError(felm, "<?php echo JsEncode(str_replace("%s", $datasheets->cover->caption(), $datasheets->cover->RequiredErrorMessage)) ?>");
 		<?php } ?>
 		<?php if ($datasheets_edit->duration->Required) { ?>
 			elm = this.getElements("x" + infix + "_duration");
@@ -217,11 +217,44 @@ fdatasheetsedit.lists["x_cddrenewal_required"].options = <?php echo JsonEncode($
 <?php
 $datasheets_edit->showMessage();
 ?>
+<?php if (!$datasheets_edit->IsModal) { ?>
+<?php if (!$datasheets->isConfirm()) { // Confirm page ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php if (!isset($datasheets_edit->Pager)) $datasheets_edit->Pager = new NumericPager($datasheets_edit->StartRec, $datasheets_edit->DisplayRecs, $datasheets_edit->TotalRecs, $datasheets_edit->RecRange, $datasheets_edit->AutoHidePager) ?>
+<?php if ($datasheets_edit->Pager->RecordCount > 0 && $datasheets_edit->Pager->Visible) { ?>
+<div class="ew-pager">
+<div class="ew-numeric-page"><ul class="pagination">
+	<?php if ($datasheets_edit->Pager->FirstButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $datasheets_edit->pageUrl() ?>start=<?php echo $datasheets_edit->Pager->FirstButton->Start ?>"><?php echo $Language->Phrase("PagerFirst") ?></a></li>
+	<?php } ?>
+	<?php if ($datasheets_edit->Pager->PrevButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $datasheets_edit->pageUrl() ?>start=<?php echo $datasheets_edit->Pager->PrevButton->Start ?>"><?php echo $Language->Phrase("PagerPrevious") ?></a></li>
+	<?php } ?>
+	<?php foreach ($datasheets_edit->Pager->Items as $pagerItem) { ?>
+		<li class="page-item<?php if (!$pagerItem->Enabled) { ?> active<?php } ?>"><a class="page-link" href="<?php if ($pagerItem->Enabled) { echo $datasheets_edit->pageUrl() . "start=" . $pagerItem->Start; } else { echo "#"; } ?>"><?php echo $pagerItem->Text ?></a></li>
+	<?php } ?>
+	<?php if ($datasheets_edit->Pager->NextButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $datasheets_edit->pageUrl() ?>start=<?php echo $datasheets_edit->Pager->NextButton->Start ?>"><?php echo $Language->Phrase("PagerNext") ?></a></li>
+	<?php } ?>
+	<?php if ($datasheets_edit->Pager->LastButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $datasheets_edit->pageUrl() ?>start=<?php echo $datasheets_edit->Pager->LastButton->Start ?>"><?php echo $Language->Phrase("PagerLast") ?></a></li>
+	<?php } ?>
+</ul></div>
+</div>
+<?php } ?>
+<div class="clearfix"></div>
+</form>
+<?php } ?>
+<?php } ?>
 <form name="fdatasheetsedit" id="fdatasheetsedit" class="<?php echo $datasheets_edit->FormClassName ?>" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($datasheets_edit->CheckToken) { ?>
 <input type="hidden" name="<?php echo TOKEN_NAME ?>" value="<?php echo $datasheets_edit->Token ?>">
 <?php } ?>
 <input type="hidden" name="t" value="datasheets">
+<input type="hidden" name="k_hash" id="k_hash" value="<?php echo $datasheets_edit->HashValue ?>">
+<?php if ($datasheets->UpdateConflict == "U") { // Record already updated by other user ?>
+<input type="hidden" name="conflict" id="conflict" value="1">
+<?php } ?>
 <?php if ($datasheets->isConfirm()) { // Confirm page ?>
 <input type="hidden" name="action" id="action" value="update">
 <input type="hidden" name="confirm" id="confirm" value="confirm">
@@ -823,22 +856,11 @@ fdatasheetsedit.createAutoSuggest({"id":"x_coo","forceSelect":false});
 		<div class="<?php echo $datasheets_edit->RightColumnClass ?>"><div<?php echo $datasheets->systrade->cellAttributes() ?>>
 <?php if (!$datasheets->isConfirm()) { ?>
 <span id="el_datasheets_systrade">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($datasheets->systrade->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $datasheets->systrade->ViewValue ?></button>
-		<div id="dsl_x_systrade" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $datasheets->systrade->radioButtonListHtml(TRUE, "x_systrade", 1) ?>
-			</div><!-- /.ew-items ##-->
-		</div><!-- /.dropdown-menu ##-->
-		<div id="tp_x_systrade" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_systrade" data-page="1" data-value-separator="<?php echo $datasheets->systrade->displayValueSeparatorAttribute() ?>" name="x_systrade" id="x_systrade" value="{value}"<?php echo $datasheets->systrade->editAttributes() ?>></div>
-	</div><!-- /.btn-group ##-->
-	<?php if (!$datasheets->systrade->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fa fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list ##-->
+<div class="input-group">
+	<select class="custom-select ew-custom-select" data-table="datasheets" data-field="x_systrade" data-page="1" data-value-separator="<?php echo $datasheets->systrade->displayValueSeparatorAttribute() ?>" id="x_systrade" name="x_systrade"<?php echo $datasheets->systrade->editAttributes() ?>>
+		<?php echo $datasheets->systrade->selectOptionListHtml("x_systrade") ?>
+	</select>
+</div>
 </span>
 <?php } else { ?>
 <span id="el_datasheets_systrade">
@@ -855,22 +877,11 @@ fdatasheetsedit.createAutoSuggest({"id":"x_coo","forceSelect":false});
 		<td<?php echo $datasheets->systrade->cellAttributes() ?>>
 <?php if (!$datasheets->isConfirm()) { ?>
 <span id="el_datasheets_systrade">
-<div class="btn-group ew-dropdown-list" role="group">
-	<div class="btn-group" role="group">
-		<button type="button" class="btn form-control dropdown-toggle ew-dropdown-toggle" aria-haspopup="true" aria-expanded="false"<?php if ($datasheets->systrade->ReadOnly) { ?> readonly<?php } else { ?>data-toggle="dropdown"<?php } ?>><?php echo $datasheets->systrade->ViewValue ?></button>
-		<div id="dsl_x_systrade" data-repeatcolumn="1" class="dropdown-menu">
-			<div class="ew-items" style="overflow-x: hidden;">
-<?php echo $datasheets->systrade->radioButtonListHtml(TRUE, "x_systrade", 1) ?>
-			</div><!-- /.ew-items ##-->
-		</div><!-- /.dropdown-menu ##-->
-		<div id="tp_x_systrade" class="ew-template"><input type="radio" class="form-check-input" data-table="datasheets" data-field="x_systrade" data-page="1" data-value-separator="<?php echo $datasheets->systrade->displayValueSeparatorAttribute() ?>" name="x_systrade" id="x_systrade" value="{value}"<?php echo $datasheets->systrade->editAttributes() ?>></div>
-	</div><!-- /.btn-group ##-->
-	<?php if (!$datasheets->systrade->ReadOnly) { ?>
-	<button type="button" class="btn btn-default ew-dropdown-clear" disabled>
-		<i class="fa fa-times ew-icon"></i>
-	</button>
-	<?php } ?>
-</div><!-- /.ew-dropdown-list ##-->
+<div class="input-group">
+	<select class="custom-select ew-custom-select" data-table="datasheets" data-field="x_systrade" data-page="1" data-value-separator="<?php echo $datasheets->systrade->displayValueSeparatorAttribute() ?>" id="x_systrade" name="x_systrade"<?php echo $datasheets->systrade->editAttributes() ?>>
+		<?php echo $datasheets->systrade->selectOptionListHtml("x_systrade") ?>
+	</select>
+</div>
 </span>
 <?php } else { ?>
 <span id="el_datasheets_systrade">
@@ -1235,6 +1246,10 @@ fdatasheetsedit.createAutoSuggest({"id":"x_coo","forceSelect":false});
 <?php if (!$datasheets_edit->IsModal) { ?>
 <div class="form-group row"><!-- buttons .form-group -->
 	<div class="<?php echo $datasheets_edit->OffsetColumnClass ?>"><!-- buttons offset -->
+<?php if ($datasheets->UpdateConflict == "U") { // Record already updated by other user ?>
+<button class="btn btn-primary ew-btn" name="btn-action" id="btn-action" type="submit" onclick="this.form.action.value='overwrite';"><?php echo $Language->phrase("OverwriteBtn") ?></button>
+<button class="btn btn-default ew-btn" name="btn-reload" id="btn-reload" type="submit" onclick="this.form.action.value='show';"><?php echo $Language->phrase("ReloadBtn") ?></button>
+<?php } else { ?>
 <?php if (!$datasheets->isConfirm()) { // Confirm page ?>
 <button class="btn btn-primary ew-btn" name="btn-action" id="btn-action" type="submit" onclick="this.form.action.value='confirm';"><?php echo $Language->phrase("SaveBtn") ?></button>
 <button class="btn btn-default ew-btn" name="btn-cancel" id="btn-cancel" type="button" data-href="<?php echo $datasheets_edit->getReturnUrl() ?>"><?php echo $Language->phrase("CancelBtn") ?></button>
@@ -1242,11 +1257,39 @@ fdatasheetsedit.createAutoSuggest({"id":"x_coo","forceSelect":false});
 <button class="btn btn-primary ew-btn" name="btn-action" id="btn-action" type="submit"><?php echo $Language->phrase("ConfirmBtn") ?></button>
 <button class="btn btn-default ew-btn" name="btn-cancel" id="btn-cancel" type="submit" onclick="this.form.action.value='cancel';"><?php echo $Language->phrase("CancelBtn") ?></button>
 <?php } ?>
+<?php } ?>
 	</div><!-- /buttons offset -->
 </div><!-- /buttons .form-group -->
 <?php } ?>
 <?php if (!$datasheets_edit->IsMobileOrModal) { ?>
 </div><!-- /desktop -->
+<?php } ?>
+<?php if (!$datasheets_edit->IsModal) { ?>
+<?php if (!$datasheets->isConfirm()) { // Confirm page ?>
+<?php if (!isset($datasheets_edit->Pager)) $datasheets_edit->Pager = new NumericPager($datasheets_edit->StartRec, $datasheets_edit->DisplayRecs, $datasheets_edit->TotalRecs, $datasheets_edit->RecRange, $datasheets_edit->AutoHidePager) ?>
+<?php if ($datasheets_edit->Pager->RecordCount > 0 && $datasheets_edit->Pager->Visible) { ?>
+<div class="ew-pager">
+<div class="ew-numeric-page"><ul class="pagination">
+	<?php if ($datasheets_edit->Pager->FirstButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $datasheets_edit->pageUrl() ?>start=<?php echo $datasheets_edit->Pager->FirstButton->Start ?>"><?php echo $Language->Phrase("PagerFirst") ?></a></li>
+	<?php } ?>
+	<?php if ($datasheets_edit->Pager->PrevButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $datasheets_edit->pageUrl() ?>start=<?php echo $datasheets_edit->Pager->PrevButton->Start ?>"><?php echo $Language->Phrase("PagerPrevious") ?></a></li>
+	<?php } ?>
+	<?php foreach ($datasheets_edit->Pager->Items as $pagerItem) { ?>
+		<li class="page-item<?php if (!$pagerItem->Enabled) { ?> active<?php } ?>"><a class="page-link" href="<?php if ($pagerItem->Enabled) { echo $datasheets_edit->pageUrl() . "start=" . $pagerItem->Start; } else { echo "#"; } ?>"><?php echo $pagerItem->Text ?></a></li>
+	<?php } ?>
+	<?php if ($datasheets_edit->Pager->NextButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $datasheets_edit->pageUrl() ?>start=<?php echo $datasheets_edit->Pager->NextButton->Start ?>"><?php echo $Language->Phrase("PagerNext") ?></a></li>
+	<?php } ?>
+	<?php if ($datasheets_edit->Pager->LastButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $datasheets_edit->pageUrl() ?>start=<?php echo $datasheets_edit->Pager->LastButton->Start ?>"><?php echo $Language->Phrase("PagerLast") ?></a></li>
+	<?php } ?>
+</ul></div>
+</div>
+<?php } ?>
+<div class="clearfix"></div>
+<?php } ?>
 <?php } ?>
 </form>
 <?php

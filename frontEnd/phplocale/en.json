@@ -20,8 +20,8 @@
     "n_sep_by_space": 0,
     "p_sign_posn": 1,
     "n_sign_posn": 1,
-    "date_sep": "\/",
+    "date_sep": "-",
     "time_sep": ":",
-    "date_format": "mdY",
+    "date_format": "Ymd",
     "time_zone": ""
 }

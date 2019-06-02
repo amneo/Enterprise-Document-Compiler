@@ -25,9 +25,9 @@ class manufacturer extends DbTable
 	public $AuditTrailOnAdd = TRUE;
 	public $AuditTrailOnEdit = TRUE;
 	public $AuditTrailOnDelete = TRUE;
-	public $AuditTrailOnView = TRUE;
-	public $AuditTrailOnViewData = TRUE;
-	public $AuditTrailOnSearch = TRUE;
+	public $AuditTrailOnView = FALSE;
+	public $AuditTrailOnViewData = FALSE;
+	public $AuditTrailOnSearch = FALSE;
 
 	// Export
 	public $ExportDoc;
@@ -1175,62 +1175,6 @@ class manufacturer extends DbTable
 				WriteAuditTrail("log", $dt, $id, $curUser, "D", $table, $fldname, $key, $oldvalue, "");
 			}
 		}
-	}
-
-	// Write Audit Trail (view page)
-	public function writeAuditTrailOnView(&$rs)
-	{
-		global $Language;
-		if (!$this->AuditTrailOnView)
-			return;
-		$table = 'manufacturer';
-
-		// Get key value
-		$key = "";
-		if ($key <> "")
-			$key .= $GLOBALS["COMPOSITE_KEY_SEPARATOR"];
-		$key .= $rs['manufacturerId'];
-
-		// Write Audit Trail
-		$dt = DbCurrentDateTime();
-		$id = ScriptName();
-		$usr = CurrentUserID();
-		if ($this->AuditTrailOnViewData) { // Write all data
-			foreach (array_keys($rs) as $fldname) {
-				if (array_key_exists($fldname, $this->fields) && $this->fields[$fldname]->DataType <> DATATYPE_BLOB) { // Ignore BLOB fields
-					if ($this->fields[$fldname]->HtmlTag == "PASSWORD") {
-						$oldvalue = $Language->phrase("PasswordMask"); // Password Field
-					} elseif ($this->fields[$fldname]->DataType == DATATYPE_MEMO) {
-						if (AUDIT_TRAIL_TO_DATABASE)
-							$oldvalue = $rs[$fldname];
-						else
-							$oldvalue = "[MEMO]"; // Memo Field
-					} elseif ($this->fields[$fldname]->DataType == DATATYPE_XML) {
-						$oldvalue = "[XML]"; // XML Field
-					} else {
-						$oldvalue = $rs[$fldname];
-					}
-					WriteAuditTrail("log", $dt, $id, $usr, "V", $table, $fldname, $key, $oldvalue, "");
-				}
-			}
-		} else { // Write record id only
-			WriteAuditTrail("log", $dt, $id, $usr, "V", $table, "", $key, "", "");
-		}
-	}
-
-	// Write Audit Trail (search)
-	public function writeAuditTrailOnSearch($searchparm, $searchsql)
-	{
-		global $Language;
-		if (!$this->AuditTrailOnSearch)
-			return;
-		$table = 'manufacturer';
-
-		// Write Audit Trail
-		$dt = DbCurrentDateTime();
-		$id = ScriptName();
-		$usr = CurrentUserID();
-		WriteAuditTrail("log", $dt, $id, $usr, "search", $table, "", "", $searchsql, $searchparm);
 	}
 
 	// Table level events

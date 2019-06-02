@@ -113,6 +113,33 @@ fmanufactureredit.validateRequired = <?php echo json_encode(CLIENT_VALIDATE) ?>;
 <?php
 $manufacturer_edit->showMessage();
 ?>
+<?php if (!$manufacturer_edit->IsModal) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php if (!isset($manufacturer_edit->Pager)) $manufacturer_edit->Pager = new NumericPager($manufacturer_edit->StartRec, $manufacturer_edit->DisplayRecs, $manufacturer_edit->TotalRecs, $manufacturer_edit->RecRange, $manufacturer_edit->AutoHidePager) ?>
+<?php if ($manufacturer_edit->Pager->RecordCount > 0 && $manufacturer_edit->Pager->Visible) { ?>
+<div class="ew-pager">
+<div class="ew-numeric-page"><ul class="pagination">
+	<?php if ($manufacturer_edit->Pager->FirstButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $manufacturer_edit->pageUrl() ?>start=<?php echo $manufacturer_edit->Pager->FirstButton->Start ?>"><?php echo $Language->Phrase("PagerFirst") ?></a></li>
+	<?php } ?>
+	<?php if ($manufacturer_edit->Pager->PrevButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $manufacturer_edit->pageUrl() ?>start=<?php echo $manufacturer_edit->Pager->PrevButton->Start ?>"><?php echo $Language->Phrase("PagerPrevious") ?></a></li>
+	<?php } ?>
+	<?php foreach ($manufacturer_edit->Pager->Items as $pagerItem) { ?>
+		<li class="page-item<?php if (!$pagerItem->Enabled) { ?> active<?php } ?>"><a class="page-link" href="<?php if ($pagerItem->Enabled) { echo $manufacturer_edit->pageUrl() . "start=" . $pagerItem->Start; } else { echo "#"; } ?>"><?php echo $pagerItem->Text ?></a></li>
+	<?php } ?>
+	<?php if ($manufacturer_edit->Pager->NextButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $manufacturer_edit->pageUrl() ?>start=<?php echo $manufacturer_edit->Pager->NextButton->Start ?>"><?php echo $Language->Phrase("PagerNext") ?></a></li>
+	<?php } ?>
+	<?php if ($manufacturer_edit->Pager->LastButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $manufacturer_edit->pageUrl() ?>start=<?php echo $manufacturer_edit->Pager->LastButton->Start ?>"><?php echo $Language->Phrase("PagerLast") ?></a></li>
+	<?php } ?>
+</ul></div>
+</div>
+<?php } ?>
+<div class="clearfix"></div>
+</form>
+<?php } ?>
 <form name="fmanufactureredit" id="fmanufactureredit" class="<?php echo $manufacturer_edit->FormClassName ?>" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($manufacturer_edit->CheckToken) { ?>
 <input type="hidden" name="<?php echo TOKEN_NAME ?>" value="<?php echo $manufacturer_edit->Token ?>">
@@ -207,6 +234,31 @@ $manufacturer_edit->showMessage();
 <?php } ?>
 <?php if (!$manufacturer_edit->IsMobileOrModal) { ?>
 </div><!-- /desktop -->
+<?php } ?>
+<?php if (!$manufacturer_edit->IsModal) { ?>
+<?php if (!isset($manufacturer_edit->Pager)) $manufacturer_edit->Pager = new NumericPager($manufacturer_edit->StartRec, $manufacturer_edit->DisplayRecs, $manufacturer_edit->TotalRecs, $manufacturer_edit->RecRange, $manufacturer_edit->AutoHidePager) ?>
+<?php if ($manufacturer_edit->Pager->RecordCount > 0 && $manufacturer_edit->Pager->Visible) { ?>
+<div class="ew-pager">
+<div class="ew-numeric-page"><ul class="pagination">
+	<?php if ($manufacturer_edit->Pager->FirstButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $manufacturer_edit->pageUrl() ?>start=<?php echo $manufacturer_edit->Pager->FirstButton->Start ?>"><?php echo $Language->Phrase("PagerFirst") ?></a></li>
+	<?php } ?>
+	<?php if ($manufacturer_edit->Pager->PrevButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $manufacturer_edit->pageUrl() ?>start=<?php echo $manufacturer_edit->Pager->PrevButton->Start ?>"><?php echo $Language->Phrase("PagerPrevious") ?></a></li>
+	<?php } ?>
+	<?php foreach ($manufacturer_edit->Pager->Items as $pagerItem) { ?>
+		<li class="page-item<?php if (!$pagerItem->Enabled) { ?> active<?php } ?>"><a class="page-link" href="<?php if ($pagerItem->Enabled) { echo $manufacturer_edit->pageUrl() . "start=" . $pagerItem->Start; } else { echo "#"; } ?>"><?php echo $pagerItem->Text ?></a></li>
+	<?php } ?>
+	<?php if ($manufacturer_edit->Pager->NextButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $manufacturer_edit->pageUrl() ?>start=<?php echo $manufacturer_edit->Pager->NextButton->Start ?>"><?php echo $Language->Phrase("PagerNext") ?></a></li>
+	<?php } ?>
+	<?php if ($manufacturer_edit->Pager->LastButton->Enabled) { ?>
+	<li class="page-item"><a class="page-link" href="<?php echo $manufacturer_edit->pageUrl() ?>start=<?php echo $manufacturer_edit->Pager->LastButton->Start ?>"><?php echo $Language->Phrase("PagerLast") ?></a></li>
+	<?php } ?>
+</ul></div>
+</div>
+<?php } ?>
+<div class="clearfix"></div>
 <?php } ?>
 </form>
 <?php

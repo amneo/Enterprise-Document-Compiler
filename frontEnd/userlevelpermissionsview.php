@@ -73,35 +73,6 @@ fuserlevelpermissionsview.autoSuggests["x__tablename"] = <?php echo json_encode(
 <?php
 $userlevelpermissions_view->showMessage();
 ?>
-<?php if (!$userlevelpermissions_view->IsModal) { ?>
-<?php if (!$userlevelpermissions->isExport()) { ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php if (!isset($userlevelpermissions_view->Pager)) $userlevelpermissions_view->Pager = new NumericPager($userlevelpermissions_view->StartRec, $userlevelpermissions_view->DisplayRecs, $userlevelpermissions_view->TotalRecs, $userlevelpermissions_view->RecRange, $userlevelpermissions_view->AutoHidePager) ?>
-<?php if ($userlevelpermissions_view->Pager->RecordCount > 0 && $userlevelpermissions_view->Pager->Visible) { ?>
-<div class="ew-pager">
-<div class="ew-numeric-page"><ul class="pagination">
-	<?php if ($userlevelpermissions_view->Pager->FirstButton->Enabled) { ?>
-	<li class="page-item"><a class="page-link" href="<?php echo $userlevelpermissions_view->pageUrl() ?>start=<?php echo $userlevelpermissions_view->Pager->FirstButton->Start ?>"><?php echo $Language->Phrase("PagerFirst") ?></a></li>
-	<?php } ?>
-	<?php if ($userlevelpermissions_view->Pager->PrevButton->Enabled) { ?>
-	<li class="page-item"><a class="page-link" href="<?php echo $userlevelpermissions_view->pageUrl() ?>start=<?php echo $userlevelpermissions_view->Pager->PrevButton->Start ?>"><?php echo $Language->Phrase("PagerPrevious") ?></a></li>
-	<?php } ?>
-	<?php foreach ($userlevelpermissions_view->Pager->Items as $pagerItem) { ?>
-		<li class="page-item<?php if (!$pagerItem->Enabled) { ?> active<?php } ?>"><a class="page-link" href="<?php if ($pagerItem->Enabled) { echo $userlevelpermissions_view->pageUrl() . "start=" . $pagerItem->Start; } else { echo "#"; } ?>"><?php echo $pagerItem->Text ?></a></li>
-	<?php } ?>
-	<?php if ($userlevelpermissions_view->Pager->NextButton->Enabled) { ?>
-	<li class="page-item"><a class="page-link" href="<?php echo $userlevelpermissions_view->pageUrl() ?>start=<?php echo $userlevelpermissions_view->Pager->NextButton->Start ?>"><?php echo $Language->Phrase("PagerNext") ?></a></li>
-	<?php } ?>
-	<?php if ($userlevelpermissions_view->Pager->LastButton->Enabled) { ?>
-	<li class="page-item"><a class="page-link" href="<?php echo $userlevelpermissions_view->pageUrl() ?>start=<?php echo $userlevelpermissions_view->Pager->LastButton->Start ?>"><?php echo $Language->Phrase("PagerLast") ?></a></li>
-	<?php } ?>
-</ul></div>
-</div>
-<?php } ?>
-<div class="clearfix"></div>
-</form>
-<?php } ?>
-<?php } ?>
 <form name="fuserlevelpermissionsview" id="fuserlevelpermissionsview" class="form-inline ew-form ew-view-form" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($userlevelpermissions_view->CheckToken) { ?>
 <input type="hidden" name="<?php echo TOKEN_NAME ?>" value="<?php echo $userlevelpermissions_view->Token ?>">
