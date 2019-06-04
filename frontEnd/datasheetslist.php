@@ -248,7 +248,6 @@ fdatasheetslistsrch.validateRequired = <?php echo json_encode(CLIENT_VALIDATE) ?
 
 fdatasheetslistsrch.filterList = <?php echo $datasheets_list->getFilterList() ?>;
 </script>
-<script src="phpjs/ewscrolltable.js"></script>
 <script>
 
 // Write your client script here, no need to add script tags.
@@ -1976,11 +1975,6 @@ if (DEBUG_ENABLED)
 // document.write("page loaded");
 
 </script>
-<?php if (!$datasheets->isExport()) { ?>
-<script>
-ew.scrollableTable("gmp_datasheets", "100%", "0%");
-</script>
-<?php } ?>
 <?php } ?>
 <?php include_once "footer.php" ?>
 <?php
