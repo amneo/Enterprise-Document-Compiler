@@ -1,0 +1,15 @@
+error code	| backend / front end	|  Error About
+psi_ravan_001	| backend		| When function does not return the latest version
+psi_ravan_002	| backend 		| When insert statement in function sai_func_03 produces some unknown error 
+psi_ravan_003	| backend 		| When insert statement in function sai_func_04 produces some unknown error IN ELSE BLOCK SOME NEW CONDITION HAS BEEN REACHED.
+psi_ravan_004	| backend 		| When insert statement in function sai_func_04 produces some unknown error IN ELSE BLOCK SOME NEW CONDITION HAS BEEN REACHED.
+psi_ravan_005	| backend 		| While query in the overall status in sai_func_06
+psi_ravan_006	| backend		| In om_func_05 when submit number for an out document has been incremented by 1 digit for an out.
+psi_ravan_007	| backend		|
+psi_ravan_008 	| backend		| When unknown condition reached for a OUT document. In function om_func_05
+psi_ravan_009	| backend		| When unknown condition reached for a IN document. In function om_func_05
+psi_ravan_010	| backend		| When previous IN document approval status is not provided same as outgoing one. In function om_func_05
+psi_ravan_011	| backend		| When previous IN document has not been submitted. In function om_func_05
+psi_ravan_012	| backend		| When submit number is not same as the previous outgoing submit number.
+psi_ravan_014 	| backend		| When OUT document was not found for the incoming recorded document.
+psi_ravan_015	| backend		| When a document type of a never expected condition is being recorded.

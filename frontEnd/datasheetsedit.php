@@ -217,35 +217,6 @@ fdatasheetsedit.lists["x_cddrenewal_required"].options = <?php echo JsonEncode($
 <?php
 $datasheets_edit->showMessage();
 ?>
-<?php if (!$datasheets_edit->IsModal) { ?>
-<?php if (!$datasheets->isConfirm()) { // Confirm page ?>
-<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
-<?php if (!isset($datasheets_edit->Pager)) $datasheets_edit->Pager = new NumericPager($datasheets_edit->StartRec, $datasheets_edit->DisplayRecs, $datasheets_edit->TotalRecs, $datasheets_edit->RecRange, $datasheets_edit->AutoHidePager) ?>
-<?php if ($datasheets_edit->Pager->RecordCount > 0 && $datasheets_edit->Pager->Visible) { ?>
-<div class="ew-pager">
-<div class="ew-numeric-page"><ul class="pagination">
-	<?php if ($datasheets_edit->Pager->FirstButton->Enabled) { ?>
-	<li class="page-item"><a class="page-link" href="<?php echo $datasheets_edit->pageUrl() ?>start=<?php echo $datasheets_edit->Pager->FirstButton->Start ?>"><?php echo $Language->Phrase("PagerFirst") ?></a></li>
-	<?php } ?>
-	<?php if ($datasheets_edit->Pager->PrevButton->Enabled) { ?>
-	<li class="page-item"><a class="page-link" href="<?php echo $datasheets_edit->pageUrl() ?>start=<?php echo $datasheets_edit->Pager->PrevButton->Start ?>"><?php echo $Language->Phrase("PagerPrevious") ?></a></li>
-	<?php } ?>
-	<?php foreach ($datasheets_edit->Pager->Items as $pagerItem) { ?>
-		<li class="page-item<?php if (!$pagerItem->Enabled) { ?> active<?php } ?>"><a class="page-link" href="<?php if ($pagerItem->Enabled) { echo $datasheets_edit->pageUrl() . "start=" . $pagerItem->Start; } else { echo "#"; } ?>"><?php echo $pagerItem->Text ?></a></li>
-	<?php } ?>
-	<?php if ($datasheets_edit->Pager->NextButton->Enabled) { ?>
-	<li class="page-item"><a class="page-link" href="<?php echo $datasheets_edit->pageUrl() ?>start=<?php echo $datasheets_edit->Pager->NextButton->Start ?>"><?php echo $Language->Phrase("PagerNext") ?></a></li>
-	<?php } ?>
-	<?php if ($datasheets_edit->Pager->LastButton->Enabled) { ?>
-	<li class="page-item"><a class="page-link" href="<?php echo $datasheets_edit->pageUrl() ?>start=<?php echo $datasheets_edit->Pager->LastButton->Start ?>"><?php echo $Language->Phrase("PagerLast") ?></a></li>
-	<?php } ?>
-</ul></div>
-</div>
-<?php } ?>
-<div class="clearfix"></div>
-</form>
-<?php } ?>
-<?php } ?>
 <form name="fdatasheetsedit" id="fdatasheetsedit" class="<?php echo $datasheets_edit->FormClassName ?>" action="<?php echo CurrentPageName() ?>" method="post">
 <?php if ($datasheets_edit->CheckToken) { ?>
 <input type="hidden" name="<?php echo TOKEN_NAME ?>" value="<?php echo $datasheets_edit->Token ?>">
@@ -1263,33 +1234,6 @@ fdatasheetsedit.createAutoSuggest({"id":"x_coo","forceSelect":false});
 <?php } ?>
 <?php if (!$datasheets_edit->IsMobileOrModal) { ?>
 </div><!-- /desktop -->
-<?php } ?>
-<?php if (!$datasheets_edit->IsModal) { ?>
-<?php if (!$datasheets->isConfirm()) { // Confirm page ?>
-<?php if (!isset($datasheets_edit->Pager)) $datasheets_edit->Pager = new NumericPager($datasheets_edit->StartRec, $datasheets_edit->DisplayRecs, $datasheets_edit->TotalRecs, $datasheets_edit->RecRange, $datasheets_edit->AutoHidePager) ?>
-<?php if ($datasheets_edit->Pager->RecordCount > 0 && $datasheets_edit->Pager->Visible) { ?>
-<div class="ew-pager">
-<div class="ew-numeric-page"><ul class="pagination">
-	<?php if ($datasheets_edit->Pager->FirstButton->Enabled) { ?>
-	<li class="page-item"><a class="page-link" href="<?php echo $datasheets_edit->pageUrl() ?>start=<?php echo $datasheets_edit->Pager->FirstButton->Start ?>"><?php echo $Language->Phrase("PagerFirst") ?></a></li>
-	<?php } ?>
-	<?php if ($datasheets_edit->Pager->PrevButton->Enabled) { ?>
-	<li class="page-item"><a class="page-link" href="<?php echo $datasheets_edit->pageUrl() ?>start=<?php echo $datasheets_edit->Pager->PrevButton->Start ?>"><?php echo $Language->Phrase("PagerPrevious") ?></a></li>
-	<?php } ?>
-	<?php foreach ($datasheets_edit->Pager->Items as $pagerItem) { ?>
-		<li class="page-item<?php if (!$pagerItem->Enabled) { ?> active<?php } ?>"><a class="page-link" href="<?php if ($pagerItem->Enabled) { echo $datasheets_edit->pageUrl() . "start=" . $pagerItem->Start; } else { echo "#"; } ?>"><?php echo $pagerItem->Text ?></a></li>
-	<?php } ?>
-	<?php if ($datasheets_edit->Pager->NextButton->Enabled) { ?>
-	<li class="page-item"><a class="page-link" href="<?php echo $datasheets_edit->pageUrl() ?>start=<?php echo $datasheets_edit->Pager->NextButton->Start ?>"><?php echo $Language->Phrase("PagerNext") ?></a></li>
-	<?php } ?>
-	<?php if ($datasheets_edit->Pager->LastButton->Enabled) { ?>
-	<li class="page-item"><a class="page-link" href="<?php echo $datasheets_edit->pageUrl() ?>start=<?php echo $datasheets_edit->Pager->LastButton->Start ?>"><?php echo $Language->Phrase("PagerLast") ?></a></li>
-	<?php } ?>
-</ul></div>
-</div>
-<?php } ?>
-<div class="clearfix"></div>
-<?php } ?>
 <?php } ?>
 </form>
 <?php

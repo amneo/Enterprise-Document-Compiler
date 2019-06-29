@@ -436,13 +436,6 @@ class changepwd extends users
 			$Security->loadCurrentUserLevel($this->ProjectID . 'users');
 			}
 		}
-
-		// Update last accessed time
-		if ($UserProfile->isValidUser(CurrentUserName(), session_id())) {
-		} else {
-			Write($Language->phrase("UserProfileCorrupted"));
-			$this->terminate();
-		}
 		$this->CurrentAction = Param("action"); // Set up current action
 
 		// Global Page Loading event (in userfn*.php)

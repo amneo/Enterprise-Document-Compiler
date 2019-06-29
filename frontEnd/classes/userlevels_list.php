@@ -704,13 +704,6 @@ class userlevels_list extends userlevels
 			}
 		}
 
-		// Update last accessed time
-		if ($UserProfile->isValidUser(CurrentUserName(), session_id())) {
-		} else {
-			Write($Language->phrase("UserProfileCorrupted"));
-			$this->terminate();
-		}
-
 		// Get export parameters
 		$custom = "";
 		if (Param("export") !== NULL) {

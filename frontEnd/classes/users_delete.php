@@ -585,13 +585,6 @@ class users_delete extends users
 				}
 			}
 		}
-
-		// Update last accessed time
-		if ($UserProfile->isValidUser(CurrentUserName(), session_id())) {
-		} else {
-			Write($Language->phrase("UserProfileCorrupted"));
-			$this->terminate();
-		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->seqid->setVisibility();
 		$this->userName->setVisibility();

@@ -717,13 +717,6 @@ class datasheets_list extends datasheets
 			}
 		}
 
-		// Update last accessed time
-		if ($UserProfile->isValidUser(CurrentUserName(), session_id())) {
-		} else {
-			Write($Language->phrase("UserProfileCorrupted"));
-			$this->terminate();
-		}
-
 		// Create form object
 		$CurrentForm = new HttpForm();
 

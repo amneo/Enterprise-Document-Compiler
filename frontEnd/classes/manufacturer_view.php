@@ -676,13 +676,6 @@ class manufacturer_view extends manufacturer
 				$Security->UserID_Loaded();
 			}
 		}
-
-		// Update last accessed time
-		if ($UserProfile->isValidUser(CurrentUserName(), session_id())) {
-		} else {
-			Write($Language->phrase("UserProfileCorrupted"));
-			$this->terminate();
-		}
 		$this->CurrentAction = Param("action"); // Set up current action
 		$this->manufacturerId->Visible = FALSE;
 		$this->manufacturerName->setVisibility();

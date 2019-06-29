@@ -547,14 +547,6 @@ class audittrail_edit extends audittrail
 	public $IsMobileOrModal = FALSE;
 	public $DbMasterFilter;
 	public $DbDetailFilter;
-	public $DisplayRecs = 1;
-	public $StartRec;
-	public $StopRec;
-	public $TotalRecs = 0;
-	public $RecRange = 10;
-	public $Pager;
-	public $AutoHidePager = AUTO_HIDE_PAGER;
-	public $RecCnt;
 
 	//
 	// Page run
@@ -618,13 +610,6 @@ class audittrail_edit extends audittrail
 			}
 		}
 
-		// Update last accessed time
-		if ($UserProfile->isValidUser(CurrentUserName(), session_id())) {
-		} else {
-			Write($Language->phrase("UserProfileCorrupted"));
-			$this->terminate();
-		}
-
 		// Create form object
 		$CurrentForm = new HttpForm();
 		$this->CurrentAction = Param("action"); // Set up current action
@@ -665,9 +650,6 @@ class audittrail_edit extends audittrail
 			$SkipHeaderFooter = TRUE;
 		$this->IsMobileOrModal = IsMobile() || $this->IsModal;
 		$this->FormClassName = "ew-form ew-edit-form ew-horizontal";
-
-		// Load record by position
-		$loadByPosition = FALSE;
 		$loaded = FALSE;
 		$postBack = FALSE;
 
@@ -695,44 +677,10 @@ class audittrail_edit extends audittrail
 			} else {
 				$this->id->CurrentValue = NULL;
 			}
-			if (!$loadByQuery)
-				$loadByPosition = TRUE;
 		}
 
-		// Load recordset
-		$this->StartRec = 1; // Initialize start position
-		if ($rs = $this->loadRecordset()) // Load records
-			$this->TotalRecs = $rs->RecordCount(); // Get record count
-		if ($this->TotalRecs <= 0) { // No record found
-			if ($this->getSuccessMessage() == "" && $this->getFailureMessage() == "")
-				$this->setFailureMessage($Language->phrase("NoRecord")); // Set no record message
-			$this->terminate("audittraillist.php"); // Return to list page
-		} elseif ($loadByPosition) { // Load record by position
-			$this->setupStartRec(); // Set up start record position
-
-			// Point to current record
-			if ($this->StartRec <= $this->TotalRecs) {
-				$rs->move($this->StartRec - 1);
-				$loaded = TRUE;
-			}
-		} else { // Match key values
-			if ($this->id->CurrentValue != NULL) {
-				while (!$rs->EOF) {
-					if (SameString($this->id->CurrentValue, $rs->fields('id'))) {
-						$this->setStartRecordNumber($this->StartRec); // Save record position
-						$loaded = TRUE;
-						break;
-					} else {
-						$this->StartRec++;
-						$rs->moveNext();
-					}
-				}
-			}
-		}
-
-		// Load current row values
-		if ($loaded)
-			$this->loadRowValues($rs);
+		// Load current record
+		$loaded = $this->loadRow();
 
 		// Process form if post back
 		if ($postBack) {
@@ -757,11 +705,10 @@ class audittrail_edit extends audittrail
 		// Perform current action
 		switch ($this->CurrentAction) {
 			case "show": // Get a record to display
-				if (!$loaded) {
-					if ($this->getSuccessMessage() == "" && $this->getFailureMessage() == "")
-						$this->setFailureMessage($Language->phrase("NoRecord")); // Set no record message
-					$this->terminate("audittraillist.php"); // Return to list page
-				} else {
+				if (!$loaded) { // Load record based on key
+					if ($this->getFailureMessage() == "")
+						$this->setFailureMessage($Language->phrase("NoRecord")); // No record found
+					$this->terminate("audittraillist.php"); // No matching record, return to list
 				}
 				break;
 			case "update": // Update
@@ -951,33 +898,6 @@ class audittrail_edit extends audittrail
 		$this->keyvalue->CurrentValue = $this->keyvalue->FormValue;
 		$this->oldvalue->CurrentValue = $this->oldvalue->FormValue;
 		$this->newvalue->CurrentValue = $this->newvalue->FormValue;
-	}
-
-	// Load recordset
-	public function loadRecordset($offset = -1, $rowcnt = -1)
-	{
-
-		// Load List page SQL
-		$sql = $this->getListSql();
-		$conn = &$this->getConnection();
-
-		// Load recordset
-		$dbtype = GetConnectionType($this->Dbid);
-		if ($this->UseSelectLimit) {
-			$conn->raiseErrorFn = $GLOBALS["ERROR_FUNC"];
-			if ($dbtype == "MSSQL") {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset, ["_hasOrderBy" => trim($this->getOrderBy()) || trim($this->getSessionOrderBy())]);
-			} else {
-				$rs = $conn->selectLimit($sql, $rowcnt, $offset);
-			}
-			$conn->raiseErrorFn = '';
-		} else {
-			$rs = LoadRecordset($sql, $conn);
-		}
-
-		// Call Recordset Selected event
-		$this->Recordset_Selected($rs);
-		return $rs;
 	}
 
 	// Load row based on key values
